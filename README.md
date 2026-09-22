@@ -30,7 +30,7 @@ go run ./cmd/go-system-one \
 
 Open `http://127.0.0.1:8080/go-system-one`. The decision endpoint is `POST /v1/decision`.
 
-The command verifies the frozen model, tokenizer, tokenizer configuration and chat-template SHA-256 values before loading them. Use `-verify-artifacts=false` only for development fixtures. `-backend simd` selects the correctness-oracle implementation; the 12B SIMD path is too slow for interactive use.
+The command verifies the frozen model, tokenizer, tokenizer configuration and chat-template SHA-256 values before loading them. Model weights and GGUF files are never shipped in this repository; provide them through external paths. Repository checks reject tracked GGUF filenames and GGUF file magic. Use `-verify-artifacts=false` only for development fixtures. `-backend simd` selects the correctness-oracle implementation; the 12B SIMD path is too slow for interactive use.
 
 The server has no authentication or TLS. Bind it to loopback or put an authenticated reverse proxy in front of every route.
 

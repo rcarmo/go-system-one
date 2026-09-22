@@ -98,6 +98,6 @@ For NVIDIA or released-model changes, set the artifact paths documented in `docs
 - Never use `git rebase`; use merge or `git pull --no-rebase`.
 - Commit as `Rui Carmo <rui.carmo@gmail.com>`. Configure local and global Git identity before committing.
 - Keep commits focused and use `scope: concise change` subjects.
-- Do not commit model weights, tokenizers, profiles, generated benchmark databases, secrets or temporary probe code.
+- Do not commit model weights, tokenizers, GGUF artifacts, profiles, generated benchmark databases, secrets or temporary probe code. `scripts/check-no-gguf-artifacts.sh` rejects GGUF-like names and file magic.
 - Do not reformat vendored dependencies. Regenerate them with `scripts/vendor.sh`; apply whitespace checks to first-party paths.
 - Push only this repository. Verify the remote branch and CI after pushing.
