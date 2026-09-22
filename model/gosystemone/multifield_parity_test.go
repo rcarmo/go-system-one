@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rcarmo/go-pherence/model"
 	"github.com/rcarmo/go-system-one/loader/tokenizer"
+	"github.com/rcarmo/go-system-one/model"
 )
 
 type llamaCppMultiFieldFixture struct {

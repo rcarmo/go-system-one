@@ -3,8 +3,8 @@
 package simd
 
 import (
-	"github.com/rcarmo/go-pherence/backends/spacemit/rvv"
 	"github.com/rcarmo/go-system-one/backends/simd/kernels"
+	"github.com/rcarmo/go-system-one/backends/spacemit/rvv"
 )
 
 // RVV vector assembly is enabled incrementally. HasVecAsm remains false until

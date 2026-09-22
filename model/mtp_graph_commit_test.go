@@ -1,0 +1,161 @@
+package model
+
+import (
+	"testing"
+
+	"github.com/rcarmo/go-system-one/runtime/kv"
+)
+
+func TestMTPVerifierResultCommitGraphFloatKV(t *testing.T) {
+	m := &LlamaModel{
+		Config: LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumKVHeads: 1, HeadDim: 2},
+		Layers: []LlamaLayer{{HasKV: true}},
+	}
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(0, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := NewMTPExecutionGraph(m, d, state, nil, []int{1, 2}, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := NewMTPVerifierResultForModel(m, 0, []int{1, 2}, [][]float32{
+		{0, 9, 0, 0}, // accepts draft 1
+		{0, 0, 0, 8}, // rejects draft 2 and emits bonus 3
+		{7, 0, 0, 0}, // unused unless all accepted
+	}, []float32{1, 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	kvCacheK := [][]float32{{1, 2, 3, 4, 5, 6}}
+	kvCacheV := [][]float32{{7, 8, 9, 10, 11, 12}}
+	cp := kv.CheckpointFloatKV(kvCacheK, kvCacheV)
+	kvCacheK[0] = append(kvCacheK[0], 100, 101, 200, 201, 300, 301)
+	kvCacheV[0] = append(kvCacheV[0], 400, 401, 500, 501, 600, 601)
+	commit, err := result.CommitGraphFloatKV(m, graph, kvCacheK, kvCacheV, cp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if commit.KeepTokens != 2 || !sameInts(commit.Positions, []int{3, 4}) || !sameInts(commit.OutputTokens, []int{1, 3}) {
+		t.Fatalf("commit=%+v", commit)
+	}
+	wantK := []float32{1, 2, 3, 4, 5, 6, 100, 101, 200, 201}
+	wantV := []float32{7, 8, 9, 10, 11, 12, 400, 401, 500, 501}
+	if !sameFloat32s(kvCacheK[0], wantK) || !sameFloat32s(kvCacheV[0], wantV) {
+		t.Fatalf("KV K=%v V=%v", kvCacheK[0], kvCacheV[0])
+	}
+}
+
+func TestMTPVerifierResultCommitGraphRejectsMismatchedGraph(t *testing.T) {
+	m := &LlamaModel{Config: LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumKVHeads: 1, HeadDim: 2}, Layers: []LlamaLayer{{HasKV: true}}}
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(0, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := NewMTPExecutionGraph(m, d, state, nil, []int{1, 2}, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := NewMTPVerifierResultForModel(m, 0, []int{1}, [][]float32{{0, 9, 0, 0}, {7, 0, 0, 0}}, []float32{1, 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := result.CommitGraphFloatKV(m, graph, [][]float32{{}}, [][]float32{{}}, kv.FloatKVCheckpoint{}); err == nil {
+		t.Fatal("accepted mismatched graph/result")
+	}
+	if _, err := result.CommitGraphCompressedKV(graph, nil, nil); err == nil {
+		t.Fatal("compressed graph commit accepted mismatched graph/result")
+	}
+}
+
+func TestMTPVerifierResultCommitGraphRejectsMutatedAcceptance(t *testing.T) {
+	m := &LlamaModel{Config: LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumKVHeads: 1, HeadDim: 2}, Layers: []LlamaLayer{{HasKV: true}}}
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(0, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := NewMTPExecutionGraph(m, d, state, nil, []int{1, 2}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := NewMTPVerifierResultForModel(m, 0, []int{1, 2}, [][]float32{
+		{0, 9, 0, 0},
+		{0, 0, 0, 8},
+		{7, 0, 0, 0},
+	}, []float32{1, 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result.Acceptance = MTPAcceptance{
+		DraftedCount:       2,
+		VerifiedCount:      2,
+		AcceptedPrefixLen:  2,
+		AcceptedTokens:     []int{1, 2},
+		BonusToken:         0,
+		OutputTokens:       []int{1, 2, 0},
+		AllDraftsAccepted:  true,
+		FirstRejectedIndex: -1,
+	}
+	if _, err := result.CommitGraphCompressedKV(graph, nil, nil); err == nil {
+		t.Fatal("compressed graph commit accepted forged acceptance that disagrees with logits")
+	}
+	if _, err := result.CommitGraphFloatKV(m, graph, nil, nil, kv.FloatKVCheckpoint{}); err == nil {
+		t.Fatal("float graph commit accepted forged acceptance that disagrees with logits")
+	}
+}
+
+func TestMTPVerifierResultCommitGraphFloatKVRejectsModelRangeDrift(t *testing.T) {
+	m := &LlamaModel{Config: LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumKVHeads: 1, HeadDim: 2}, Layers: []LlamaLayer{{HasKV: true}}}
+	graph := MTPExecutionGraph{
+		InputToken:      9,
+		DraftedTokens:   []int{1},
+		StartPos:        0,
+		DrafterSteps:    []MTPDrafterGraphStep{{Index: 0, InputToken: 9, ActivationWidth: 2}},
+		Verifier:        MTPVerifierPlan{InputToken: 9, DraftedTokens: []int{1}, VerifierTokens: []int{9, 1}, StartPos: 0, Positions: []int{0, 1}},
+		MaxKVKeepTokens: 2,
+	}
+	result, err := NewMTPVerifierResult(9, []int{1}, [][]float32{{0, 9, 0, 0, 0, 0, 0, 0, 0, 0}, {7, 0, 0, 0, 0, 0, 0, 0, 0, 0}}, []float32{1, 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := result.CommitGraphFloatKV(m, graph, [][]float32{{1, 2, 3, 4}}, [][]float32{{5, 6, 7, 8}}, kv.CheckpointFloatKV([][]float32{{}}, [][]float32{{}})); err == nil {
+		t.Fatal("accepted verifier graph token/logit rows outside model vocab")
+	}
+	if _, err := result.CommitGraphCompressedKVForModel(m, graph, nil, nil); err == nil {
+		t.Fatal("model-aware compressed commit accepted verifier graph token/logit rows outside model vocab")
+	}
+}
+
+func TestMTPVerifierResultCommitGraphRejectsMalformedVerifierRows(t *testing.T) {
+	m := &LlamaModel{Config: LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumKVHeads: 1, HeadDim: 2}, Layers: []LlamaLayer{{HasKV: true}}}
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(0, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := NewMTPExecutionGraph(m, d, state, nil, []int{1, 2}, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := NewMTPVerifierResultRowsForModel(m, 0, []int{1, 2}, [][]float32{
+		{0, 9, 0, 0},
+		{0, 0, 0, 8},
+		{7, 0, 0, 0},
+	}, [][]float32{{1, 2}, {3, 4}, {5, 6}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bad := result
+	bad.Logits = bad.Logits[:2]
+	if _, err := bad.CommitGraphFloatKV(m, graph, [][]float32{{}}, [][]float32{{}}, kv.FloatKVCheckpoint{}); err == nil {
+		t.Fatal("accepted verifier result with short logits rows")
+	}
+	bad = result
+	bad.ActivationRows = bad.ActivationRows[:2]
+	if _, err := bad.CommitGraphFloatKV(m, graph, [][]float32{{}}, [][]float32{{}}, kv.FloatKVCheckpoint{}); err == nil {
+		t.Fatal("accepted verifier result with short activation rows")
+	}
+}

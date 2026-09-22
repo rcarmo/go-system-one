@@ -5,13 +5,6 @@ github.com/ebitengine/purego/internal/cgo
 github.com/ebitengine/purego/internal/fakecgo
 github.com/ebitengine/purego/internal/strings
 github.com/ebitengine/purego/internal/xreflect
-# github.com/rcarmo/go-pherence v0.0.0-20260922134306-9ada94d175cb
-## explicit; go 1.26.2
-github.com/rcarmo/go-pherence/backends/spacemit/rvv
-github.com/rcarmo/go-pherence/internal/checked
-github.com/rcarmo/go-pherence/internal/ggmlfp16
-github.com/rcarmo/go-pherence/model
-github.com/rcarmo/go-pherence/model/internal/ops
 # golang.org/x/sys v0.43.0
 ## explicit; go 1.25.0
 golang.org/x/sys/cpu

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/model"
+	"github.com/rcarmo/go-system-one/model"
 )
 
 // Gemma4CPUScorer is the correctness oracle for Go System One branch execution. It owns

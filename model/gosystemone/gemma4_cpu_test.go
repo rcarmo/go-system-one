@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/rcarmo/go-pherence/model"
+	"github.com/rcarmo/go-system-one/model"
 	"github.com/rcarmo/go-system-one/tensor"
 )
 

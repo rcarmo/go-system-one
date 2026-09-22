@@ -2,7 +2,7 @@
 
 package simd
 
-import "github.com/rcarmo/go-pherence/backends/spacemit/rvv"
+import "github.com/rcarmo/go-system-one/backends/spacemit/rvv"
 
 // fastExpF32 uses the Schraudolph integer-trick approximation on riscv64,
 // which is ~9x faster than math.Exp. Accuracy is ~6% max relative error,

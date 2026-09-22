@@ -1,12 +1,12 @@
 # Updating from go-pherence
 
-`go-system-one` imports reviewed work from `go-pherence` in one direction. The update process never modifies the upstream checkout.
+`go-system-one` imports reviewed source from `go-pherence` in one direction. The update process never modifies the upstream checkout and never adds `go-pherence` as a Go module dependency.
 
-## Pinned inputs
+## Pinned source
 
-[`scripts/upstream.env`](../scripts/upstream.env) records the accepted source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps first-party upstream paths to their local destinations. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps internalised package imports; vendoring rewrites the retained upstream closure to those local packages and removes each duplicate vendor directory. `go.mod` separately pins the remaining shared runtime module to an immutable pseudo-version. `vendor/` contains the resulting package closure used by offline builds.
+[`scripts/upstream.env`](../scripts/upstream.env) records the accepted full source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps upstream paths to local destinations. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps upstream import paths to this module path after copying.
 
-These pins may advance together when an upstream change touches both product and runtime code. A documentation-only product update need not change the module dependency.
+All compiled first-party packages live in this repository. `vendor/` contains third-party modules and licences only.
 
 ## Import a revision
 
@@ -16,9 +16,9 @@ Use a full commit hash for the complete update:
 ./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-The command requires a clean `go-system-one` tree. It copies the manifest, updates both pins, regenerates `vendor/` and runs `make check`.
+The command requires a clean `go-system-one` tree. It copies the manifest, records the source pin, rewrites first-party imports, runs `go mod tidy`, regenerates third-party `vendor/` and runs `make check`.
 
-Use the lower-level copy-only command when reviewing product files before changing the dependency pin:
+Use the lower-level copy-only command when reviewing source before accepting the pin:
 
 ```sh
 ./scripts/sync-upstream.sh <full-go-pherence-commit>
@@ -35,28 +35,28 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 
 ## Review and accept
 
-1. Read the complete diff. Resolve repository-specific imports without changing the public API.
-2. Add new first-party files to `scripts/upstream-files.tsv`. Add an import mapping to `scripts/local-packages.tsv` only after the complete package and its tests move here. Remove mappings only when this repository deliberately replaces or deletes the corresponding feature.
-3. Update `scripts/upstream.env` with the accepted full commit and its UTC commit time.
-4. If shared model, loader, SIMD or NVIDIA code changed, update the `go-pherence` pseudo-version in `go.mod` to the same accepted commit.
-5. Run `go mod tidy` and `./scripts/vendor.sh`. Commit the resulting `vendor/` changes, including dependency licences.
-6. Run `make check` with network access disabled for the vendored test.
-7. Run the released-model parity gate when model, tokenizer, scorer, PTX or dispatch behaviour changed.
-8. Record performance claims in `docs/validation/` with raw sample distributions and exact hardware details.
-9. Commit the copied source, both pins, dependency snapshot and evidence as one reviewable change.
+1. Read the complete diff. Resolve repository-specific imports without changing public contracts.
+2. Add new imported files to `scripts/upstream-files.tsv`. Add package-path mappings to `scripts/local-packages.tsv` when a new package enters this module.
+3. Update `scripts/upstream.env` with the accepted full commit and UTC commit time.
+4. Confirm no source imports `github.com/rcarmo/go-pherence/...` and no `go-pherence` requirement appears in `go.mod`, `go.sum` or `vendor/modules.txt`.
+5. Run `go mod tidy`, `./scripts/vendor.sh` and `make check`.
+6. Run released-model parity when model, tokenizer, scorer, PTX or dispatch behaviour changed.
+7. Record performance claims in `docs/validation/` with raw sample distributions and exact hardware details.
+8. Commit copied source, the source pin, third-party dependency changes and evidence as one reviewable change.
 
 ## Automation contract
 
 [`.github/workflows/upstream-update.yml`](../.github/workflows/upstream-update.yml) checks the upstream `main` head weekly and can also run manually for an explicit full commit. It opens or updates `automation/go-pherence-update`; it never commits directly to `main`.
 
-An automated update job may open a pull request, but it must:
+An automated update job must:
 
 - use an explicit full upstream commit;
-- refuse a dirty source checkout;
-- include the generated diff and pin changes;
-- run the offline checks;
+- refuse dirty source and destination checkouts;
+- include the generated source diff and pin change;
+- keep the standalone module free of `go-pherence` package dependencies;
+- run offline checks;
 - leave hardware tests marked as required when it cannot run them;
 - avoid force pushes and writes to `go-pherence`;
 - require review before merge.
 
-The updater does not infer that every upstream change is relevant. The manifest is the relevance boundary.
+The updater does not infer that every upstream change is relevant. The file manifest is the relevance boundary.

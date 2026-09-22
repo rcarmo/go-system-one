@@ -56,7 +56,10 @@ while IFS=$'\t' read -r upstream_import local_import mode; do
   fi
 done < "$root/scripts/local-packages.tsv"
 
-gofmt -w "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinput" "$root/half" "$root/backends"
+mapfile -d '' go_files < <(find "$root" -type f -name '*.go' -not -path "$root/.git/*" -not -path "$root/vendor/*" -print0)
+if ((${#go_files[@]})); then
+  gofmt -w "${go_files[@]}"
+fi
 
 printf 'synced declared paths from go-pherence %s\n' "$(git -C "$source_repo" rev-parse "$revision^{commit}")"
-printf 'review the diff, update scripts/upstream.env and go.mod deliberately, then run make check\n'
+printf 'review the diff, update scripts/upstream.env, then run make check\n'

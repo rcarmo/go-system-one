@@ -4,11 +4,11 @@ Go System One is a native Go service for finite boolean and enum decisions using
 
 The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver API/PTX. It does not use CGo, a llama.cpp runtime wrapper or a production CUDA toolkit.
 
-## Current source boundary
+## Source boundary
 
-This repository owns the decision contract, request validation, scorer adapters, HTTP service, web interface, frozen oracle fixtures and evaluation records. Shared kernels move here package by package with their tests; `half` is the first internalised kernel. The remaining model, tokenizer, SIMD and NVIDIA runtime currently pin [`go-pherence@f65652f6d9d8aa45c2f5eae68603e995f27b5b75`](https://github.com/rcarmo/go-pherence/commit/f65652f6d9d8aa45c2f5eae68603e995f27b5b75).
+This repository owns the complete Go System One build: decision contract, HTTP service, playground, model orchestration, loaders, tensor/runtime packages, portable SIMD, NVIDIA Driver API runtime, embedded PTX and platform adapters. It has no compile-time dependency on `go-pherence`; `vendor/` contains third-party modules and their licences only.
 
-The remaining shared runtime is an ordinary immutable Go module dependency. Its complete build closure is checked into `vendor/`, including licences, so a clone can build offline without a sibling checkout. Vendoring rewrites retained upstream packages to use internalised local kernels and removes duplicate package copies. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies declared first-party files from a reviewed `go-pherence` commit without writing to that repository.
+[`go-pherence@9ada94d175cbb82dc78e27f2aa8df5b129e30676`](https://github.com/rcarmo/go-pherence/commit/9ada94d175cbb82dc78e27f2aa8df5b129e30676) is the current immutable source provenance. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies manifest-listed files from a reviewed upstream commit in one direction and never writes to that repository.
 
 ## Build
 
@@ -49,7 +49,7 @@ The default suite is offline and uses synthetic or frozen repository fixtures. R
 ./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-This command copies the manifest-listed product files, updates the immutable module pin, regenerates `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. A weekly GitHub workflow runs the full updater and opens a review pull request when the upstream pin changes. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
+This command copies the manifest-listed source files, records the immutable source commit, regenerates third-party `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. A weekly GitHub workflow runs the full updater and opens a review pull request when the source pin changes. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
 
 ## Licence
 

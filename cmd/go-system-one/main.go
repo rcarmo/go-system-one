@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rcarmo/go-pherence/model"
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-system-one/loader/tokenizer"
+	"github.com/rcarmo/go-system-one/model"
 	gosystemone "github.com/rcarmo/go-system-one/model/gosystemone"
 	"github.com/rcarmo/go-system-one/webui"
 )

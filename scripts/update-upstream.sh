@@ -27,20 +27,17 @@ git -C "$tmp/go-pherence" checkout --detach "$revision"
 resolved=$(git -C "$tmp/go-pherence" rev-parse HEAD)
 commit_epoch=$(git -C "$tmp/go-pherence" show -s --format=%ct HEAD)
 committed_at=$(date -u -d "@$commit_epoch" '+%Y-%m-%dT%H:%M:%SZ')
-pseudo_time=$(date -u -d "@$commit_epoch" '+%Y%m%d%H%M%S')
-short=${resolved:0:12}
-
 GO_PHERENCE_SOURCE="$tmp/go-pherence" "$root/scripts/sync-upstream.sh" "$resolved"
 
 cat > "$root/scripts/upstream.env" <<EOF
-# Source revision for product-owned files and the temporary core module dependency.
+# Source revision for files imported through the one-way update manifest.
 UPSTREAM_REPOSITORY=$UPSTREAM_REPOSITORY
 UPSTREAM_COMMIT=$resolved
 UPSTREAM_COMMITTED_AT=$committed_at
 EOF
 
 cd "$root"
-go mod edit -require="github.com/rcarmo/go-pherence@v0.0.0-${pseudo_time}-${short}"
+go mod edit -droprequire=github.com/rcarmo/go-pherence
 go mod tidy
 "$root/scripts/vendor.sh"
 make check
