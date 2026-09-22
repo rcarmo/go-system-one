@@ -284,12 +284,12 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 	}
 	var packed *nvidia.SegmentedRows
 	if len(segments) > 0 {
-		lengths := make([]int, len(segments))
+		layout := make([]nvidia.AttentionSegment, len(segments))
 		for i, segment := range segments {
-			lengths[i] = segment.length
+			layout[i] = nvidia.AttentionSegment{Length: segment.length, ParentStart: segment.parentStart, ParentLength: segment.parentLength}
 		}
 		var err error
-		packed, err = nvidia.NewSegmentedRows(lengths, pos0)
+		packed, err = nvidia.NewBranchedRows(layout, pos0)
 		if err != nil {
 			return err
 		}
@@ -374,7 +374,7 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 		if len(segments) > 0 {
 			lastPos = pos0
 			for _, segment := range segments {
-				lastPos = max(lastPos, pos0+segment.length-1)
+				lastPos = max(lastPos, pos0+segment.parentLength+segment.length-1)
 			}
 		}
 		_, rot := m.ensureGemma4RoPE(l, lastPos)
@@ -438,15 +438,19 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 		}
 	}
 	if finalDevice != nil {
-		count := max(1, len(segments))
-		if finalDevice.Size < count*h*4 {
+		lastRows := []int{B - 1}
+		if len(segments) > 0 {
+			lastRows = nil
+			for _, segment := range segments {
+				if segment.terminal {
+					lastRows = append(lastRows, segment.offset+segment.length-1)
+				}
+			}
+		}
+		if finalDevice.Size < len(lastRows)*h*4 {
 			return fmt.Errorf("NVIDIA prefill final device buffer too small")
 		}
-		for i := 0; i < count; i++ {
-			lastRow := B - 1
-			if len(segments) > 0 {
-				lastRow = segments[i].offset + segments[i].length - 1
-			}
+		for i, lastRow := range lastRows {
 			if err := nvidia.CopyDtoD(finalDevice.Ptr+nvidia.CUdeviceptr(i*h*4), hidden.Ptr+nvidia.CUdeviceptr(lastRow*h*4), uint64(h*4)); err != nil {
 				return err
 			}

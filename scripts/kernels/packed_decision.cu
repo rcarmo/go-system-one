@@ -7,7 +7,7 @@ extern "C" __global__ void rope_partial_segmented(float *x, const float *cs,
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= rows * heads * rot) return;
     int row = i / (heads * rot), pair = i % rot, head = (i / rot) % heads;
-    int pos = prefix + row - starts[row];
+    int pos = prefix + row - starts[row*3] + starts[row*3+2];
     int at = (row * heads + head) * dim + pair;
     float a=x[at], b=x[at+rot], c=cs[2*(pos*rot+pair)], s=cs[2*(pos*rot+pair)+1];
     x[at] = fmaf(a,c,b*(-s));
@@ -22,14 +22,14 @@ extern "C" __global__ __launch_bounds__(256,1) void gqa_attention_segmented(
     int heads, int kvheads, int dim, float scale) {
     int head=blockIdx.x, row=blockIdx.y, t=threadIdx.x;
     if(head>=heads || row>=rows) return;
-    int lane=t&31, warp=t>>5, start=starts[row];
-    int end=prefix+row-start+1, first=window>0 && end>window ? end-window : 0;
+    int lane=t&31, warp=t>>5, start=starts[row*3], parent=starts[row*3+1], plen=starts[row*3+2];
+    int end=prefix+plen+row-start+1, first=window>0 && end>window ? end-window : 0;
     int count=end-first, kvhead=head/(heads/kvheads), stride=kvheads*dim;
     const float *qr=q+(row*heads+head)*dim;
     __shared__ float scores[2048], reduce[256];
     for(int j=warp;j<count;j+=8) {
         int pos=first+j;
-        const float *kr=pos<prefix ? pk+pos*stride+kvhead*dim : k+(start+pos-prefix)*stride+kvhead*dim;
+        const float *kr=pos<prefix ? pk+pos*stride+kvhead*dim : k+(pos<prefix+plen ? parent+pos-prefix : start+pos-prefix-plen)*stride+kvhead*dim;
         float sum=0;
         for(int d=lane;d<dim;d+=32) sum=fmaf(qr[d],kr[d],sum);
         for(int n=16;n;n>>=1) sum+=__shfl_down_sync(0xffffffff,sum,n);
@@ -56,7 +56,7 @@ extern "C" __global__ __launch_bounds__(256,1) void gqa_attention_segmented(
         float value=0;
         for(int j=0;j<count;j++) {
             int pos=first+j;
-            const float *vr=pos<prefix ? pv+pos*stride+kvhead*dim : v+(start+pos-prefix)*stride+kvhead*dim;
+            const float *vr=pos<prefix ? pv+pos*stride+kvhead*dim : v+(pos<prefix+plen ? parent+pos-prefix : start+pos-prefix-plen)*stride+kvhead*dim;
             value=fmaf(scores[j],vr[d],value);
         }
         out[(row*heads+head)*dim+d]=value;

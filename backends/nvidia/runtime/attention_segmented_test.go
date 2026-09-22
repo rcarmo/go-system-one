@@ -94,3 +94,17 @@ func TestSegmentedRowsValidation(t *testing.T) {
 		t.Fatal("nil plan accepted")
 	}
 }
+
+func TestBranchedRowsRejectInvalidParents(t *testing.T) {
+	for _, s := range [][]AttentionSegment{
+		{{Length: 2, ParentStart: 0, ParentLength: 1}},
+		{{Length: 2}, {Length: 3, ParentStart: 1, ParentLength: 1}},
+		{{Length: 2}, {Length: 3, ParentStart: 0, ParentLength: 3}},
+		{{Length: 2}, {Length: 3, ParentStart: 0, ParentLength: 2}, {Length: 1, ParentStart: 2, ParentLength: 3}},
+	} {
+		if p, err := NewBranchedRows(s, 57); err == nil {
+			p.Close()
+			t.Fatal("invalid parent accepted")
+		}
+	}
+}

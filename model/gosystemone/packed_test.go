@@ -180,3 +180,55 @@ func TestGoSystemOnePackedReleasedModelMatchesSerial(t *testing.T) {
 		})
 	}
 }
+
+type treeFake struct {
+	fixedScorer
+	callsTree int
+	bad       int
+}
+
+func (s *treeFake) ScoreSplitContextTrees(_ context.Context, _ []int, contexts [][]int, branches []Branch, _ bool) ([][][]float32, error) {
+	s.callsTree++
+	out := make([][][]float32, len(contexts))
+	for i := range out {
+		out[i] = make([][]float32, len(branches))
+		for j, b := range branches {
+			out[i][j] = make([]float32, len(b.CandidateTokens))
+			for k, tok := range b.CandidateTokens {
+				out[i][j][k] = float32(tok)
+			}
+		}
+	}
+	if s.bad == 1 {
+		return out[:len(out)-1], nil
+	}
+	if s.bad == 2 {
+		out[0] = nil
+	}
+	if s.bad == 3 {
+		out[0][0] = nil
+	}
+	return out, nil
+}
+func TestEngineBatchTreeMatchesScalar(t *testing.T) {
+	r := Request{Schema: json.RawMessage(`{"urgent":{"type":"boolean","description":"urgency"},"severity":{"type":"enum","description":"severity","choices":["critical incident","routine maintenance","routine request"]}}`), Contexts: []string{"one", "different longer context"}, Mode: ModeTree}
+	s := &treeFake{}
+	e := &Engine{Tokenizer: runeTokenizer{}, Scorer: s, BOSToken: 2}
+	got, err := e.Decide(context.Background(), r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := (&Engine{Tokenizer: runeTokenizer{}, Scorer: &fixedScorer{}, BOSToken: 2}).Decide(context.Background(), r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.callsTree != 1 || s.calls != 0 || !reflect.DeepEqual(got.Results, want.Results) || got.Usage != want.Usage || got.Timings.Rounds != want.Timings.Rounds {
+		t.Fatal("tree/scalar mismatch")
+	}
+	for _, bad := range []int{1, 2, 3} {
+		s.bad = bad
+		if _, err := e.Decide(context.Background(), r); err == nil {
+			t.Fatal("malformed tree scores accepted")
+		}
+	}
+}

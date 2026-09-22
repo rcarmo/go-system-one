@@ -12,7 +12,10 @@ import (
 // Gemma4PackedRows bounds total real token rows in a packed transformer pass.
 const Gemma4PackedRows = 512
 
-type gemma4PrefillSegment struct{ offset, length int }
+type gemma4PrefillSegment struct {
+	offset, length, parentStart, parentLength int
+	terminal                                  bool
+}
 
 // Reused only while the owning Gemma4NVIDIA mutex is held. Each slot grows to
 // at most the 512-row workspace; Close releases every retained allocation.
@@ -118,15 +121,20 @@ func (g *Gemma4NVIDIA) ScorePrefixedPacked(ctx context.Context, prefix *Gemma4NV
 				}
 			}
 		}
-		segments[i] = gemma4PrefillSegment{rows, len(path)}
+		segments[i] = gemma4PrefillSegment{offset: rows, length: len(path), terminal: true}
 		rows += len(path)
 	}
 	flat := make([]int, 0, rows)
 	for _, path := range paths {
 		flat = append(flat, path...)
 	}
+	return g.scorePackedPlan(ctx, prefix, flat, segments, candidates)
+}
+
+// Caller holds g.mu and validates the plan before entering.
+func (g *Gemma4NVIDIA) scorePackedPlan(ctx context.Context, prefix *Gemma4NVIDIAContext, flat []int, segments []gemma4PrefillSegment, candidates [][]int) ([][]float32, error) {
 	h := g.model.Config.HiddenSize
-	terminal, err := nvidia.Malloc(len(paths) * h)
+	terminal, err := nvidia.Malloc(len(candidates) * h)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +144,7 @@ func (g *Gemma4NVIDIA) ScorePrefixedPacked(ctx context.Context, prefix *Gemma4NV
 	if err := g.runPrefillRows(ctx, flat, len(prefix.tokens), prefix.arena, nil, terminal, segments); err != nil {
 		return nil, err
 	}
-	if err := nvidia.IdeogramRMSNormRowsBuffer(terminal, terminal, g.norm, nil, len(paths), h, float32(g.model.Config.RMSNormEps), false); err != nil {
+	if err := nvidia.IdeogramRMSNormRowsBuffer(terminal, terminal, g.norm, nil, len(candidates), h, float32(g.model.Config.RMSNormEps), false); err != nil {
 		return nil, err
 	}
 	out, err := g.lmHead.ProjectSelectedBatch(terminal, candidates)
@@ -159,4 +167,70 @@ func (g *Gemma4NVIDIA) transformSelectedLogits(logits []float32, tokens []int) {
 			}
 		}
 	}
+}
+
+// ScorePrefixedTreeGroups shares each context once among its independent field
+// branches, and packs multiple contexts into the same transformer projections.
+func (g *Gemma4NVIDIA) ScorePrefixedTreeGroups(ctx context.Context, prefix *Gemma4NVIDIAContext, contexts, branches, candidates [][]int) ([][][]float32, error) {
+	if g == nil || ctx == nil {
+		return nil, fmt.Errorf("nil tree scorer/context")
+	}
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.closed || prefix == nil || prefix.closed || prefix.owner != g || prefix.arena == nil {
+		return nil, fmt.Errorf("invalid tree prefix")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if len(contexts) < 1 || len(branches) < 1 || len(branches) != len(candidates) || len(contexts) > 256/len(branches) {
+		return nil, fmt.Errorf("invalid tree group shape")
+	}
+	var flat []int
+	var segments []gemma4PrefillSegment
+	var selected [][]int
+	appendTokens := func(tokens []int) error {
+		if len(tokens) < 1 || len(tokens) > Gemma4PackedRows-len(flat) {
+			return fmt.Errorf("tree group token budget exceeded")
+		}
+		for _, id := range tokens {
+			if id < 0 || id >= g.model.Config.VocabSize {
+				return fmt.Errorf("tree group token outside vocabulary")
+			}
+		}
+		flat = append(flat, tokens...)
+		return nil
+	}
+	for _, c := range contexts {
+		start := len(flat)
+		if err := appendTokens(c); err != nil {
+			return nil, err
+		}
+		segments = append(segments, gemma4PrefillSegment{offset: start, length: len(c)})
+		for j, b := range branches {
+			if len(prefix.tokens)+len(c)+len(b) > 2048 || len(candidates[j]) < 1 || len(candidates[j]) > 255 {
+				return nil, fmt.Errorf("invalid tree group branch")
+			}
+			for _, id := range candidates[j] {
+				if id < 0 || id >= g.model.Config.VocabSize {
+					return nil, fmt.Errorf("candidate outside vocabulary")
+				}
+			}
+			at := len(flat)
+			if err := appendTokens(b); err != nil {
+				return nil, err
+			}
+			segments = append(segments, gemma4PrefillSegment{offset: at, length: len(b), parentStart: start, parentLength: len(c), terminal: true})
+			selected = append(selected, candidates[j])
+		}
+	}
+	logits, err := g.scorePackedPlan(ctx, prefix, flat, segments, selected)
+	if err != nil {
+		return nil, err
+	}
+	out := make([][][]float32, len(contexts))
+	for i := range out {
+		out[i] = logits[i*len(branches) : (i+1)*len(branches)]
+	}
+	return out, nil
 }

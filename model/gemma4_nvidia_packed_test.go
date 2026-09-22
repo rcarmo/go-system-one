@@ -131,3 +131,75 @@ func TestGemma4DeviceWorkReusesAndFrees(t *testing.T) {
 	}
 	w.free()
 }
+
+func TestGemma4PackedTreeGroupsIsolation(t *testing.T) {
+	if !nvidia.SgemmReady() {
+		t.Skip("CUDA unavailable")
+	}
+	for _, window := range []int{0, 3} {
+		m := newGemma4NVIDIAQuantTestModel(t)
+		if window > 0 {
+			m.Config.SlidingWindow = window
+			m.Config.LayerTypes = []string{"sliding_attention"}
+		}
+		g, err := NewGemma4NVIDIA(m)
+		if err != nil {
+			t.Fatal(err)
+		}
+		prefix, err := g.PrefillPreparedCapacity(context.Background(), []int{1, 2}, 18, 1, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		contexts := [][]int{{0, 1, 2, 1}, {2, 1, 0, 2, 0}}
+		branches := [][]int{{0}, {1, 0}, {2, 0, 1}}
+		ids := [][]int{{0, 1, 2}, {1, 2}, {2, 0}}
+		want := make([][][]float32, len(contexts))
+		for i, c := range contexts {
+			want[i] = make([][]float32, len(branches))
+			for j, b := range branches {
+				path := append(append([]int{}, c...), b...)
+				want[i][j], err = g.ScorePrefixedSingleBranch(context.Background(), prefix, path, ids[j])
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		got, err := g.ScorePrefixedTreeGroups(context.Background(), prefix, contexts, branches, ids)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i := range got {
+			for j := range got[i] {
+				assertFloat32RowsRelative(t, got[i][j], want[i][j], 1e-2, 5e-3)
+			}
+		}
+		branches[0] = []int{2}
+		changed, err := g.ScorePrefixedTreeGroups(context.Background(), prefix, contexts, branches, ids)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i := range got {
+			for j := 1; j < len(branches); j++ {
+				assertFloat32RowsRelative(t, changed[i][j], got[i][j], 1e-6, 1e-6)
+			}
+		}
+		contexts[0] = []int{2, 2, 2, 2}
+		again, err := g.ScorePrefixedTreeGroups(context.Background(), prefix, contexts, branches, ids)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for j := range branches {
+			assertFloat32RowsRelative(t, again[1][j], changed[1][j], 1e-6, 1e-6)
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		if out, err := g.ScorePrefixedTreeGroups(ctx, prefix, contexts, branches, ids); err == nil || out != nil {
+			t.Fatal("cancelled tree accepted")
+		}
+		if _, err := g.ScorePrefixedTreeGroups(context.Background(), prefix, contexts, branches, ids); err != nil {
+			t.Fatal(err)
+		}
+		prefix.Close()
+		g.Close()
+	}
+}

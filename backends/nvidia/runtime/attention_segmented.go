@@ -14,21 +14,38 @@ type SegmentedRows struct {
 	rows, prefix, longest int
 }
 
+// AttentionSegment optionally reads one earlier context before its own suffix.
+// Parents must be complete, root-level segments; sibling branches stay isolated.
+type AttentionSegment struct{ Length, ParentStart, ParentLength int }
+
 func NewSegmentedRows(lengths []int, prefix int) (*SegmentedRows, error) {
-	if len(lengths) == 0 || len(lengths) > 256 || prefix < 1 || prefix >= 2048 {
+	segments := make([]AttentionSegment, len(lengths))
+	for i, n := range lengths {
+		segments[i].Length = n
+	}
+	return NewBranchedRows(segments, prefix)
+}
+
+func NewBranchedRows(segments []AttentionSegment, prefix int) (*SegmentedRows, error) {
+	if len(segments) == 0 || len(segments) > 512 || prefix < 1 || prefix >= 2048 {
 		return nil, fmt.Errorf("invalid segmented prefix/lengths")
 	}
 	var ids []uint32
-	longest := 0
-	for _, length := range lengths {
-		if length < 1 || length > 512-len(ids) || length > 2048-prefix {
-			return nil, fmt.Errorf("invalid segmented token budget")
+	rows, longest := 0, 0
+	roots := map[int]int{}
+	for _, segment := range segments {
+		n, parent, plen := segment.Length, segment.ParentStart, segment.ParentLength
+		if n < 1 || n > 512-rows || plen < 0 || plen > 2048-prefix-n || parent < 0 || (plen > 0 && roots[parent] != plen) || (plen == 0 && parent != 0) {
+			return nil, fmt.Errorf("invalid segment length/parent")
 		}
-		start := uint32(len(ids))
-		for i := 0; i < length; i++ {
-			ids = append(ids, start)
+		if plen == 0 {
+			roots[rows] = n
 		}
-		longest = max(longest, length)
+		for i := 0; i < n; i++ {
+			ids = append(ids, uint32(rows), uint32(parent), uint32(plen))
+		}
+		rows += n
+		longest = max(longest, plen+n)
 	}
 	buf, err := Malloc(len(ids))
 	if err != nil {
@@ -38,7 +55,7 @@ func NewSegmentedRows(lengths []int, prefix int) (*SegmentedRows, error) {
 		buf.Free()
 		return nil, err
 	}
-	return &SegmentedRows{buf, len(ids), prefix, longest}, nil
+	return &SegmentedRows{buf, rows, prefix, longest}, nil
 }
 func (p *SegmentedRows) Close() {
 	if p != nil && p.starts != nil {

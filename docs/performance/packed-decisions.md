@@ -2,7 +2,7 @@
 
 Process several independent contexts in the same transformer matrix operations, then extract only the required candidate logits. Keep the pinned Gemma weights, prompt, token paths and probability calculation unchanged.
 
-The first implementation is opt-in with `-packed-token-rows=512`. It packs single-field, single-node tree decisions; multi-field, deeper trees and oversized contexts still use the serial path. Default behaviour is unchanged. The source review used `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
+Packed execution is opt-in with `-packed-token-rows=512`. It supports multi-field tree decisions and multi-token enums, sharing each context among its independent branches. Greedy/mixed-mode requests and groups exceeding the token or branch budget retain the serial path. Default behaviour is unchanged. The source review used `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
 
 ## First measurements
 
@@ -27,9 +27,26 @@ Development source for the segmented attention, rotary-position and batched Q5 s
 
 Two INT8 tensor-core prototypes were rejected: they were slower than the existing dp4a kernels, and Q5 accumulation also differed slightly. No prototype kernel enters production. Next steps are multi-field packing and further projection/layout work. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
-## Current cost
+## Multi-field experiment
 
-[`Engine.Decide`](../../model/gosystemone/engine.go) scores contexts serially. The NVIDIA single-branch path combines the context and forced suffix into one causal prefill. It already projects only candidate vocabulary rows through `finishSelectedDevice` in [`gemma4_nvidia.go`](../../model/gemma4_nvidia.go).
+The tree layout shares each context once, then packs field/node suffixes with explicit parent references. A branch sees the schema prefix, its own context and its own causal suffix. Selected-logit extraction replaces full-vocabulary projection and hidden-state CPU transfers.
+
+For one boolean and a three-choice multi-token enum, the same binary produced these medians on the RTX 3060:
+
+| Entries | Serial | Packed tree | Speedup |
+|---:|---:|---:|---:|
+| 1 | 1,017.42 ms | 141.57 ms | 7.19× |
+| 10 | 10,427.21 ms | 967.59 ms | 10.78× |
+
+One warm-up preceded three measured requests per case. Each request started at no more than 60°C; GPU temperature reached 80°C in serial mode. Sampled device memory peaked at 9,619 MiB packed and 9,472 MiB serially. [Requests, complete responses and samples](../benchmarks/data/packed-multifield.json) retain the comparison. Three samples do not establish tail latency.
+
+All 22 compared field decisions agreed. Maximum candidate-probability movement was **0.0000251846**, or **0.00252 percentage points**. This exceeds the `1e-6` probability tolerance used by the pinned multi-field fixture, although that fixture itself passes unchanged at all tested budgets. This broader comparison is experimental evidence, not a new accuracy or numerical acceptance claim.
+
+The old scorer uses F32 activation kernels for fewer than four active branch rows. Packed execution uses Q8 activations. Thus the speed comparison includes both parallel execution and a precision change. Diagnostic independent causal-prefill scoring agreed exactly with packed logits on the sampled inputs. Broader ambiguous-input, near-tie, threshold and raw/centred-logit evaluation is still needed before default promotion. Do not reject this path on raw-logit inequality alone, or accept it solely because these decisions agreed.
+
+## Serial-path cost
+
+Without packing, [`Engine.Decide`](../../model/gosystemone/engine.go) scores contexts serially. The NVIDIA single-branch path combines the context and forced suffix into one causal prefill. It already projects only candidate vocabulary rows through `finishSelectedDevice` in [`gemma4_nvidia.go`](../../model/gemma4_nvidia.go).
 
 The short boolean fixture processes 24 token rows per context. Ten entries therefore cause ten separate transformer passes over 24 rows. Packing would instead process 240 rows through each layer's projections, with attention isolated by context. This can improve matrix utilisation and amortise launches and weight reads. It does not remove the transformer arithmetic for each token.
 
@@ -61,7 +78,7 @@ Choose group size by token rows and measured memory, not entry count alone. The 
 
 ## Acceptance
 
-- Compare packed versus independent candidate logits and probabilities without weakening existing numerical tolerances.
+- Preserve pinned-reference tolerances. For broader precision experiments, report raw/centred logit errors, probability movement, candidate margins and decision/threshold crossings separately. Bitwise equality is a diagnostic, not a general acceptance requirement.
 - Test unequal lengths, reversed context order, contradictory siblings, repeated calls, cancellation and prefix immutability. Verify that changing one context cannot change another result.
 - Preserve Gemma normalisation, rotary positions, sliding attention and applicable logit softcapping or token suppression.
 - Benchmark distinct positive and negative contexts at 1, 10, 25, 50 and 100 entries, including longer contexts and multi-token enums. Repeated copies of one sentence alone are insufficient evidence.
