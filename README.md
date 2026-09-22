@@ -2,6 +2,8 @@
 
 Go System One is a native Go service for finite boolean and enum decisions using the pinned Gemma 4 12B instruction checkpoint. It provides `POST /v1/decision` and an embedded browser playground at `/go-system-one`.
 
+[![Go System One decision playground](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
+
 The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver API/PTX. It does not use CGo, a llama.cpp runtime wrapper or a production CUDA toolkit.
 
 ## Source boundary
