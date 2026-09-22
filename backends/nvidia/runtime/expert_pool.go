@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/rcarmo/go-pherence/backends/placement"
+	"github.com/rcarmo/go-system-one/backends/placement"
 )
 
 // ExpertCachePolicy names the eviction policy used by ExpertPool.

@@ -15,3 +15,4 @@ github.com/rcarmo/go-pherence/backends/nvidia/ptx/nvfp4	github.com/rcarmo/go-sys
 github.com/rcarmo/go-pherence/backends/nvidia/runtime	github.com/rcarmo/go-system-one/backends/nvidia/runtime
 github.com/rcarmo/go-pherence/backends/nvidia/internal/debuglog	github.com/rcarmo/go-system-one/backends/nvidia/internal/debuglog
 github.com/rcarmo/go-pherence/internal/checked	github.com/rcarmo/go-system-one/internal/checked	local-only
+github.com/rcarmo/go-pherence/backends/placement	github.com/rcarmo/go-system-one/backends/placement

@@ -3,7 +3,7 @@ package nvidia
 import (
 	"testing"
 
-	"github.com/rcarmo/go-pherence/backends/placement"
+	"github.com/rcarmo/go-system-one/backends/placement"
 )
 
 func accessExpert(pool *ExpertPool, expertID int) *ExpertEntry {

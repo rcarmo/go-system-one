@@ -239,3 +239,7 @@ backends/nvidia/runtime/whisper_pool_test.go	backends/nvidia/runtime/whisper_poo
 backends/nvidia/runtime/zero_test.go	backends/nvidia/runtime/zero_test.go
 backends/nvidia/internal/debuglog/debug.go	backends/nvidia/internal/debuglog/debug.go
 internal/checked/int.go	internal/checked/int.go
+backends/placement/budget.go	backends/placement/budget.go
+backends/placement/budget_test.go	backends/placement/budget_test.go
+backends/placement/placement.go	backends/placement/placement.go
+backends/placement/placement_test.go	backends/placement/placement_test.go
