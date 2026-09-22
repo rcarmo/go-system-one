@@ -65,4 +65,4 @@ jobs:
             Imports manifest-listed Go System One files from `go-pherence` and pins the shared runtime to `${{ steps.upstream.outputs.revision }}`.
 
             Automated offline checks passed. Review the complete diff and run the released-model NVIDIA parity gate before merging changes to model, tokenizer, scorer, PTX or dispatch behaviour.
-          labels: dependencies,upstream
+          labels: dependencies
