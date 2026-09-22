@@ -314,6 +314,9 @@ func gemmQ6PackedQ8ToBuffer(out, x *Buffer, batch int, m *GPUQKMatrix) error {
 		return err
 	}
 	kk, nn, bb := uint32(m.InDim), uint32(m.OutDim), uint32(batch)
+	if fnQ6Staged24 != 0 && (batch >= 128 || batch > 16 && m.InDim >= 8192) {
+		return LaunchKernel(fnQ6Staged24, uint32((m.OutDim+63)/64), uint32((batch+23)/24), 1, 256, 1, 1, 0, unsafe.Pointer(&q.Ptr), unsafe.Pointer(&d.Ptr), unsafe.Pointer(&m.PackedQ.Ptr), unsafe.Pointer(&m.PackedScale.Ptr), unsafe.Pointer(&out.Ptr), unsafe.Pointer(&kk), unsafe.Pointer(&nn), unsafe.Pointer(&bb))
+	}
 	if batch >= 256 && m.InDim >= 8192 && fnQ6PackedMMQ64J16 != 0 {
 		return LaunchKernel(fnQ6PackedMMQ64J16, uint32((m.OutDim+63)/64), uint32((batch+15)/16), 1, 256, 1, 1, 0, unsafe.Pointer(&q.Ptr), unsafe.Pointer(&d.Ptr), unsafe.Pointer(&m.PackedQ.Ptr), unsafe.Pointer(&m.PackedScale.Ptr), unsafe.Pointer(&out.Ptr), unsafe.Pointer(&kk), unsafe.Pointer(&nn), unsafe.Pointer(&bb))
 	}
