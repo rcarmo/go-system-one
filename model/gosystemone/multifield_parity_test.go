@@ -88,9 +88,9 @@ func TestPinnedLlamaCppMultiFieldFixtureContract(t *testing.T) {
 }
 
 func TestGoSystemOneNVIDIAMultiFieldReleasedModelMatchesPinnedLlamaCpp(t *testing.T) {
-	modelPath, tokenizerDir := os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B"), os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+	modelPath, tokenizerDir := os.Getenv("GO_SYSTEM_ONE_MODEL"), os.Getenv("GO_SYSTEM_ONE_TOKENIZER_DIR")
 	if modelPath == "" || tokenizerDir == "" {
-		t.Skip("set GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B and GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+		t.Skip("set GO_SYSTEM_ONE_MODEL and GO_SYSTEM_ONE_TOKENIZER_DIR")
 	}
 	fixture := loadLlamaCppMultiFieldFixture(t)
 	tok, err := tokenizer.LoadWithConfig(tokenizerDir)

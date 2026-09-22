@@ -38,8 +38,8 @@ GitHub Actions run [`35731940802`](https://github.com/rcarmo/go-system-one/actio
 The pinned Gemma 4 12B GGUF and tokenizer from the [v1 validation record](go-system-one-v1-20260921.md) were available locally. This command ran against the vendored runtime:
 
 ```sh
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B=/tmp/qev-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER=/tmp/qev-gemma4-12b/tokenizer \
+GO_SYSTEM_ONE_MODEL=/tmp/qev-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
+GO_SYSTEM_ONE_TOKENIZER_DIR=/tmp/qev-gemma4-12b/tokenizer \
   go test -mod=vendor ./model/gosystemone \
   -run '^TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision$' \
   -count=1 -v

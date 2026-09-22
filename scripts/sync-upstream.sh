@@ -56,6 +56,16 @@ while IFS=$'\t' read -r upstream_import local_import mode; do
   fi
 done < "$root/scripts/local-packages.tsv"
 
+# Use standalone artifact environment names in imported Go tests.
+mapfile -d '' artifact_files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' \
+  'GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B' "$root" || true)
+if ((${#artifact_files[@]})); then
+  sed -i \
+    -e 's/GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER/GO_SYSTEM_ONE_TOKENIZER_DIR/g' \
+    -e 's/GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B/GO_SYSTEM_ONE_MODEL/g' \
+    "${artifact_files[@]}"
+fi
+
 mapfile -d '' go_files < <(find "$root" -type f -name '*.go' -not -path "$root/.git/*" -not -path "$root/vendor/*" -print0)
 if ((${#go_files[@]})); then
   gofmt -w "${go_files[@]}"

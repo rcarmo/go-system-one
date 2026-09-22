@@ -7,9 +7,9 @@ import (
 )
 
 func TestGemma4WhitespaceTokenizationPinnedLlamaCppFixture(t *testing.T) {
-	dir := os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+	dir := os.Getenv("GO_SYSTEM_ONE_TOKENIZER_DIR")
 	if dir == "" {
-		t.Skip("set GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER for pinned tokenizer parity")
+		t.Skip("set GO_SYSTEM_ONE_TOKENIZER_DIR for pinned tokenizer parity")
 	}
 	tok, err := LoadWithConfig(dir)
 	if err != nil {

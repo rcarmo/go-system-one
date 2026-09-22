@@ -23,8 +23,8 @@ Synthetic differential tests cover Q4_K, Q5_K and Q6_K projection kernels; devic
 The opt-in released-model test is:
 
 ```sh
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B=/tmp/go-system-one-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER=/tmp/go-system-one-gemma4-12b/tokenizer \
+GO_SYSTEM_ONE_MODEL=/tmp/go-system-one-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
+GO_SYSTEM_ONE_TOKENIZER_DIR=/tmp/go-system-one-gemma4-12b/tokenizer \
 go test ./model/gosystemone -run '^TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision$' -count=1 -v
 ```
 
@@ -33,8 +33,8 @@ It uses the checked-in llama.cpp fixture prompt and candidate paths. The native 
 The second fixture, `llamacpp-go-system-one-gemma4-12b-multifield.json`, adds two contexts, two fields and a three-way multi-token enum. The pinned worker selects `critical incident`/`true` for a production outage and `routine maintenance`/`false` for completed maintenance. Native NVIDIA matches all four winners and probabilities within `1e-6`. The fixture records exact rendered text, SHA-256 values, token IDs, candidate indices and the worker environment.
 
 ```sh
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B=/tmp/go-system-one-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
-GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER=/tmp/go-system-one-gemma4-12b/tokenizer \
+GO_SYSTEM_ONE_MODEL=/tmp/go-system-one-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf \
+GO_SYSTEM_ONE_TOKENIZER_DIR=/tmp/go-system-one-gemma4-12b/tokenizer \
 go test ./model/gosystemone -run 'TestGoSystemOneNVIDIAMultiFieldReleasedModelMatchesPinnedLlamaCpp' -count=1 -v
 ```
 

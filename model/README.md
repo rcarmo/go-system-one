@@ -24,7 +24,7 @@ paths have no compatibility wrappers.
 `checkpoints/` at the repository root is git-ignored data: downloaded weights,
 configuration and tokenizer files. `cmd/models/` remains the inspector command
 group, and `docs/models/` remains model documentation. Neither is an asset folder.
-See the [asset migration notes](../docs/guides/model-assets.md) for older checkouts.
+See the [external artifact contract](../docs/artifacts.md) for the pinned Go System One model and tokenizer layout.
 
 ## Layering
 
