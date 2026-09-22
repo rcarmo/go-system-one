@@ -76,6 +76,13 @@ sed -i \
 sed -i \
   -e 's#\[asset migration notes\](../docs/guides/model-assets.md)#[external artifact contract](../docs/artifacts.md)#' \
   "$root/model/README.md"
+if [[ -f "$root/cmd/go-system-one/README.md" ]]; then
+  perl -0pi -e 's#```sh\ngo run \./cmd/llm/go-system-one \\\n  -model .*?\n```#```sh\nmake run BACKEND=nvidia LISTEN=127.0.0.1:8080\n```#s' "$root/cmd/go-system-one/README.md"
+  sed -i \
+    -e 's#../../../docs/images/go-system-one-playground.png#../../docs/images/go-system-one-light-desktop.png#' \
+    -e 's#../../../docs/validation/go-system-one-v1-20260921.md#../../docs/validation/go-system-one-v1-20260921.md#' \
+    "$root/cmd/go-system-one/README.md"
+fi
 
 mapfile -d '' go_files < <(find "$root" -type f -name '*.go' -not -path "$root/.git/*" -not -path "$root/vendor/*" -print0)
 if ((${#go_files[@]})); then

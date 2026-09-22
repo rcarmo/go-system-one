@@ -92,9 +92,12 @@ fmt-check:
 
 scripts-check:
 	bash -n scripts/*.sh
+	./scripts/check-manifests.sh
+	./scripts/manifests_test.sh
 	./scripts/check-local-imports.sh
 	./scripts/check-no-gguf-artifacts.sh
 	./scripts/artifacts_test.sh
+	./scripts/upstream_relevant_test.sh
 
 vendor-check:
 	@test ! -d vendor/github.com/rcarmo/go-pherence

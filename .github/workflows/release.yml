@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build and audit code-only archives
+        env:
+          GOPROXY: "off"
+          GOSUMDB: "off"
+        run: |
+          make package VERSION="${GITHUB_REF_NAME}"
+          (cd dist && sha256sum -c SHA256SUMS)
+          ./scripts/check-release-archives.sh dist
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --generate-notes \
+            --title "Go System One $GITHUB_REF_NAME" \
+            dist/*.tar.gz dist/SHA256SUMS

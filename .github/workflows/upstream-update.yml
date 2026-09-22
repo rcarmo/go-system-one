@@ -39,22 +39,37 @@ jobs:
           fi
           [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
-      - name: Stop when the pin is current
-        id: pin
+      - name: Check manifest relevance
+        id: relevance
         env:
           REVISION: ${{ steps.upstream.outputs.revision }}
         run: |
           source scripts/upstream.env
           if [[ "$REVISION" == "$UPSTREAM_COMMIT" ]]; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
-          else
+            exit 0
+          fi
+          set +e
+          changed_paths=$(./scripts/upstream-relevant.sh "$REVISION")
+          rc=$?
+          set -e
+          if [[ $rc -eq 0 ]]; then
             echo 'changed=true' >> "$GITHUB_OUTPUT"
+            {
+              echo 'paths<<EOF'
+              printf '%s\n' "$changed_paths"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+          elif [[ $rc -eq 3 ]]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            exit "$rc"
           fi
       - name: Import, pin, vendor and test
-        if: steps.pin.outputs.changed == 'true'
+        if: steps.relevance.outputs.changed == 'true'
         run: ./scripts/update-upstream.sh '${{ steps.upstream.outputs.revision }}'
       - name: Create review pull request
-        if: steps.pin.outputs.changed == 'true'
+        if: steps.relevance.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: automation/go-pherence-update
@@ -62,7 +77,13 @@ jobs:
           commit-message: "upstream: import go-pherence ${{ steps.upstream.outputs.revision }}"
           title: "upstream: import go-pherence ${{ steps.upstream.outputs.revision }}"
           body: |
-            Imports manifest-listed Go System One files from `go-pherence` and pins the shared runtime to `${{ steps.upstream.outputs.revision }}`.
+            Imports manifest-listed Go System One files from canonical `go-pherence` source commit `${{ steps.upstream.outputs.revision }}`.
+
+            Relevant upstream paths reported by the manifest comparison:
+
+            ```text
+            ${{ steps.relevance.outputs.paths }}
+            ```
 
             Automated offline checks passed. Review the complete diff and run the released-model NVIDIA parity gate before merging changes to model, tokenizer, scorer, PTX or dispatch behaviour.
           labels: dependencies
