@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-pherence/internal/commandcapture"
 )
 

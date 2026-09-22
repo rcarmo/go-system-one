@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	simdq4 "github.com/rcarmo/go-pherence/backends/simd/quant/q4"
+	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
 )
 
 func packBenchmarkQ4Sym(a0, a1, a2, a3, a4, a5, a6, a7 int32) int32 {

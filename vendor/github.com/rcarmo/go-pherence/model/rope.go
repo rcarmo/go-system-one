@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	llmops "github.com/rcarmo/go-pherence/model/internal/ops"
 )
 

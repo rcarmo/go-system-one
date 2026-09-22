@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-pherence/loader/gguf"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 	"github.com/rcarmo/go-pherence/tensor"

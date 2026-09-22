@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 // TurboQuantConfig holds settings for KV cache compression.

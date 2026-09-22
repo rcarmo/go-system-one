@@ -6,7 +6,7 @@ import (
 	"github.com/rcarmo/go-pherence/backends/mlx"
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 func uploadExpertNativeToPool(pool *nvidia.ExpertPool, layer *LlamaLayer, expertID, poolKey, moeInter, hidden int) *nvidia.ExpertEntry {

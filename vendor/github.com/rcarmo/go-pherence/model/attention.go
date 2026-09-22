@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 func attentionLogitSoftcap(cfg LlamaConfig) float32 {

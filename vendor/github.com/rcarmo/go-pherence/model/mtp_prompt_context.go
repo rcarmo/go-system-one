@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-system-one/half"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 )

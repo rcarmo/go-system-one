@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 )
 

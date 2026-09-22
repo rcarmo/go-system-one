@@ -11,12 +11,6 @@ github.com/rcarmo/go-pherence/backends/ggmlgraph
 github.com/rcarmo/go-pherence/backends/ggmlquant
 github.com/rcarmo/go-pherence/backends/internal/ggmlutil
 github.com/rcarmo/go-pherence/backends/mlx
-github.com/rcarmo/go-pherence/backends/simd/kernels
-github.com/rcarmo/go-pherence/backends/simd/quant/bf16
-github.com/rcarmo/go-pherence/backends/simd/quant/fp8
-github.com/rcarmo/go-pherence/backends/simd/quant/nvfp4
-github.com/rcarmo/go-pherence/backends/simd/quant/q4
-github.com/rcarmo/go-pherence/backends/simd/runtime
 github.com/rcarmo/go-pherence/backends/spacemit/board
 github.com/rcarmo/go-pherence/backends/spacemit/ort
 github.com/rcarmo/go-pherence/backends/spacemit/rvv

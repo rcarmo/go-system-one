@@ -1,7 +1,7 @@
 package nvidia
 
 import (
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"math"
 	"testing"
 )

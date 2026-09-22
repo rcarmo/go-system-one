@@ -1,6 +1,6 @@
 package tensor
 
-import simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+import simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 
 // Softmax computes softmax along the last axis.
 func (t *Tensor) Softmax() *Tensor {

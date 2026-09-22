@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-pherence/loader/weights"
 	"github.com/rcarmo/go-pherence/tensor"

@@ -9,7 +9,7 @@ import (
 	"github.com/rcarmo/go-pherence/backends/mlx"
 	"github.com/rcarmo/go-system-one/half"
 
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 // LoadSwitchMLXExperts loads a switch_mlp-style 3D packed tensor and

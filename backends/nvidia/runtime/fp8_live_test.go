@@ -1,7 +1,7 @@
 package nvidia
 
 import (
-	simdfp8 "github.com/rcarmo/go-pherence/backends/simd/quant/fp8"
+	simdfp8 "github.com/rcarmo/go-system-one/backends/simd/quant/fp8"
 	"math"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	llmops "github.com/rcarmo/go-pherence/model/internal/ops"
 )
 

@@ -20,6 +20,7 @@ fmt-check:
 
 scripts-check:
 	bash -n scripts/*.sh
+	./scripts/check-local-imports.sh
 
 vendor-check:
 	GOPROXY=off GOSUMDB=off $(GO) test -mod=vendor ./...

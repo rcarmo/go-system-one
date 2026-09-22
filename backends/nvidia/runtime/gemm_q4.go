@@ -16,7 +16,7 @@ import (
 	"github.com/rcarmo/go-system-one/internal/checked"
 	"unsafe"
 
-	simdq4 "github.com/rcarmo/go-pherence/backends/simd/quant/q4"
+	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
 )
 
 // GemmQ4 performs batched matrix multiply: out[B×outDim] = input[B×inDim] × W_q4[inDim×outDim]

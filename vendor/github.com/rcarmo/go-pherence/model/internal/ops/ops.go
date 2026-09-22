@@ -1,6 +1,6 @@
 package ops
 
-import "github.com/rcarmo/go-pherence/backends/simd/runtime"
+import "github.com/rcarmo/go-system-one/backends/simd/runtime"
 
 // GemvNT computes out = x @ w^T where w is [outDim, inDim].
 func GemvNT(out, x []float32, w []float32, inDim, outDim int) {

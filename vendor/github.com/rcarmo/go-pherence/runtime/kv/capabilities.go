@@ -1,6 +1,6 @@
 package kv
 
-import simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+import simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 
 // TurboQuantCapabilities reports the native CPU features relevant to the
 // TurboQuant KV cache path. It is owned by runtime/kv so command/server

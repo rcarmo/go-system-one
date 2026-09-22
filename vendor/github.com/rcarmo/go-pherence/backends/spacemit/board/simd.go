@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sync"
 
-	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 // SIMDBackend routes ops through the RVV-tuned CPU SIMD paths.

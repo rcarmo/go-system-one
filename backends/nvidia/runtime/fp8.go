@@ -9,7 +9,7 @@ import (
 	"sync"
 	"unsafe"
 
-	simdfp8 "github.com/rcarmo/go-pherence/backends/simd/quant/fp8"
+	simdfp8 "github.com/rcarmo/go-system-one/backends/simd/quant/fp8"
 )
 
 var fnFP8E4M3GemvF32 CUfunction

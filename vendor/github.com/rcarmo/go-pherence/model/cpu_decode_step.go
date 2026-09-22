@@ -6,7 +6,7 @@ import (
 
 	"github.com/rcarmo/go-pherence/loader/gguf"
 
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 )
 
 // finalizeCPUHidden applies the model's final decode norm in place without

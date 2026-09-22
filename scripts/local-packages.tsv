@@ -20,3 +20,9 @@ github.com/rcarmo/go-pherence/loader/config	github.com/rcarmo/go-system-one/load
 github.com/rcarmo/go-pherence/runtime/memory	github.com/rcarmo/go-system-one/runtime/memory
 github.com/rcarmo/go-pherence/runtime/inferencesched	github.com/rcarmo/go-system-one/runtime/inferencesched
 github.com/rcarmo/go-pherence/runtime/promptcache	github.com/rcarmo/go-system-one/runtime/promptcache
+github.com/rcarmo/go-pherence/backends/simd/kernels	github.com/rcarmo/go-system-one/backends/simd/kernels
+github.com/rcarmo/go-pherence/backends/simd/runtime	github.com/rcarmo/go-system-one/backends/simd/runtime
+github.com/rcarmo/go-pherence/backends/simd/quant/bf16	github.com/rcarmo/go-system-one/backends/simd/quant/bf16
+github.com/rcarmo/go-pherence/backends/simd/quant/fp8	github.com/rcarmo/go-system-one/backends/simd/quant/fp8
+github.com/rcarmo/go-pherence/backends/simd/quant/nvfp4	github.com/rcarmo/go-system-one/backends/simd/quant/nvfp4
+github.com/rcarmo/go-pherence/backends/simd/quant/q4	github.com/rcarmo/go-system-one/backends/simd/quant/q4

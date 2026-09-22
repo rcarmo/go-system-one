@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	simdq4 "github.com/rcarmo/go-pherence/backends/simd/quant/q4"
+	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rcarmo/go-pherence/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-pherence/tensor"
 )
 
