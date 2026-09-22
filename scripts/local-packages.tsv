@@ -26,3 +26,10 @@ github.com/rcarmo/go-pherence/backends/simd/quant/bf16	github.com/rcarmo/go-syst
 github.com/rcarmo/go-pherence/backends/simd/quant/fp8	github.com/rcarmo/go-system-one/backends/simd/quant/fp8
 github.com/rcarmo/go-pherence/backends/simd/quant/nvfp4	github.com/rcarmo/go-system-one/backends/simd/quant/nvfp4
 github.com/rcarmo/go-pherence/backends/simd/quant/q4	github.com/rcarmo/go-system-one/backends/simd/quant/q4
+github.com/rcarmo/go-pherence/loader/gguf	github.com/rcarmo/go-system-one/loader/gguf
+github.com/rcarmo/go-pherence/loader/gguf/internal/q4layout	github.com/rcarmo/go-system-one/loader/gguf/internal/q4layout
+github.com/rcarmo/go-pherence/loader/gguf/llamaq4	github.com/rcarmo/go-system-one/loader/gguf/llamaq4
+github.com/rcarmo/go-pherence/loader/gguf/llamaq4plan9	github.com/rcarmo/go-system-one/loader/gguf/llamaq4plan9
+github.com/rcarmo/go-pherence/backends/ggmlquant	github.com/rcarmo/go-system-one/backends/ggmlquant
+github.com/rcarmo/go-pherence/backends/internal/ggmlutil	github.com/rcarmo/go-system-one/backends/internal/ggmlutil
+github.com/rcarmo/go-pherence/internal/commandcapture	github.com/rcarmo/go-system-one/internal/commandcapture	local-only

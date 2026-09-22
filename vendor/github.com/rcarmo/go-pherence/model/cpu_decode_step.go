@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 )

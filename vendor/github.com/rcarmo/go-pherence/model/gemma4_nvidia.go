@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 )
 

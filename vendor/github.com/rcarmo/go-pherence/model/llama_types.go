@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 	"github.com/rcarmo/go-system-one/loader/tokenizer"
 	"github.com/rcarmo/go-pherence/model/common"
 	"github.com/rcarmo/go-pherence/runtime/kv"

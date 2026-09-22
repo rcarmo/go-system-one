@@ -12,9 +12,9 @@ import (
 	"sync"
 
 	"github.com/rcarmo/go-pherence/backends/ggmlgraph"
-	"github.com/rcarmo/go-pherence/backends/ggmlquant"
+	"github.com/rcarmo/go-system-one/backends/ggmlquant"
 	"github.com/rcarmo/go-pherence/backends/spacemit/board"
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 	gograph "github.com/rcarmo/go-pherence/runtime/graph"
 	"github.com/rcarmo/go-pherence/runtime/kv"
 )

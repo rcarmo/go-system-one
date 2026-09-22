@@ -8,7 +8,7 @@ import (
 
 	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-system-one/half"
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 func QuantGemvRVVBlocks(out, x []float32, w *gguf.QuantMatrix) error {

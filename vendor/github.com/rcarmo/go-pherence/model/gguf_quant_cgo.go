@@ -169,7 +169,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 func QuantGemvCgoFused(out, x []float32, w *gguf.QuantMatrix) error {

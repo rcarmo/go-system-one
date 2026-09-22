@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 	"github.com/rcarmo/go-pherence/model/common"
 	"github.com/rcarmo/go-pherence/tensor"
 )

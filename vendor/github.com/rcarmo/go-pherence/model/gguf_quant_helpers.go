@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 func gemvGGUFTo(out, x []float32, w *gguf.QuantMatrix, inDim, outDim int) bool {

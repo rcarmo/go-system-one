@@ -5,7 +5,7 @@ import (
 	"math"
 
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 func (c GGUFLlamaConfig) IsQwenNextHybridGGUF() bool {

@@ -5,8 +5,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/rcarmo/go-pherence/loader/gguf"
 	"github.com/rcarmo/go-system-one/half"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 func TestGPUGGUFMatrixDispatchesAdmittedKTypes(t *testing.T) {

@@ -5,7 +5,7 @@ package ggmlgraph
 import (
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/loader/gguf"
+	"github.com/rcarmo/go-system-one/loader/gguf"
 )
 
 type MulMat struct{}
