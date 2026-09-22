@@ -37,3 +37,12 @@ backends/nvidia/ptx/q5/q5_scatter_work_ptrs.go	backends/nvidia/ptx/q5/q5_scatter
 backends/nvidia/ptx/q5/q5mmq64_tiles_generated.go	backends/nvidia/ptx/q5/q5mmq64_tiles_generated.go
 backends/nvidia/ptx/q5/q5packed_generated.go	backends/nvidia/ptx/q5/q5packed_generated.go
 backends/nvidia/ptx/q5/q5selected_generated.go	backends/nvidia/ptx/q5/q5selected_generated.go
+backends/nvidia/ptx/q6/gemm_q6k_batch8.go	backends/nvidia/ptx/q6/gemm_q6k_batch8.go
+backends/nvidia/ptx/q6/gemm_q6k_warp.go	backends/nvidia/ptx/q6/gemm_q6k_warp.go
+backends/nvidia/ptx/q6/q6.go	backends/nvidia/ptx/q6/q6.go
+backends/nvidia/ptx/q6/q6mmq64_generated.go	backends/nvidia/ptx/q6/q6mmq64_generated.go
+backends/nvidia/ptx/q6/q6mmq_generated.go	backends/nvidia/ptx/q6/q6mmq_generated.go
+backends/nvidia/ptx/q6/q6packed_f32_generated.go	backends/nvidia/ptx/q6/q6packed_f32_generated.go
+backends/nvidia/ptx/q6/q6packed_generated.go	backends/nvidia/ptx/q6/q6packed_generated.go
+backends/nvidia/ptx/q6/q6q8_generated.go	backends/nvidia/ptx/q6/q6q8_generated.go
+backends/nvidia/ptx/q6/q8rows16_grouped_generated.go	backends/nvidia/ptx/q6/q8rows16_grouped_generated.go
