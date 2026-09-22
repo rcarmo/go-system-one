@@ -28,7 +28,7 @@ go run ./cmd/go-system-one \
   -listen 127.0.0.1:8080
 ```
 
-Open `http://127.0.0.1:8080/go-system-one`. The decision endpoint is `POST /v1/decision`.
+Open `http://127.0.0.1:8080/go-system-one`. The decision endpoint is `POST /v1/decision`. Desktop and mobile captures, theme behaviour and screenshot provenance are documented in [`docs/playground.md`](docs/playground.md).
 
 The command verifies the frozen model, tokenizer, tokenizer configuration and chat-template SHA-256 values before loading them. Model weights and GGUF files are never shipped in this repository; provide them through external paths. Repository checks reject tracked GGUF filenames and GGUF file magic. Use `-verify-artifacts=false` only for development fixtures. `-backend simd` selects the correctness-oracle implementation; the 12B SIMD path is too slow for interactive use.
 
