@@ -11,7 +11,7 @@ import (
 	ptxideogram "github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram"
 	ptxmlx "github.com/rcarmo/go-pherence/backends/nvidia/ptx/mlx"
 	ptxnvfp4 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/nvfp4"
-	ptxq4 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/q4"
+	ptxq4 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q4"
 	ptxq5 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q5"
 	ptxq6 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q6"
 	ptxq8 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/q8"

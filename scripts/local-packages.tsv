@@ -2,3 +2,4 @@
 github.com/rcarmo/go-pherence/half	github.com/rcarmo/go-system-one/half
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q5	github.com/rcarmo/go-system-one/backends/nvidia/ptx/q5
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q6	github.com/rcarmo/go-system-one/backends/nvidia/ptx/q6
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/q4	github.com/rcarmo/go-system-one/backends/nvidia/ptx/q4
