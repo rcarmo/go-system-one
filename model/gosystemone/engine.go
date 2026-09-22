@@ -30,6 +30,12 @@ type SplitContextScorer interface {
 	ScoreSplitContext(context.Context, []int, []int, []Branch, bool) ([][]float32, error)
 }
 
+// BatchContextScorer scores one branch across independent contexts. Results
+// retain input context order and each row contains only CandidateTokens logits.
+type BatchContextScorer interface {
+	ScoreSplitContexts(context.Context, []int, [][]int, Branch, bool) ([][]float32, error)
+}
+
 type Engine struct {
 	Tokenizer Tokenizer
 	Scorer    ContextScorer
@@ -110,12 +116,38 @@ func (e *Engine) Decide(ctx context.Context, request Request) (Response, error) 
 
 	scoringStart := now()
 	totalRounds := 0
+	var packedScores [][]float32
+	if batch, ok := e.Scorer.(BatchContextScorer); ok && len(contexts) > 1 && len(fields) == 1 && fields[0].Tree && len(fields[0].Nodes) == 1 {
+		field, node := fields[0], fields[0].Nodes[0]
+		branch := Branch{Tokens: append(append([]int(nil), field.Suffix...), node.Prefix...), CandidateTokens: append([]int(nil), node.Options...)}
+		packedScores, err = batch.ScoreSplitContexts(ctx, sharedTokens, contexts, branch, request.AllowCache())
+		if err != nil {
+			return Response{}, err
+		}
+		if len(packedScores) != len(contexts) {
+			return Response{}, fmt.Errorf("batch scorer contexts=%d, want %d", len(packedScores), len(contexts))
+		}
+	}
 	for i, contextTokens := range contexts {
 		states := make([]fieldState, len(fields))
 		for f, field := range fields {
 			states[f] = newFieldState(field)
 		}
-		rounds, err := e.scoreFields(ctx, sharedTokens, contextTokens, states, request.AllowCache())
+		rounds := 1
+		if packedScores != nil {
+			if len(packedScores[i]) != len(fields[0].Nodes[0].Options) {
+				return Response{}, fmt.Errorf("batch scorer context %d candidate count mismatch", i)
+			}
+			winner, probabilities, scoreErr := FinishTree(fields[0], [][]float32{packedScores[i]})
+			err = scoreErr
+			if err == nil {
+				states[0].winner, states[0].probabilities = winner, probabilities
+				states[0].pathScore = probabilities[winner]
+				states[0].scoredNodes = 1
+			}
+		} else {
+			rounds, err = e.scoreFields(ctx, sharedTokens, contextTokens, states, request.AllowCache())
+		}
 		if err != nil {
 			return Response{}, fmt.Errorf("contexts[%d]: %w", i, err)
 		}

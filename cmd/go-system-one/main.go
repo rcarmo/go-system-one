@@ -29,6 +29,7 @@ type options struct {
 	listen       string
 	backend      string
 	verify       bool
+	packedRows   int
 }
 
 func main() {
@@ -48,6 +49,7 @@ func run(ctx context.Context, args []string) error {
 	fs.StringVar(&cfg.listen, "listen", "127.0.0.1:8080", "HTTP listen address")
 	fs.StringVar(&cfg.backend, "backend", "nvidia", "scoring backend: nvidia or simd")
 	fs.BoolVar(&cfg.verify, "verify-artifacts", true, "verify exact Go System One v1 model/tokenizer SHA-256 pins")
+	fs.IntVar(&cfg.packedRows, "packed-token-rows", 0, "experimental NVIDIA cross-context token budget (0 disables; maximum 512)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -59,6 +61,9 @@ func run(ctx context.Context, args []string) error {
 	}
 	if cfg.backend != "nvidia" && cfg.backend != "simd" {
 		return fmt.Errorf("-backend must be nvidia or simd")
+	}
+	if cfg.packedRows < 0 || cfg.packedRows > model.Gemma4PackedRows || (cfg.packedRows > 0 && cfg.backend != "nvidia") {
+		return fmt.Errorf("-packed-token-rows requires nvidia and must be 0..%d", model.Gemma4PackedRows)
 	}
 	if cfg.verify {
 		log.Printf("go-system-one: verifying pinned artifacts")
@@ -95,7 +100,7 @@ func run(ctx context.Context, args []string) error {
 		defer gpu.Close()
 		defer nvidia.Shutdown()
 		device, residentBytes = gpu.DeviceName(), gpu.ResidentBytes()
-		nvidiaScorer = &gosystemone.Gemma4NVIDIAScorer{Model: m, GPU: gpu}
+		nvidiaScorer = &gosystemone.Gemma4NVIDIAScorer{Model: m, GPU: gpu, PackedTokenRows: cfg.packedRows}
 		defer nvidiaScorer.Close()
 		scorer = nvidiaScorer
 	} else {

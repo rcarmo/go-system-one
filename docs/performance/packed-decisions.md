@@ -2,7 +2,24 @@
 
 Process several independent contexts in the same transformer matrix operations, then extract only the required candidate logits. Keep the pinned Gemma weights, prompt, token paths and probability calculation unchanged.
 
-This is a source review and implementation plan, not a measured optimisation. Reviewed `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
+The first implementation is opt-in with `-packed-token-rows=512`. It packs single-field, single-node tree decisions; multi-field, deeper trees and oversized contexts still use the serial path. Default behaviour is unchanged. The source review used `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
+
+## First measurements
+
+Both modes used the same binary with the attention barrier fix from `e53e9770a756f981a3ac3bacc414e9181fa834f5`. One warm-up and three measured requests per case used varied positive and negative contexts with unique ticket numbers. Before each request, the GPU cooled to at most 60°C. Packed mode ran first.
+
+| Entries | Serial median | Packed median | Speedup |
+|---:|---:|---:|---:|
+| 10 | 1,133.16 ms | 827.51 ms | 1.37× |
+| 100 | 11,587.71 ms | 8,517.50 ms | 1.36× |
+
+All candidate probabilities were identical between modes in these HTTP samples. The released-model raw-logit gate also produced identical logits at 128, 256 and 512 token-row budgets. These contexts are longer than the earlier repeated 20-token context; their timings are not directly comparable to its 8.08-second 100-entry result.
+
+The GPU reached at most 75°C. One-second sampling observed up to 9,658 MiB used in packed mode and 9,424 MiB serially; sampling can miss brief peaks. [Raw requests, responses, timings and device readings](../benchmarks/data/packed-contexts-initial.json) are committed. Three samples do not establish tail latency. An earlier uninterrupted sweep used the faulty attention kernel and reached 87°C; its numbers are not acceptance evidence.
+
+Packing exposed an existing shared-memory softmax race: a warp could overwrite the maximum before another warp read it. The new short-softmax regression failed ten consecutive runs with the old kernel and passes with the barrier. Saturated probabilities had hidden raw-logit changes. The original llama.cpp parity fixtures still pass.
+
+The first executor shares projections but launches attention separately per context and uses a reusable suffix region in a private arena. Selected hidden rows remain on-device; selected projection and download still run once per result. Next steps are segmented attention, batched selected readout, persistent bounded scratch and larger-batch projection tuning. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
 ## Current cost
 

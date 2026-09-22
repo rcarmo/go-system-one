@@ -259,6 +259,12 @@ func (g *Gemma4NVIDIA) runPrefillBatch(ctx context.Context, tokens []int, pos0 i
 	return g.runPrefillBatchOutput(ctx, tokens, pos0, arena, final, nil)
 }
 func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, pos0 int, arena *gemma4NVIDIAKVArena, final []float32, finalDevice *nvidia.Buffer) error {
+	return g.runPrefillRows(ctx, tokens, pos0, arena, final, finalDevice, nil)
+}
+
+// segments partitions packed projection rows into independent causal sequences.
+// A nil partition retains the single-sequence prefill path.
+func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 int, arena *gemma4NVIDIAKVArena, final []float32, finalDevice *nvidia.Buffer, segments []gemma4PrefillSegment) error {
 	m := g.model
 	B, h := len(tokens), m.Config.HiddenSize
 	host := make([]float32, B*h)
@@ -270,18 +276,19 @@ func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, 
 			return err
 		}
 	}
-	hidden, err := nvidia.Malloc(B * h)
-	if err != nil {
-		return err
+	var work gemma4DeviceWork
+	defer work.free()
+	defer nvidia.SyncAll()
+	hidden := work.alloc(B * h)
+	if work.err != nil {
+		return work.err
 	}
-	defer hidden.Free()
+	var err error
 	if err = hidden.Upload(host); err != nil {
 		return err
 	}
-	residual, _ := nvidia.Malloc(B * h)
-	normed, _ := nvidia.Malloc(B * h)
-	defer residual.Free()
-	defer normed.Free()
+	residual := work.alloc(B * h)
+	normed := work.alloc(B * h)
 	maxQ, maxKV, maxInter := 1, 1, 1
 	for l := range m.Layers {
 		hd, _ := m.LayerHeadDim(l)
@@ -289,24 +296,18 @@ func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, 
 		maxKV = max(maxKV, gemmacfg.LayerKVHeads(m.Config, l)*hd)
 		maxInter = max(maxInter, m.layerInterFor(&m.Layers[l]))
 	}
-	q, _ := nvidia.Malloc(B * maxQ)
-	k, _ := nvidia.Malloc(B * maxKV)
-	v, _ := nvidia.Malloc(B * maxKV)
-	attn, _ := nvidia.Malloc(B * maxQ)
-	o, _ := nvidia.Malloc(B * h)
-	gate, _ := nvidia.Malloc(B * maxInter)
-	up, _ := nvidia.Malloc(B * maxInter)
-	gateUp, _ := nvidia.Malloc(B * maxInter * 2)
-	down, _ := nvidia.Malloc(B * h)
-	defer q.Free()
-	defer k.Free()
-	defer v.Free()
-	defer attn.Free()
-	defer o.Free()
-	defer gate.Free()
-	defer up.Free()
-	defer gateUp.Free()
-	defer down.Free()
+	q := work.alloc(B * maxQ)
+	k := work.alloc(B * maxKV)
+	v := work.alloc(B * maxKV)
+	attn := work.alloc(B * maxQ)
+	o := work.alloc(B * h)
+	gate := work.alloc(B * maxInter)
+	up := work.alloc(B * maxInter)
+	gateUp := work.alloc(B * maxInter * 2)
+	down := work.alloc(B * h)
+	if work.err != nil {
+		return work.err
+	}
 	for l := 0; l < m.Config.NumLayers; l++ {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -350,23 +351,21 @@ func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, 
 		if err := nvidia.IdeogramRMSNormRowsNoWeightBuffer(v, v, B*kvHeads, hd, float32(m.Config.RMSNormEps)); err != nil {
 			return err
 		}
-		_, rot := m.ensureGemma4RoPE(l, pos0+B-1)
+		lastPos := pos0 + B - 1
+		if len(segments) > 0 {
+			lastPos = pos0
+			for _, segment := range segments {
+				lastPos = max(lastPos, pos0+segment.length-1)
+			}
+		}
+		_, rot := m.ensureGemma4RoPE(l, lastPos)
 		rope := g.ropeSWA
 		window := m.Config.SlidingWindow
 		if len(m.Config.LayerTypes) <= l || m.Config.LayerTypes[l] != "sliding_attention" {
 			rope = g.ropeFull
 			window = 0
 		}
-		if err := nvidia.RoPEPartialSequenceBuffer(q, rope, B, pos0, m.Config.NumHeads, hd, rot); err != nil {
-			return err
-		}
-		if err := nvidia.RoPEPartialSequenceBuffer(k, rope, B, pos0, kvHeads, hd, rot); err != nil {
-			return err
-		}
-		if err := arena.appendTrunkRows(l, pos0, B, k, v); err != nil {
-			return err
-		}
-		if err := nvidia.CausalBatchAttentionBuffer(attn, q, arena.trunkK[l], arena.trunkV[l], B, pos0, pos0+B, window, m.Config.NumHeads, kvHeads, hd, attentionScale(m.Config, hd)); err != nil {
+		if err := g.prefillAttentionSegments(attn, q, k, v, rope, arena, l, B, pos0, window, hd, rot, segments); err != nil {
 			return err
 		}
 		if err := gl.o.ProjectBatchToBuffer(o, attn, B); err != nil {
@@ -420,11 +419,18 @@ func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, 
 		}
 	}
 	if finalDevice != nil {
-		if finalDevice.Size < h*4 {
+		count := max(1, len(segments))
+		if finalDevice.Size < count*h*4 {
 			return fmt.Errorf("NVIDIA prefill final device buffer too small")
 		}
-		if err := nvidia.CopyDtoD(finalDevice.Ptr, hidden.Ptr+nvidia.CUdeviceptr((B-1)*h*4), uint64(h*4)); err != nil {
-			return err
+		for i := 0; i < count; i++ {
+			lastRow := B - 1
+			if len(segments) > 0 {
+				lastRow = segments[i].offset + segments[i].length - 1
+			}
+			if err := nvidia.CopyDtoD(finalDevice.Ptr+nvidia.CUdeviceptr(i*h*4), hidden.Ptr+nvidia.CUdeviceptr(lastRow*h*4), uint64(h*4)); err != nil {
+				return err
+			}
 		}
 	}
 	if final != nil {
@@ -1062,11 +1068,20 @@ func (g *Gemma4NVIDIA) finishSelectedDevice(hb *nvidia.Buffer, tokens []int) ([]
 	if hb == nil || hb.Size < h*4 || len(tokens) == 0 {
 		return nil, fmt.Errorf("invalid selected device logits")
 	}
-	nb, _ := nvidia.Malloc(h)
-	rb, _ := nvidia.MallocBytes(len(tokens) * 4)
-	lb, _ := nvidia.Malloc(len(tokens))
+	nb, err := nvidia.Malloc(h)
+	if err != nil {
+		return nil, err
+	}
 	defer nb.Free()
+	rb, err := nvidia.MallocBytes(len(tokens) * 4)
+	if err != nil {
+		return nil, err
+	}
 	defer rb.Free()
+	lb, err := nvidia.Malloc(len(tokens))
+	if err != nil {
+		return nil, err
+	}
 	defer lb.Free()
 	ids := make([]uint32, len(tokens))
 	for i, t := range tokens {
@@ -1088,6 +1103,7 @@ func (g *Gemma4NVIDIA) finishSelectedDevice(hb *nvidia.Buffer, tokens []int) ([]
 	if err := lb.Download(out); err != nil {
 		return nil, err
 	}
+	g.transformSelectedLogits(out, tokens)
 	return out, nil
 }
 
