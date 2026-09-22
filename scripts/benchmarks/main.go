@@ -349,9 +349,9 @@ func renderDistribution(data sampleData) string {
 }
 
 func renderComparison(data benchmarkData) string {
-	const width, height = 960, 470
-	b := chartStart("Decision latency comparison", "Same released-model fixture; lower is better; ranges shown where available", width, height)
-	left, top, plotW := 250.0, 105.0, 620.0
+	const width, height = 1040, 470
+	b := chartStart("From prototype to hand-tuned Go", "Gemma 4 12B on the same RTX 3060 fixture; chronological stages; lower is better", width, height)
+	left, top, plotW := 280.0, 105.0, 650.0
 	maxV := 0.0
 	for _, item := range data.Comparison {
 		maxV = math.Max(maxV, item.MaxMS)
@@ -365,12 +365,12 @@ func renderComparison(data benchmarkData) string {
 		y := top + float64(i)*70
 		barW := item.RepresentativeMS / maxV * plotW
 		class := "primary"
-		if strings.Contains(item.Label, "Standalone") {
+		if strings.Contains(item.Label, "Hand-tuned") {
 			class = "good"
 		} else if strings.Contains(item.Label, "llama") {
 			class = "amber"
 		}
-		fmt.Fprintf(b, `<text x="238" y="%.1f" text-anchor="end" font-size="13">%s</text>`, y+20, html.EscapeString(item.Label))
+		fmt.Fprintf(b, `<text x="268" y="%.1f" text-anchor="end" font-size="13">%s</text>`, y+20, html.EscapeString(item.Label))
 		fmt.Fprintf(b, `<rect class="%s" x="%.1f" y="%.1f" width="%.1f" height="32" rx="5"/>`, class, left, y, barW)
 		fmt.Fprintf(b, `<text x="%.1f" y="%.1f" font-size="13" font-weight="700">%.2f ms</text>`, left+barW+8, y+21, item.RepresentativeMS)
 		if item.MaxMS > item.MinMS {

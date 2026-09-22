@@ -16,13 +16,15 @@ The chart uses the complete committed [100-request sample](data/nvidia-http-100-
 | p99 | 82.15 ms |
 | Maximum | 82.39 ms |
 
-## Historical and pinned comparison
+## Implementation sequence
 
-![Decision latency comparison](latency-comparison.svg)
+![Latency from the llama.cpp prototype to hand-tuned Go/PTX](latency-comparison.svg)
 
-The current standalone median is 15.5% lower than the pinned 96.0 ms llama.cpp worker result on the same fixture, 40.3% lower than the midpoint of the 135.3–136.7 ms pre-optimisation native range, and 6.43 times faster than the midpoint of the 520.8–521.9 ms earlier native range.
+The chart follows the development order. The llama.cpp prototype established a 96.0 ms reference on the fixed Gemma 4 12B request. The first native Go/NVIDIA runtime took 520.8–521.9 ms. Initial tuning reduced it to 135.3–136.7 ms. Direct execution of hand-tuned PTX from Go now has an 81.13 ms median.
 
-These figures came from different executable revisions and runs. The native entries measure complete warm HTTP requests. The llama.cpp entry is its reported 53.8 ms prefill plus 42.2 ms suffix scoring. The comparison is useful for this frozen fixture and host; it is not a cross-hardware or throughput benchmark.
+The current median is 15.5% lower than the llama.cpp prototype, 40.3% lower than the midpoint of the initially tuned native range, and 6.43 times faster than the midpoint of the early native range.
+
+The native entries measure complete warm HTTP requests from different executable revisions. The llama.cpp entry is its reported 53.8 ms prefill plus 42.2 ms suffix scoring. All measurements use the same frozen fixture and host. They do not measure throughput or performance on other hardware.
 
 ## Workload scaling
 

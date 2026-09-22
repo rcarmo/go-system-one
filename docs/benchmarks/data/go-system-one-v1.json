@@ -12,28 +12,28 @@
   },
   "comparison": [
     {
-      "label": "Earlier native baseline",
-      "representative_ms": 521.35,
-      "min_ms": 520.8,
-      "max_ms": 521.9,
-      "basis": "midpoint of reported range"
-    },
-    {
-      "label": "Pre-optimisation native",
-      "representative_ms": 136,
-      "min_ms": 135.3,
-      "max_ms": 136.7,
-      "basis": "midpoint of reported range"
-    },
-    {
-      "label": "Pinned llama.cpp worker",
+      "label": "llama.cpp prototype",
       "representative_ms": 96,
       "min_ms": 96,
       "max_ms": 96,
       "basis": "reported total"
     },
     {
-      "label": "Standalone Go/PTX",
+      "label": "Early native Go",
+      "representative_ms": 521.35,
+      "min_ms": 520.8,
+      "max_ms": 521.9,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Native Go after initial tuning",
+      "representative_ms": 136,
+      "min_ms": 135.3,
+      "max_ms": 136.7,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Hand-tuned Go/PTX",
       "representative_ms": 81.1343165,
       "min_ms": 80.310148,
       "max_ms": 82.391372,
