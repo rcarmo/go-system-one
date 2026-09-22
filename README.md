@@ -1,37 +1,64 @@
 # Go System One
 
-Go System One provides a Jev-like model for scoring finite boolean and enum choices. It uses pinned Gemma 4 12B instruction weights as its backbone, retaining Gemma's broad pretrained world knowledge while constraining each answer to typed candidate paths. The native Go service exposes `POST /v1/decision` and an embedded browser playground at `/go-system-one`.
+Go System One runs Gemma 4 12B as a finite-choice decision model. A request contains context and a set of boolean or string-enum fields. The model scores the allowed values and returns a selected value and probability for each field.
 
 [![Go System One decision playground](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
 
-The Jev-like label describes the decision interface and finite-choice behaviour. Go System One does not use a Jev checkpoint or pointer head. It runs through a portable CPU/SIMD correctness path or NVIDIA Driver API/PTX, without CGo, a llama.cpp runtime wrapper or a production CUDA toolkit.
+## From Gemma to a native Go runtime
 
-## Benchmarks
+Development started with a fixed Gemma 4 12B baseline: one model, tokenizer, chat template and quantised GGUF file. The Gemma weights supply the pretrained knowledge used to score each choice.
 
-On the pinned one-context boolean fixture, 100 sequential warm HTTP requests on an RTX 3060 produced an **81.13 ms median**, **81.59 ms p95** and **82.15 ms p99**. Every response selected `urgent=true`. The standalone median is 15.5% lower than the pinned 96.0 ms llama.cpp worker result for the same fixture.
+We then built a llama.cpp prototype around the same model. It fixed the prompt format and candidate token paths, and provided reference decisions and probabilities. Its 96.0 ms result on the pinned test request became the first performance target. Frozen results from that prototype still provide an independent check for the Go implementation.
+
+Next, we replaced the llama.cpp runtime with native Go code. It loads the GGUF and tokenizer files, builds a shared prompt prefix and scores only the token paths allowed by the request schema. The CPU/SIMD path is a slow numerical reference.
+
+The NVIDIA path runs hand-tuned kernels directly from Go. The Go code loads embedded PTX through the NVIDIA Driver API and launches the kernels. It does not use CGo, llama.cpp or a CUDA toolkit at run time. Performance changes include:
+
+- keep projection weights and the KV cache on the device;
+- reuse the shared schema prefix;
+- score independent candidate branches in packed batches;
+- project only the vocabulary rows needed by those candidates;
+- tune Q4, Q5, Q6, attention and activation kernels for the target GPU.
+
+On the pinned RTX 3060 test, the early native path took about 521 ms. Later changes reduced this to about 136 ms and then to an 81.13 ms median. The current Go/PTX path is faster than the 96.0 ms llama.cpp reference for this request.
+
+## Decision model
+
+The HTTP service exposes `POST /v1/decision`. The scorer supports boolean fields, unordered string enums and up to 256 contexts in one request. It validates the schema before tokenisation and restricts output to the candidate paths in that schema.
+
+The term *Jev-like* describes this finite-choice interface. The model uses the pinned Gemma weights. It has no Jev weights, Jev training or Jev pointer head.
+
+Returned probabilities are model probabilities over the allowed candidates. They have not been calibrated against a labelled test set. See [`docs/jev-like.md`](docs/jev-like.md) for the request limits and model details.
+
+## Performance
+
+One warm-up request followed by 100 sequential HTTP requests on an RTX 3060 produced these handler times:
+
+| Runtime | Warm latency |
+|---|---:|
+| llama.cpp prototype | 96.0 ms |
+| Early native Go/NVIDIA path | 520.8–521.9 ms |
+| Native path before later kernel work | 135.3–136.7 ms |
+| Current Go/PTX path | 81.13 ms median; 81.59 ms p95; 82.15 ms p99 |
+
+All 100 current responses selected `urgent=true`. The measurements used one pinned model, request and host. They cover latency only. Task accuracy and concurrent throughput require separate tests.
 
 [![Go System One latency comparison](docs/benchmarks/latency-comparison.svg)](docs/benchmarks/README.md)
 
 [![Go System One warm HTTP latency distribution](docs/benchmarks/warm-latency.svg)](docs/benchmarks/README.md)
 
-The charts come from committed JSON, not hand-entered SVG geometry. [`docs/benchmarks/README.md`](docs/benchmarks/README.md) records the workload, complete 100-request distribution, scaling matrix, comparison limits and reproduction commands. These are latency measurements for one pinned model, request and host; task accuracy and probability calibration require separate labelled evaluations.
+The charts are generated from committed JSON. [`docs/benchmarks/README.md`](docs/benchmarks/README.md) records the full sample, request, scaling tests, limits and reproduction commands.
 
-## Source boundary
+## Build
 
-[`go-pherence`](https://github.com/rcarmo/go-pherence) is the canonical reference for Go System One implementation lineage, shared-kernel evolution and relevant future changes. This repository is the independently buildable and releasable projection of that work: it owns the decision contract, HTTP service, playground, model orchestration, loaders, tensor/runtime packages, portable SIMD, NVIDIA Driver API runtime, embedded PTX and platform adapters.
-
-The standalone build has no compile-time dependency on `go-pherence`; `vendor/` contains third-party modules and their licences only. [`go-pherence@788f22402d928004a597b1446568f0e0595dfb1c`](https://github.com/rcarmo/go-pherence/commit/788f22402d928004a597b1446568f0e0595dfb1c) is the current immutable source provenance. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies manifest-listed files from a reviewed upstream commit in one direction and never writes to that repository.
-
-## Setup and build
-
-Go 1.26.2 or the version declared in `go.mod` is required.
+Use Go 1.26.2 or the version declared in `go.mod`.
 
 ```sh
 make prerequisites
 make setup
 ```
 
-The model and tokenizer remain external. Their exact repositories, revisions, filenames, byte count and SHA-256 pins are listed in [`docs/artifacts.md`](docs/artifacts.md). The [documentation index](docs/README.md) links operational, update, release and validation records.
+The model and tokenizer are separate downloads. [`docs/artifacts.md`](docs/artifacts.md) lists their repositories, revisions, filenames, sizes and SHA-256 values.
 
 ```sh
 make artifacts-info
@@ -39,45 +66,65 @@ make artifacts-download ACCEPT_GEMMA_LICENSE=1 HF_TOKEN="$HF_TOKEN"
 make artifacts-verify
 ```
 
+`ACCEPT_GEMMA_LICENSE=1` records that you accepted the Gemma licence before downloading. Model, tokenizer and GGUF files are excluded from source control and release archives.
+
 ## Run
 
 ```sh
 make run BACKEND=nvidia LISTEN=127.0.0.1:8080
 ```
 
-Use `MODEL=/path/to/model.gguf TOKENIZER_DIR=/path/to/tokenizer` with `make run`, `make artifacts-verify` or `make hardware-check` to use an existing external store.
+To use files from another directory:
 
-Open `http://127.0.0.1:8080/go-system-one`. The decision endpoint is `POST /v1/decision`. Desktop and mobile captures, theme behaviour and screenshot provenance are documented in [`docs/playground.md`](docs/playground.md).
+```sh
+make run \
+  BACKEND=nvidia \
+  LISTEN=127.0.0.1:8080 \
+  MODEL=/path/to/model.gguf \
+  TOKENIZER_DIR=/path/to/tokenizer
+```
 
-The command verifies the frozen model, tokenizer, tokenizer configuration and chat-template SHA-256 values before loading them. Model weights and GGUF files are never shipped in this repository or release packages. Repository checks reject tracked GGUF filenames and GGUF file magic. Use `-verify-artifacts=false` only for development fixtures. `BACKEND=simd make run` selects the correctness-oracle implementation; the 12B SIMD path is too slow for interactive use.
+The command verifies all pinned artifact hashes before loading the model. Open `http://127.0.0.1:8080/go-system-one` for the playground. [`docs/playground.md`](docs/playground.md) describes its browser tests, theme behaviour and screenshots.
 
-The server has no authentication or TLS. Bind it to loopback or put an authenticated reverse proxy in front of every route.
+`BACKEND=simd make run` selects the CPU/SIMD reference. Gemma 4 12B is too slow on this path for interactive use.
+
+The server has no authentication or TLS. Bind it to loopback or place an authenticated reverse proxy in front of it.
 
 ## Test
+
+The default checks use synthetic or committed fixtures and do not download model files.
 
 ```sh
 make test
 make race
 make check
 make cross-build
-make hardware-check  # requires verified artifacts and NVIDIA hardware
+make browser-test
 ```
 
-The default suite is offline and uses synthetic or frozen repository fixtures. Released-model NVIDIA parity is opt-in because it requires the pinned checkpoint, tokenizer and suitable hardware. See the [v1 model validation](docs/validation/go-system-one-v1-20260921.md) for artifact pins and oracle data, the [standalone repository validation](docs/validation/standalone-repository-20260922.md) for extraction and CI evidence, and the [accelerated standalone NVIDIA run](docs/validation/standalone-nvidia-f65652f6-20260922.md) for the complete 100-request sample.
+NVIDIA tests for the pinned model require its artifacts and compatible hardware:
 
-## Update from go-pherence
+```sh
+make hardware-check
+```
+
+The [v1 model report](docs/validation/go-system-one-v1-20260921.md) records the model pins, llama.cpp comparisons and numerical limits. The [standalone NVIDIA report](docs/validation/standalone-nvidia-f65652f6-20260922.md) records the 100-request run.
+
+## Source updates
+
+This repository contains all Go source needed to build the service. Third-party Go modules and their licences are stored under `vendor/`.
+
+Development also takes place in [`go-pherence`](https://github.com/rcarmo/go-pherence). The current imported source revision is [`788f22402d928004a597b1446568f0e0595dfb1c`](https://github.com/rcarmo/go-pherence/commit/788f22402d928004a597b1446568f0e0595dfb1c). Imports are limited to files listed in the source manifest.
 
 ```sh
 ./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-This command copies manifest-listed source files, records the immutable source commit, regenerates third-party `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. The weekly workflow compares only manifest-listed upstream blobs, so unrelated canonical work does not advance the pin or open a pull request. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
+The script copies listed files in one direction, records the source commit, rebuilds `vendor/` and runs the offline checks. It does not write to the `go-pherence` checkout. [`docs/upstream.md`](docs/upstream.md) defines the review procedure.
 
-## Project lifecycle
+## Packages and releases
 
-Run `make help` for the complete target list. The Makefile covers prerequisites, setup, vendoring, build, install/uninstall, serving, tests, race and coverage runs, policy checks, cross-builds, artifact management, hardware parity, upstream source updates, release packaging and cleanup.
-
-`make package` writes code-only Linux archives under `dist/`. It never includes model or tokenizer artifacts. Tag-driven publication and build-only dry runs are documented in [`docs/releases.md`](docs/releases.md).
+`make package` creates code-only Linux archives under `dist/`. [`docs/releases.md`](docs/releases.md) lists the archive checks and release process. Run `make help` for all available targets.
 
 ## Licence
 
