@@ -32,7 +32,7 @@ github.com/rcarmo/go-pherence/loader/gguf/llamaq4	github.com/rcarmo/go-system-on
 github.com/rcarmo/go-pherence/loader/gguf/llamaq4plan9	github.com/rcarmo/go-system-one/loader/gguf/llamaq4plan9
 github.com/rcarmo/go-pherence/backends/ggmlquant	github.com/rcarmo/go-system-one/backends/ggmlquant
 github.com/rcarmo/go-pherence/backends/internal/ggmlutil	github.com/rcarmo/go-system-one/backends/internal/ggmlutil
-github.com/rcarmo/go-pherence/internal/commandcapture	github.com/rcarmo/go-system-one/internal/commandcapture	local-only
+github.com/rcarmo/go-pherence/internal/commandcapture	github.com/rcarmo/go-system-one/internal/commandcapture
 github.com/rcarmo/go-pherence/loader/safetensors	github.com/rcarmo/go-system-one/loader/safetensors
 github.com/rcarmo/go-pherence/loader/weights	github.com/rcarmo/go-system-one/loader/weights
 github.com/rcarmo/go-pherence/tensor	github.com/rcarmo/go-system-one/tensor
@@ -42,3 +42,6 @@ github.com/rcarmo/go-pherence/runtime/expertstream	github.com/rcarmo/go-system-o
 github.com/rcarmo/go-pherence/internal/floatcmp	github.com/rcarmo/go-system-one/internal/floatcmp
 github.com/rcarmo/go-pherence/backends/ggmlgraph	github.com/rcarmo/go-system-one/backends/ggmlgraph
 github.com/rcarmo/go-pherence/backends/mlx	github.com/rcarmo/go-system-one/backends/mlx
+github.com/rcarmo/go-pherence/backends/spacemit/board	github.com/rcarmo/go-system-one/backends/spacemit/board
+github.com/rcarmo/go-pherence/backends/spacemit/ort	github.com/rcarmo/go-system-one/backends/spacemit/ort
+github.com/rcarmo/go-pherence/backends/vulkan	github.com/rcarmo/go-system-one/backends/vulkan
