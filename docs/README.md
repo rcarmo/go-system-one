@@ -19,4 +19,5 @@ These documents define the standalone service, its external artifacts, browser p
 - [Go System One v1](validation/go-system-one-v1-20260921.md) — model/oracle pins, numerical gates, workload matrix and NVIDIA performance.
 - [Standalone repository extraction](validation/standalone-repository-20260922.md) — source/dependency boundaries, offline builds and CI.
 - [Standalone accelerated NVIDIA run](validation/standalone-nvidia-f65652f6-20260922.md) — complete 100-request sample.
+- [Standalone final state](validation/standalone-final-20260922.md) — fully local source, lifecycle, release and relevance-aware update evidence.
 - [Kev comparison](validation/go-system-one-kev-20260922.md) — architecture/API comparison and adopted delimiter protection.
