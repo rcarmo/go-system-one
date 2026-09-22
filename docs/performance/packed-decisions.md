@@ -19,7 +19,11 @@ The GPU reached at most 75°C. One-second sampling observed up to 9,658 MiB used
 
 Packing exposed an existing shared-memory softmax race: a warp could overwrite the maximum before another warp read it. The new short-softmax regression failed ten consecutive runs with the old kernel and passes with the barrier. Saturated probabilities had hidden raw-logit changes. The original llama.cpp parity fixtures still pass.
 
-The first executor shares projections but launches attention separately per context and uses a reusable suffix region in a private arena. Selected hidden rows remain on-device; selected projection and download still run once per result. Next steps are segmented attention, batched selected readout, persistent bounded scratch and larger-batch projection tuning. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
+The first executor shared projections but launched attention separately per context and copied KV into a reusable suffix region. The next version uses one segmented attention launch per layer, reads prefix and suffix KV directly, and batches terminal normalisation and selected-logit projection into one download. It preserves the same raw logits in the released-model comparison.
+
+Using the same requests and cooling protocol, three warm samples gave 809.33 ms for 10 entries and 8,340.94 ms for 100 entries. This is about 2% below the first packed executor and 1.39–1.40× faster than serial. Sampled memory use peaked at 9,562 MiB; temperature reached 74°C. [Segmented executor samples](../benchmarks/data/packed-contexts-segmented.json) contain identical complete HTTP results to the serial comparison.
+
+Development source for the segmented attention, rotary-position and batched Q5 selected-head kernels is in `scripts/kernels/packed_decision.cu`; `scripts/generate-packed-ptx.sh` embeds CUDA 12.8 PTX. The runtime still requires only the NVIDIA driver. Next steps are persistent bounded scratch, larger-batch projection tuning and multi-field packing. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
 ## Current cost
 

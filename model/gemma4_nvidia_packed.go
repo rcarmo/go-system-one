@@ -42,34 +42,28 @@ func deviceView(b *nvidia.Buffer, offset, count int) *nvidia.Buffer {
 	return &nvidia.Buffer{Ptr: b.Ptr + nvidia.CUdeviceptr(offset*4), Size: count * 4}
 }
 
-func (g *Gemma4NVIDIA) prefillAttentionSegments(out, q, k, v, rope *nvidia.Buffer, arena *gemma4NVIDIAKVArena, layer, rows, pos0, window, hd, rot int, segments []gemma4PrefillSegment) error {
+func (g *Gemma4NVIDIA) prefillAttentionSegments(out, q, k, v, rope *nvidia.Buffer, arena *gemma4NVIDIAKVArena, layer, rows, pos0, window, hd, rot int, packed *nvidia.SegmentedRows) error {
 	m := g.model
 	kvHeads := gemmacfg.LayerKVHeads(m.Config, layer)
-	qDim, kvDim := m.Config.NumHeads*hd, kvHeads*hd
-	if len(segments) == 0 {
-		segments = []gemma4PrefillSegment{{length: rows}}
+	if packed != nil {
+		if err := packed.RoPE(q, rope, m.Config.NumHeads, hd, rot); err != nil {
+			return err
+		}
+		if err := packed.RoPE(k, rope, kvHeads, hd, rot); err != nil {
+			return err
+		}
+		return packed.Attention(out, q, k, v, arena.trunkK[layer], arena.trunkV[layer], window, m.Config.NumHeads, kvHeads, hd, attentionScale(m.Config, hd))
 	}
-	for _, segment := range segments {
-		qq := deviceView(q, segment.offset*qDim, segment.length*qDim)
-		kk := deviceView(k, segment.offset*kvDim, segment.length*kvDim)
-		vv := deviceView(v, segment.offset*kvDim, segment.length*kvDim)
-		oo := deviceView(out, segment.offset*qDim, segment.length*qDim)
-		if err := nvidia.RoPEPartialSequenceBuffer(qq, rope, segment.length, pos0, m.Config.NumHeads, hd, rot); err != nil {
-			return err
-		}
-		if err := nvidia.RoPEPartialSequenceBuffer(kk, rope, segment.length, pos0, kvHeads, hd, rot); err != nil {
-			return err
-		}
-		// Only prefix KV survives across segments. Each attention launch reads
-		// its own causal suffix before the next segment replaces that suffix.
-		if err := arena.appendTrunkRows(layer, pos0, segment.length, kk, vv); err != nil {
-			return err
-		}
-		if err := nvidia.CausalBatchAttentionBuffer(oo, qq, arena.trunkK[layer], arena.trunkV[layer], segment.length, pos0, pos0+segment.length, window, m.Config.NumHeads, kvHeads, hd, attentionScale(m.Config, hd)); err != nil {
-			return err
-		}
+	if err := nvidia.RoPEPartialSequenceBuffer(q, rope, rows, pos0, m.Config.NumHeads, hd, rot); err != nil {
+		return err
 	}
-	return nil
+	if err := nvidia.RoPEPartialSequenceBuffer(k, rope, rows, pos0, kvHeads, hd, rot); err != nil {
+		return err
+	}
+	if err := arena.appendTrunkRows(layer, pos0, rows, k, v); err != nil {
+		return err
+	}
+	return nvidia.CausalBatchAttentionBuffer(out, q, arena.trunkK[layer], arena.trunkV[layer], rows, pos0, pos0+rows, window, m.Config.NumHeads, kvHeads, hd, attentionScale(m.Config, hd))
 }
 
 // ScorePrefixedPacked scores independent token sequences after one immutable
@@ -91,9 +85,9 @@ func (g *Gemma4NVIDIA) ScorePrefixedPacked(ctx context.Context, prefix *Gemma4NV
 		return nil, fmt.Errorf("invalid NVIDIA packed paths/candidates")
 	}
 	segments := make([]gemma4PrefillSegment, len(paths))
-	rows, longest := 0, 0
+	rows := 0
 	for i, path := range paths {
-		if len(path) == 0 || len(path) > Gemma4PackedRows-rows || len(candidates[i]) == 0 || len(prefix.tokens)+len(path) > 2048 {
+		if len(path) == 0 || len(path) > Gemma4PackedRows-rows || len(candidates[i]) == 0 || len(candidates[i]) > 255 || len(prefix.tokens)+len(path) > 2048 {
 			return nil, fmt.Errorf("invalid NVIDIA packed path %d", i)
 		}
 		for _, ids := range [][]int{path, candidates[i]} {
@@ -105,19 +99,11 @@ func (g *Gemma4NVIDIA) ScorePrefixedPacked(ctx context.Context, prefix *Gemma4NV
 		}
 		segments[i] = gemma4PrefillSegment{rows, len(path)}
 		rows += len(path)
-		longest = max(longest, len(path))
 	}
 	flat := make([]int, 0, rows)
 	for _, path := range paths {
 		flat = append(flat, path...)
 	}
-	// One private arena holds the immutable prefix plus a reusable suffix,
-	// not a copy of the entire prefix per context.
-	arena, err := prefix.arena.cloneTrunk(max(prefix.arena.trunkLen, len(prefix.tokens)+longest), 1, 1)
-	if err != nil {
-		return nil, err
-	}
-	defer arena.free()
 	h := g.model.Config.HiddenSize
 	terminal, err := nvidia.Malloc(len(paths) * h)
 	if err != nil {
@@ -126,18 +112,18 @@ func (g *Gemma4NVIDIA) ScorePrefixedPacked(ctx context.Context, prefix *Gemma4NV
 	defer terminal.Free()
 	// Drain submitted work on cancellation/error before releasing owned buffers.
 	defer nvidia.SyncAll()
-	if err := g.runPrefillRows(ctx, flat, len(prefix.tokens), arena, nil, terminal, segments); err != nil {
+	if err := g.runPrefillRows(ctx, flat, len(prefix.tokens), prefix.arena, nil, terminal, segments); err != nil {
 		return nil, err
 	}
-	out := make([][]float32, len(paths))
-	for i := range paths {
-		if err := ctx.Err(); err != nil {
-			return nil, err
-		}
-		out[i], err = g.finishSelectedDevice(deviceView(terminal, i*h, h), candidates[i])
-		if err != nil {
-			return nil, err
-		}
+	if err := nvidia.IdeogramRMSNormRowsBuffer(terminal, terminal, g.norm, nil, len(paths), h, float32(g.model.Config.RMSNormEps), false); err != nil {
+		return nil, err
+	}
+	out, err := g.lmHead.ProjectSelectedBatch(terminal, candidates)
+	if err != nil {
+		return nil, err
+	}
+	for i := range out {
+		g.transformSelectedLogits(out[i], candidates[i])
 	}
 	return out, ctx.Err()
 }

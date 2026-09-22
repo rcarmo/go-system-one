@@ -276,6 +276,19 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 			return err
 		}
 	}
+	var packed *nvidia.SegmentedRows
+	if len(segments) > 0 {
+		lengths := make([]int, len(segments))
+		for i, segment := range segments {
+			lengths[i] = segment.length
+		}
+		var err error
+		packed, err = nvidia.NewSegmentedRows(lengths, pos0)
+		if err != nil {
+			return err
+		}
+		defer packed.Close()
+	}
 	var work gemma4DeviceWork
 	defer work.free()
 	defer nvidia.SyncAll()
@@ -365,7 +378,7 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 			rope = g.ropeFull
 			window = 0
 		}
-		if err := g.prefillAttentionSegments(attn, q, k, v, rope, arena, l, B, pos0, window, hd, rot, segments); err != nil {
+		if err := g.prefillAttentionSegments(attn, q, k, v, rope, arena, l, B, pos0, window, hd, rot, packed); err != nil {
 			return err
 		}
 		if err := gl.o.ProjectBatchToBuffer(o, attn, B); err != nil {
