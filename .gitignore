@@ -1,0 +1,7 @@
+/bin/
+/dist/
+/coverage.out
+*.prof
+*.nsys-rep
+*.sqlite
+.env
