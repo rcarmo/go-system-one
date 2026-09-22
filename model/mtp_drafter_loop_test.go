@@ -1,0 +1,632 @@
+package model
+
+import (
+	"math"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/rcarmo/go-system-one/backends/mlx"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/loader/gguf"
+	"github.com/rcarmo/go-system-one/tensor"
+)
+
+func TestNewMTPDrafterState(t *testing.T) {
+	state, err := NewMTPDrafterState(7, []float32{1, 2, 3}, 3)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	if state.PreviousToken != 7 || !sameFloat32s(state.Activation, []float32{1, 2, 3}) {
+		t.Fatalf("state=%+v", state)
+	}
+	state.Activation[0] = 99
+	orig := []float32{4, 5}
+	state, err = NewMTPDrafterState(1, orig, 2)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	orig[0] = 99
+	if state.Activation[0] == 99 {
+		t.Fatal("state activation aliases caller slice")
+	}
+}
+
+func TestNewMTPDrafterStateValidation(t *testing.T) {
+	if _, err := NewMTPDrafterState(-1, nil, 1); err == nil {
+		t.Fatal("accepted negative previous token")
+	}
+	if _, err := NewMTPDrafterState(1, nil, 0); err == nil {
+		t.Fatal("accepted invalid backbone width")
+	}
+	if _, err := NewMTPDrafterState(1, []float32{1}, 2); err == nil {
+		t.Fatal("accepted wrong activation width")
+	}
+}
+
+func TestRunMTPDrafterStepProjectionOnly(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(1, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	got, err := m.RunMTPDrafterStep(d, state)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStep: %v", err)
+	}
+	if got.Token != 1 {
+		t.Fatalf("Token=%d want 1 logits=%v", got.Token, got.Logits)
+	}
+	if !sameFloat32s(got.NextActivation, []float32{0, 0.5}) {
+		t.Fatalf("NextActivation=%v want [0 0.5]", got.NextActivation)
+	}
+	got.NextActivation[0] = 99
+	if got.NextState.Activation[0] == 99 {
+		t.Fatal("NextState activation aliases result activation")
+	}
+}
+
+func TestRunMTPDrafterStepScalesBackboneEmbeddingByBackboneWidth(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	m.Config.ModelType = "gemma4_text"
+	d := validProjectionOnlyDrafter()
+	state, err := NewMTPDrafterState(0, []float32{0, 0}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	got, err := m.RunMTPDrafterStep(d, state)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStep: %v", err)
+	}
+	want := float32(math.Sqrt(2))
+	if len(got.NextActivation) != 2 || got.NextActivation[0] != want || got.NextActivation[1] != 0 {
+		t.Fatalf("NextActivation=%v, want scaled backbone embedding [%g 0]", got.NextActivation, want)
+	}
+}
+
+func TestRunMTPDrafterStepContractValidation(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	if _, err := (*LlamaModel)(nil).RunMTPDrafterStep(validProjectionOnlyDrafter(), MTPDrafterState{}); err == nil {
+		t.Fatal("accepted nil model")
+	}
+	if _, err := m.RunMTPDrafterStep(nil, MTPDrafterState{}); err == nil {
+		t.Fatal("accepted nil drafter")
+	}
+	d := validDrafterStepScaffold()
+	state, err := NewMTPDrafterState(1, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	_, err = m.RunMTPDrafterStep(d, state)
+	if err == nil || !strings.Contains(err.Error(), "external KV is required") {
+		t.Fatalf("RunMTPDrafterStep err=%v, want missing external KV", err)
+	}
+	externalKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0}, SeqLen: 1}
+	got, err := m.RunMTPDrafterStepWithExternalKV(d, state, externalKV)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV: %v", err)
+	}
+	if len(got.Logits) != m.Config.VocabSize || len(got.NextActivation) != d.BackboneHiddenSize {
+		t.Fatalf("result logits/activation len=%d/%d", len(got.Logits), len(got.NextActivation))
+	}
+
+	bad := *d
+	bad.Config.VocabSize = 0
+	if _, err := m.RunMTPDrafterStep(&bad, state); err == nil {
+		t.Fatal("accepted invalid drafter dims")
+	}
+	bad = *d
+	bad.BackboneHiddenSize = 3
+	if _, err := m.RunMTPDrafterStep(&bad, MTPDrafterState{PreviousToken: 1, Activation: []float32{1, 2, 3}}); err == nil {
+		t.Fatal("accepted model/drafter dimension mismatch")
+	}
+	if _, err := m.RunMTPDrafterStep(d, MTPDrafterState{PreviousToken: 99, Activation: []float32{1, 2}}); err == nil {
+		t.Fatal("accepted previous token outside vocab")
+	}
+	if _, err := m.RunMTPDrafterStep(d, MTPDrafterState{PreviousToken: 1, Activation: []float32{1}}); err == nil {
+		t.Fatal("accepted wrong state activation width")
+	}
+	bad = *d
+	bad.PreProjection = nil
+	if _, err := m.RunMTPDrafterStep(&bad, state); err == nil {
+		t.Fatal("accepted missing projection weights")
+	}
+	bad = *d
+	bad.PreProjection = []float32{1}
+	if _, err := m.RunMTPDrafterStep(&bad, state); err == nil || !strings.Contains(err.Error(), "pre_projection len") {
+		t.Fatalf("RunMTPDrafterStep short pre_projection err=%v, want length rejection", err)
+	}
+	bad = *d
+	bad.PreProjection = nil
+	bad.PreProjectionMLX = &mlx.QuantWeight{OutDim: 1, InDim: 4, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0}, Scales: []float32{1}, Biases: []float32{0}}
+	if _, err := m.RunMTPDrafterStep(&bad, state); err == nil || !strings.Contains(err.Error(), "pre_projection MLX dims") {
+		t.Fatalf("RunMTPDrafterStep malformed pre_projection MLX dims err=%v, want dimension rejection", err)
+	}
+	bad = *d
+	bad.PreProjection = nil
+	bad.PreProjectionMLX = &mlx.QuantWeight{OutDim: 2, InDim: 4, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0, 0}, Scales: []float32{1, 1}, Biases: []float32{0, 0}}
+	if _, err := m.RunMTPDrafterStep(&bad, state); err == nil || !strings.Contains(err.Error(), "pre_projection MLX weight") {
+		t.Fatalf("RunMTPDrafterStep malformed pre_projection MLX layout err=%v, want structural rejection", err)
+	}
+}
+
+func TestMTPDrafterGQAAttentionUsesGemmaScale(t *testing.T) {
+	d := validDrafterStepScaffold()
+	d.Config.ModelType = "gemma4_text"
+	q := []float32{1, 0}
+	k := []float32{0, 1, 2, 0}
+	v := []float32{1, 10, 100, 1000}
+	got := drafterGQAAttention(d, q, k, v, 2, 1, 1, 2)
+	want := gqaAttentionScale(q, k, v, 2, 1, 1, 2, 1.0)
+	if !sameFloat32s(got, want) {
+		t.Fatalf("drafter attention=%v want Gemma scale %v", got, want)
+	}
+	defaultScaled := gqaAttention(q, k, v, 2, 1, 1, 2)
+	if sameFloat32s(got, defaultScaled) {
+		t.Fatalf("Gemma drafter attention unexpectedly matched default scaled path: %v", got)
+	}
+}
+
+func TestMTPDrafterRMSNormUsesLlamaGemma4F32Path(t *testing.T) {
+	d := validDrafterStepScaffold()
+	d.Config.ModelType = "gemma4_text"
+	x := []float32{1.0001, 2.0001}
+	want := append([]float32(nil), x...)
+	rmsNormInPlace(want, []float32{1, 1}, float32(d.Config.RMSNormEps))
+	drafterRMSNormInPlace(d, x, []float32{1, 1})
+	if !sameFloat32s(x, want) {
+		t.Fatalf("drafter norm=%v want llama.cpp Gemma4 F32 path %v", x, want)
+	}
+
+	gemma3 := validDrafterStepScaffold()
+	gemma3.Config.ModelType = "gemma3_text"
+	gotBF16 := []float32{1.0001, 2.0001}
+	wantBF16 := append([]float32(nil), gotBF16...)
+	rmsNormBF16(wantBF16, []float32{1, 1}, float32(gemma3.Config.RMSNormEps))
+	drafterRMSNormInPlace(gemma3, gotBF16, []float32{1, 1})
+	if !sameFloat32s(gotBF16, wantBF16) {
+		t.Fatalf("Gemma3 drafter norm=%v want BF16 path %v", gotBF16, wantBF16)
+	}
+}
+
+func TestRunMTPDrafterStepUsesAssistantHiddenForLogitsAndPostProjectionForHandoff(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	d := validProjectionOnlyDrafter()
+	d.EmbedTokens = tensor.FromFloat32([]float32{
+		1, 0,
+		0, 1,
+		1, 1,
+		-1, 0,
+	}, []int{4, 2})
+	state, err := NewMTPDrafterState(1, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	got, err := m.RunMTPDrafterStep(d, state)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStep: %v", err)
+	}
+	d.PostProjection = []float32{
+		2, 0,
+		0, -3,
+	}
+	withDifferentHandoff, err := m.RunMTPDrafterStep(d, state)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStep with changed post_projection: %v", err)
+	}
+	if !sameFloat32s(got.Logits, withDifferentHandoff.Logits) || got.Token != withDifferentHandoff.Token {
+		t.Fatalf("post_projection changed assistant logits/token: logits %v -> %v token %d -> %d", got.Logits, withDifferentHandoff.Logits, got.Token, withDifferentHandoff.Token)
+	}
+	if sameFloat32s(got.NextActivation, withDifferentHandoff.NextActivation) {
+		t.Fatalf("post_projection did not affect h_nextn handoff: %v", got.NextActivation)
+	}
+}
+
+func TestRunMTPDrafterStepAppliesFinalNormBeforePostProjection(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	d := validDrafterStepScaffold()
+	state, err := NewMTPDrafterState(1, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	externalKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0}, SeqLen: 1}
+	got, err := m.RunMTPDrafterStepWithExternalKV(d, state, externalKV)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV: %v", err)
+	}
+	d.Norm = tensor.FromFloat32([]float32{1, 2}, []int{2})
+	withNorm, err := m.RunMTPDrafterStepWithExternalKV(d, state, externalKV)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV with norm: %v", err)
+	}
+	if sameFloat32s(got.NextActivation, withNorm.NextActivation) {
+		t.Fatalf("final norm did not affect next activation: %v", got.NextActivation)
+	}
+}
+
+func TestNewMTPDrafterExternalKVDefaultMapping(t *testing.T) {
+	d := validDrafterStepScaffold()
+	externalKV, err := NewMTPDrafterExternalKV(d, [][]float32{{1, 0}}, [][]float32{{0, 1}}, 1)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterExternalKV: %v", err)
+	}
+	if !sameInts(externalKV.SourceLayers, []int{0}) {
+		t.Fatalf("SourceLayers=%v want [0]", externalKV.SourceLayers)
+	}
+	if _, err := NewMTPDrafterExternalKV(nil, nil, nil, 0); err == nil {
+		t.Fatal("accepted nil drafter")
+	}
+}
+
+func TestRunMTPDrafterStepRealAssetContract(t *testing.T) {
+	drafterDir := filepath.Join("..", "checkpoints", "gemma4-e2b-mtp-drafter")
+	mainDir := filepath.Join("..", "checkpoints", "gemma4-e2b-mlx4")
+	if _, errSingle := os.Stat(filepath.Join(drafterDir, "model.safetensors")); errSingle != nil {
+		if _, errSharded := os.Stat(filepath.Join(drafterDir, "model.safetensors.index.json")); errSharded != nil {
+			t.Skipf("local Gemma4 MTP drafter asset not available: single=%v sharded=%v", errSingle, errSharded)
+		}
+	}
+	if _, errSingle := os.Stat(filepath.Join(mainDir, "model.safetensors")); errSingle != nil {
+		if _, errSharded := os.Stat(filepath.Join(mainDir, "model.safetensors.index.json")); errSharded != nil {
+			t.Skipf("local Gemma4 main asset not available: single=%v sharded=%v", errSingle, errSharded)
+		}
+	}
+	d, err := LoadGemma4MTPDrafter(drafterDir)
+	if err != nil {
+		t.Fatalf("LoadGemma4MTPDrafter: %v", err)
+	}
+	m, err := LoadLlama(mainDir)
+	if err != nil {
+		t.Fatalf("LoadLlama: %v", err)
+	}
+	if m.Config.HiddenSize != d.BackboneHiddenSize || m.Config.VocabSize != d.Config.VocabSize {
+		t.Fatalf("model/drafter mismatch h/vocab=%d/%d backbone/vocab=%d/%d", m.Config.HiddenSize, m.Config.VocabSize, d.BackboneHiddenSize, d.Config.VocabSize)
+	}
+	k := make([][]float32, d.Config.NumLayers)
+	v := make([][]float32, d.Config.NumLayers)
+	for i := range d.Layers {
+		kvDim, err := d.LayerKVDim(i)
+		if err != nil {
+			t.Fatalf("LayerKVDim(%d): %v", i, err)
+		}
+		k[i] = make([]float32, kvDim)
+		v[i] = make([]float32, kvDim)
+	}
+	externalKV, err := NewMTPDrafterExternalKV(d, k, v, 1)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterExternalKV: %v", err)
+	}
+	state, err := NewMTPDrafterState(0, make([]float32, d.BackboneHiddenSize), d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	result, err := m.RunMTPDrafterStepWithExternalKV(d, state, externalKV)
+	if err != nil {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV: %v", err)
+	}
+	if result.Token < 0 || result.Token >= m.Config.VocabSize {
+		t.Fatalf("draft token=%d out of range [0,%d)", result.Token, m.Config.VocabSize)
+	}
+	if len(result.Logits) != m.Config.VocabSize || len(result.NextActivation) != d.BackboneHiddenSize || len(result.NextState.Activation) != d.BackboneHiddenSize {
+		t.Fatalf("result shapes logits/activation/state=%d/%d/%d", len(result.Logits), len(result.NextActivation), len(result.NextState.Activation))
+	}
+}
+
+func TestRunMTPDrafterQOnlyLayerRejectsMLXProjectionFailure(t *testing.T) {
+	d := validDrafterStepScaffold()
+	d.Layers[0].QW = nil
+	d.Layers[0].QWm = &mlx.QuantWeight{OutDim: 2, InDim: 2, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0}, Scales: []float32{1, 1}, Biases: []float32{0, 0}}
+	externalKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0}, SeqLen: 1}
+	if _, err := runMTPDrafterQOnlyLayer(nil, d, []float32{0.5, 0.25}, 0, externalKV); err == nil || !strings.Contains(err.Error(), "Q MLX projection failed") {
+		t.Fatalf("runMTPDrafterQOnlyLayer malformed MLX err=%v, want projection failure", err)
+	}
+}
+
+func TestDrafterLayerDimsDeriveGemma4FullAttentionDim(t *testing.T) {
+	d := validDrafterStepScaffold()
+	d.Config.ModelType = "gemma4_text"
+	d.Config.NumLayers = 2
+	d.Config.LayerTypes = []string{"sliding_attention", "full_attention"}
+	d.Config.NumKVHeads = 2
+	d.Config.NumGlobalKVHeads = 1
+	d.Config.HeadDim = 2
+	d.Config.GlobalHeadDim = 4
+	d.Layers = []Gemma4MTPDrafterLayer{{KVSourceLayer: -1}, {KVSourceLayer: -1}}
+	if got := drafterLayerHeadDim(d, 0); got != 2 {
+		t.Fatalf("sliding drafter headDim=%d want 2", got)
+	}
+	if got := drafterLayerKVHeads(d, 0); got != 2 {
+		t.Fatalf("sliding drafter kvHeads=%d want 2", got)
+	}
+	if got := drafterLayerHeadDim(d, 1); got != 4 {
+		t.Fatalf("full drafter headDim=%d want 4", got)
+	}
+	if got := drafterLayerKVHeads(d, 1); got != 1 {
+		t.Fatalf("full drafter kvHeads=%d want 1", got)
+	}
+	if got, err := d.LayerKVDim(1); err != nil || got != 4 {
+		t.Fatalf("full drafter LayerKVDim=%d err=%v want 4", got, err)
+	}
+	d.Layers[1].HeadDimLocal = 6
+	if got := drafterLayerHeadDim(d, 1); got != 6 {
+		t.Fatalf("explicit full drafter headDim=%d want 6", got)
+	}
+	if got, err := d.LayerKVDim(1); err != nil || got != 6 {
+		t.Fatalf("explicit full drafter LayerKVDim=%d err=%v want 6", got, err)
+	}
+	if _, err := d.LayerKVDim(2); err == nil {
+		t.Fatal("LayerKVDim accepted out-of-range drafter layer")
+	}
+}
+
+func TestGemma4MTPDrafterGGUFConfigUsesAssistantSlidingWindowPattern(t *testing.T) {
+	g := &gguf.GGUF{Meta: map[string]any{
+		"gemma4-assistant.block_count":                      uint32(4),
+		"gemma4-assistant.embedding_length":                 uint32(8),
+		"gemma4-assistant.embedding_length_out":             uint32(16),
+		"gemma4-assistant.feed_forward_length":              uint32(32),
+		"gemma4-assistant.context_length":                   uint32(64),
+		"gemma4-assistant.attention.head_count":             uint32(2),
+		"gemma4-assistant.attention.head_count_kv":          uint32(1),
+		"gemma4-assistant.attention.key_length_swa":         uint32(4),
+		"gemma4-assistant.attention.key_length":             uint32(8),
+		"gemma4-assistant.attention.sliding_window":         uint32(16),
+		"gemma4-assistant.attention.layer_norm_rms_epsilon": float32(1e-6),
+		"gemma4-assistant.attention.sliding_window_pattern": []any{true, false, true, false},
+		"tokenizer.ggml.tokens":                             []any{"<bos>", "a", "b"},
+	}}
+	cfg, _, err := gemma4MTPDrafterGGUFConfig(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"sliding_attention", "full_attention", "sliding_attention", "full_attention"}
+	if !sameStrings(cfg.LayerTypes, want) {
+		t.Fatalf("assistant layer types=%v want %v", cfg.LayerTypes, want)
+	}
+}
+
+func sameStrings(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestMTPDrafterExternalKVValidationRejectsDenseWeightOverflow(t *testing.T) {
+	maxInt := int(^uint(0) >> 1)
+	d := &Gemma4MTPDrafter{
+		Config: LlamaConfig{NumLayers: 1, HiddenSize: 3, NumHeads: maxInt/2 + 1, NumKVHeads: 1, HeadDim: 1, Intermediate: 2, RMSNormEps: 1e-6},
+		Layers: []Gemma4MTPDrafterLayer{{
+			InputNorm: tensor.Ones([]int{3}), PostNorm: tensor.Ones([]int{3}), PreFFNNorm: tensor.Ones([]int{3}), PostFFNNorm: tensor.Ones([]int{3}), QNorm: tensor.Ones([]int{1}), KVSourceLayer: -1,
+		}},
+	}
+	ext := &MTPDrafterExternalKV{K: [][]float32{{0}}, V: [][]float32{{0}}, SourceLayers: []int{0}, SeqLen: 1}
+	if err := validateMTPDrafterExternalKV(d, ext); err == nil || !strings.Contains(err.Error(), "attention weight dims overflow") {
+		t.Fatalf("validateMTPDrafterExternalKV err=%v, want attention overflow", err)
+	}
+}
+
+func TestBF16DrafterDotUsesGGMLAVX2ReductionOrder(t *testing.T) {
+	x := simd.BF16FromF32Slice([]float32{
+		4096, 1, -4096, 1, 2048, 1, -2048, 1,
+		1024, 1, -1024, 1, 512, 1, -512, 1,
+		256, 1, -256, 1, 128, 1, -128, 1,
+		64, 1, -64, 1, 32, 1, -32, 1,
+		3, -2, 5,
+	})
+	y := simd.BF16FromF32Slice([]float32{
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1,
+	})
+	got := bf16DrafterDotGGMLAVX2Order(x, y)
+	want := float32(16 + 6) // 16 small ones in the 32-wide chunk plus scalar tail 3-2+5.
+	if got != want {
+		t.Fatalf("bf16DotGGMLAVX2Order=%g want %g", got, want)
+	}
+}
+
+func TestRunMTPDrafterStepExternalKVValidationUsesGlobalFullAttentionDim(t *testing.T) {
+	m := &LlamaModel{
+		Config: LlamaConfig{VocabSize: 4, HiddenSize: 4},
+		EmbedTokens: tensor.FromFloat32([]float32{
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		}, []int{4, 4}),
+		LMHead: tensor.FromFloat32([]float32{
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		}, []int{4, 4}),
+	}
+	d := validDrafterStepScaffold()
+	d.Config.ModelType = "gemma4_text"
+	d.Config.VocabSize = 4
+	d.Config.HiddenSize = 4
+	d.Config.NumHeads = 1
+	d.Config.NumKVHeads = 2
+	d.Config.NumGlobalKVHeads = 1
+	d.Config.HeadDim = 2
+	d.Config.GlobalHeadDim = 4
+	d.Config.LayerTypes = []string{"full_attention"}
+	d.Config.Intermediate = 4
+	d.BackboneHiddenSize = 4
+	d.Norm = tensor.Ones([]int{4})
+	identity4 := []float32{
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1,
+	}
+	d.PreProjection = []float32{
+		1, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 1, 0, 0, 0,
+		0, 1, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 1, 0, 0,
+	}
+	d.PostProjection = append([]float32(nil), identity4...)
+	d.Layers = []Gemma4MTPDrafterLayer{{
+		InputNorm:     tensor.Ones([]int{4}),
+		PostNorm:      tensor.Ones([]int{4}),
+		PreFFNNorm:    tensor.Ones([]int{4}),
+		PostFFNNorm:   tensor.Ones([]int{4}),
+		QNorm:         tensor.Ones([]int{4}),
+		LayerScalar:   1,
+		KVSourceLayer: -1,
+		QW:            append([]float32(nil), identity4...),
+		OW:            append([]float32(nil), identity4...),
+		GateW:         append([]float32(nil), identity4...),
+		UpW:           append([]float32(nil), identity4...),
+		DownW:         append([]float32(nil), identity4...),
+	}}
+	state, err := NewMTPDrafterState(0, []float32{0.25, 0.5, 0.75, 1}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	validKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0, 0, 0}}, V: [][]float32{{0, 1, 0, 0}}, SourceLayers: []int{0}, SeqLen: 1}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, validKV); err != nil {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV with full-attention global dim: %v", err)
+	}
+	badKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0}, SeqLen: 1}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, badKV); err == nil {
+		t.Fatal("accepted full-attention external KV sized with sliding head dim")
+	}
+}
+
+func TestRunMTPDrafterStepExternalKVValidation(t *testing.T) {
+	m := validDrafterStepBackboneModel()
+	d := validDrafterStepScaffold()
+	state, err := NewMTPDrafterState(1, []float32{0.5, 0.25}, d.BackboneHiddenSize)
+	if err != nil {
+		t.Fatalf("NewMTPDrafterState: %v", err)
+	}
+	validKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0}, SeqLen: 1}
+	badKV := *validKV
+	badKV.SeqLen = 0
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, &badKV); err == nil {
+		t.Fatal("accepted invalid external KV seq len")
+	}
+	badKV = *validKV
+	badKV.SourceLayers = nil
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, &badKV); err == nil {
+		t.Fatal("accepted missing external KV source mapping")
+	}
+	badKV = *validKV
+	badKV.SourceLayers = []int{1}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, &badKV); err == nil {
+		t.Fatal("accepted out-of-range external KV source")
+	}
+	badKV = *validKV
+	badKV.K = [][]float32{{1}}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(d, state, &badKV); err == nil {
+		t.Fatal("accepted wrong external KV width")
+	}
+	twoLayer := *d
+	twoLayer.Config.NumLayers = 2
+	twoLayer.Layers = append(append([]Gemma4MTPDrafterLayer(nil), d.Layers...), d.Layers[0])
+	dupKV := &MTPDrafterExternalKV{K: [][]float32{{1, 0}}, V: [][]float32{{0, 1}}, SourceLayers: []int{0, 0}, SeqLen: 1}
+	if err := validateMTPDrafterExternalKV(&twoLayer, dupKV); err == nil {
+		t.Fatal("accepted duplicate external KV source mapping")
+	}
+	bad := *d
+	bad.Layers = append([]Gemma4MTPDrafterLayer(nil), d.Layers...)
+	bad.Layers[0].KVSourceLayer = 0
+	if _, err := m.RunMTPDrafterStepWithExternalKV(&bad, state, validKV); err == nil {
+		t.Fatal("accepted non-q-only drafter KV source")
+	}
+	bad = *d
+	bad.Norm = nil
+	if _, err := m.RunMTPDrafterStepWithExternalKV(&bad, state, validKV); err == nil {
+		t.Fatal("accepted missing drafter final norm")
+	}
+	bad = *d
+	bad.Layers = append([]Gemma4MTPDrafterLayer(nil), d.Layers...)
+	bad.Layers[0].QW = bad.Layers[0].QW[:1]
+	if _, err := m.RunMTPDrafterStepWithExternalKV(&bad, state, validKV); err == nil {
+		t.Fatal("accepted invalid q-only projection dims")
+	}
+	bad = *d
+	bad.Layers = append([]Gemma4MTPDrafterLayer(nil), d.Layers...)
+	bad.Layers[0].QW = nil
+	bad.Layers[0].QWm = &mlx.QuantWeight{OutDim: 1, InDim: 2, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0}, Scales: []float32{1}, Biases: []float32{0}}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(&bad, state, validKV); err == nil || !strings.Contains(err.Error(), "q_proj MLX dims") {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV malformed q_proj MLX err=%v, want dimension rejection", err)
+	}
+	bad = *d
+	bad.Layers = append([]Gemma4MTPDrafterLayer(nil), d.Layers...)
+	bad.Layers[0].QW = nil
+	bad.Layers[0].QWm = &mlx.QuantWeight{OutDim: 2, InDim: 2, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0}, Scales: []float32{1, 1}, Biases: []float32{0, 0}}
+	if _, err := m.RunMTPDrafterStepWithExternalKV(&bad, state, validKV); err == nil || !strings.Contains(err.Error(), "q_proj MLX weight") {
+		t.Fatalf("RunMTPDrafterStepWithExternalKV malformed q_proj MLX layout err=%v, want structural rejection", err)
+	}
+}
+
+func validDrafterStepBackboneModel() *LlamaModel {
+	return &LlamaModel{
+		Config: LlamaConfig{VocabSize: 4, HiddenSize: 2},
+		EmbedTokens: tensor.FromFloat32([]float32{
+			1, 0,
+			0, 1,
+			1, 1,
+			-1, 0,
+		}, []int{4, 2}),
+		LMHead: tensor.FromFloat32([]float32{
+			1, 0,
+			0, 1,
+			1, 1,
+			-1, 0,
+		}, []int{4, 2}),
+	}
+}
+
+func validProjectionOnlyDrafter() *Gemma4MTPDrafter {
+	return &Gemma4MTPDrafter{
+		Config:             LlamaConfig{VocabSize: 4, HiddenSize: 2, NumLayers: 0, RMSNormEps: 1e-6},
+		BackboneHiddenSize: 2,
+		PreProjection: []float32{
+			1, 0, 0, 0,
+			0, 0, 1, 0,
+		},
+		PostProjection: []float32{
+			1, 0,
+			0, 1,
+		},
+	}
+}
+
+func validDrafterStepScaffold() *Gemma4MTPDrafter {
+	d := validProjectionOnlyDrafter()
+	d.Config.NumLayers = 1
+	d.Config.NumHeads = 1
+	d.Config.NumKVHeads = 1
+	d.Config.HeadDim = 2
+	d.Config.Intermediate = 2
+	d.Norm = tensor.Ones([]int{2})
+	d.Layers = []Gemma4MTPDrafterLayer{{
+		InputNorm:     tensor.Ones([]int{2}),
+		PostNorm:      tensor.Ones([]int{2}),
+		PreFFNNorm:    tensor.Ones([]int{2}),
+		PostFFNNorm:   tensor.Ones([]int{2}),
+		QNorm:         tensor.Ones([]int{2}),
+		LayerScalar:   1,
+		KVSourceLayer: -1,
+		QW:            []float32{1, 0, 0, 1},
+		OW:            []float32{1, 0, 0, 1},
+		GateW:         []float32{1, 0, 0, 1},
+		UpW:           []float32{1, 0, 0, 1},
+		DownW:         []float32{1, 0, 0, 1},
+	}}
+	return d
+}

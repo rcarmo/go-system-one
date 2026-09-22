@@ -20,17 +20,18 @@ if [[ -n "$upstream" ]]; then
     exit 1
   fi
   source_repo=$(cd "$upstream" && pwd)
+  if [[ -n "$(git -C "$source_repo" status --porcelain)" ]]; then
+    printf 'refusing to sync from a dirty upstream checkout: %s\n' "$source_repo" >&2
+    exit 1
+  fi
 else
   tmp=$(mktemp -d)
   git clone --filter=blob:none --no-checkout "$UPSTREAM_REPOSITORY" "$tmp/go-pherence"
   source_repo="$tmp/go-pherence"
+  git -C "$source_repo" checkout --detach "$revision"
 fi
 
 git -C "$source_repo" cat-file -e "$revision^{commit}"
-if [[ -n "$(git -C "$source_repo" status --porcelain)" ]]; then
-  printf 'refusing to sync from a dirty upstream checkout: %s\n' "$source_repo" >&2
-  exit 1
-fi
 
 while IFS=$'\t' read -r source_path destination_path; do
   [[ -n "$source_path" && ${source_path:0:1} != "#" ]] || continue
@@ -46,7 +47,40 @@ find "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinp
   -e 's#github.com/rcarmo/go-pherence/internal/httpinput#github.com/rcarmo/go-system-one/internal/httpinput#g' \
   -e 's#github.com/rcarmo/go-pherence/webui#github.com/rcarmo/go-system-one/webui#g'
 
-gofmt -w "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinput"
+# Preserve every package boundary already internalised by this repository.
+while IFS=$'\t' read -r upstream_import local_import mode; do
+  [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
+  mapfile -d '' files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' "\"$upstream_import\"" "$root" || true)
+  if ((${#files[@]})); then
+    sed -i "s#\"$upstream_import\"#\"$local_import\"#g" "${files[@]}"
+  fi
+done < "$root/scripts/local-packages.tsv"
+
+# Use standalone artifact environment names in imported Go tests.
+mapfile -d '' artifact_files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' \
+  'GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B' "$root" || true)
+if ((${#artifact_files[@]})); then
+  sed -i \
+    -e 's/GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER/GO_SYSTEM_ONE_TOKENIZER_DIR/g' \
+    -e 's/GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B/GO_SYSTEM_ONE_MODEL/g' \
+    "${artifact_files[@]}"
+fi
+
+# Preserve standalone documentation links after importing monorepo-relative text.
+sed -i \
+  -e 's#\[Kev porting roadmap\](../models/kev-porting-roadmap.md)#[upstream Kev porting roadmap](https://github.com/rcarmo/go-pherence/blob/'"$revision"'/docs/models/kev-porting-roadmap.md)#' \
+  "$root/docs/validation/go-system-one-kev-20260922.md"
+sed -i \
+  -e 's#\[CPU SIMD gap note\](../../docs/performance/gemma4-cpu-simd-gap.md)#[upstream CPU SIMD gap note](https://github.com/rcarmo/go-pherence/blob/'"$revision"'/docs/performance/gemma4-cpu-simd-gap.md)#' \
+  "$root/loader/gguf/README.md"
+sed -i \
+  -e 's#\[asset migration notes\](../docs/guides/model-assets.md)#[external artifact contract](../docs/artifacts.md)#' \
+  "$root/model/README.md"
+
+mapfile -d '' go_files < <(find "$root" -type f -name '*.go' -not -path "$root/.git/*" -not -path "$root/vendor/*" -print0)
+if ((${#go_files[@]})); then
+  gofmt -w "${go_files[@]}"
+fi
 
 printf 'synced declared paths from go-pherence %s\n' "$(git -C "$source_repo" rev-parse "$revision^{commit}")"
-printf 'review the diff, update scripts/upstream.env and go.mod deliberately, then run make check\n'
+printf 'review the diff, update scripts/upstream.env, then run make check\n'

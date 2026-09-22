@@ -69,10 +69,10 @@ func TestV1ProvenanceMatchesCheckedInManifest(t *testing.T) {
 }
 
 func TestPinnedGemma4Artifacts(t *testing.T) {
-	modelPath := os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B")
-	tokenizerDir := os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+	modelPath := os.Getenv("GO_SYSTEM_ONE_MODEL")
+	tokenizerDir := os.Getenv("GO_SYSTEM_ONE_TOKENIZER_DIR")
 	if modelPath == "" || tokenizerDir == "" {
-		t.Skip("set GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B and GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER for pinned artifact checks")
+		t.Skip("set GO_SYSTEM_ONE_MODEL and GO_SYSTEM_ONE_TOKENIZER_DIR for pinned artifact checks")
 	}
 	assertPinnedFile(t, modelPath, V1Provenance.ModelBytes, V1Provenance.ModelSHA256)
 	for name, want := range map[string]string{

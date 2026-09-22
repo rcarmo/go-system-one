@@ -6,12 +6,15 @@ cd "$root"
 
 go mod vendor
 
-# `go mod vendor` copies files selected by Go packages. The RISC-V assembly in
-# go-pherence includes this adjacent header, which is invisible to that package
-# selection. Copy it from the exact module version in go.mod.
-module_dir=$(go list -mod=mod -m -f '{{.Dir}}' github.com/rcarmo/go-pherence)
-install -D -m 0644 \
-  "$module_dir/backends/spacemit/ime2/ime2_isa.h" \
-  "$root/vendor/github.com/rcarmo/go-pherence/backends/spacemit/ime2/ime2_isa.h"
+# All first-party packages are local. The manifest remains an update/audit map;
+# vendor contains third-party modules only.
+if grep -q '^github.com/rcarmo/go-pherence/' "$root/vendor/modules.txt" 2>/dev/null; then
+  printf 'go-pherence packages unexpectedly remain in vendor/modules.txt\n' >&2
+  exit 1
+fi
+if [[ -d "$root/vendor/github.com/rcarmo/go-pherence" ]]; then
+  printf 'go-pherence source unexpectedly remains under vendor/\n' >&2
+  exit 1
+fi
 
-printf 'vendored dependencies from go.mod\n'
+printf 'vendored third-party dependencies from go.mod\n'

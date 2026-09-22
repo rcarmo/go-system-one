@@ -5,17 +5,18 @@ This repository owns the Go System One decision service, its public contract, pl
 ## Source ownership
 
 - `go-system-one` is an independent repository. Commit and push changes here.
-- `go-pherence` owns the shared model, loader, SIMD and NVIDIA runtime while those packages remain external dependencies.
+- This repository owns its complete compiled source tree. `go-pherence` is an immutable source/update origin, not a Go module dependency.
 - Never edit, commit, push, reset or clean a neighbouring `go-pherence` checkout while working here.
 - Pull product-owned files through `scripts/sync-upstream.sh`. The sync direction is one way: `go-pherence` to `go-system-one`.
-- Pin every upstream import to an immutable full commit. Do not track an upstream branch or use an uncommitted checkout as release evidence.
-- A local `replace` directive is allowed only for temporary development and must not be committed.
+- Pin every upstream source update to an immutable full commit. Do not track an upstream branch or use an uncommitted checkout as release evidence.
+- Do not add a `go-pherence` module requirement or local `replace` directive.
 
 ## Repository layout
 
 ```text
 cmd/go-system-one/       HTTP service entry point
 model/gosystemone/       decision contract, validation, scorer adapters and tests
+half/                    FP16/BF16 conversion kernel and exhaustive tests
 internal/httpinput/      bounded JSON request decoding
 webui/                   embedded standalone playground and status endpoint
 docs/validation/         model pins, oracle results and benchmark evidence
@@ -34,8 +35,9 @@ vendor/                  pinned offline build closure and dependency licences
 1. Read the relevant files and tests.
 2. Search all callers before changing a public function, schema field or route.
 3. Treat `POST /v1/decision`, `/go-system-one`, artifact hashes, candidate order and validation limits as public contracts.
-4. Check `scripts/upstream-files.tsv` when adding, moving or removing a product-owned file that still originates in `go-pherence`.
-5. Keep ordinary tests offline and deterministic. Released-model and hardware tests must remain opt-in.
+4. Check `scripts/upstream-files.tsv` when adding, moving or removing a first-party file that still originates in `go-pherence`.
+5. Keep package-path mappings in `scripts/local-packages.tsv`; sync uses them to rewrite imported source to this module path.
+6. Keep ordinary tests offline and deterministic. Released-model and hardware tests must remain opt-in.
 
 ## Correctness rules
 
@@ -57,20 +59,20 @@ vendor/                  pinned offline build closure and dependency licences
 
 ## Upstream synchronisation
 
-Run the sync against a clean upstream commit:
+Run the complete update against an explicit upstream commit:
 
 ```sh
-./scripts/sync-upstream.sh <full-go-pherence-commit>
+./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to use an existing clean checkout. The script refuses a dirty source tree. After syncing:
+Use `scripts/sync-upstream.sh` only for a copy-only review before accepting a source pin. Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to use an existing clean checkout with that lower-level script. Both scripts refuse dirty source trees. After syncing:
 
 1. Review every changed file.
 2. Update `scripts/upstream.env` to the reviewed full commit and UTC commit time.
-3. Update the pinned `go-pherence` pseudo-version in `go.mod` when shared runtime changes are required.
+3. Confirm `go.mod`, `go.sum` and `vendor/` contain no `go-pherence` module or source.
 4. Run `go mod tidy`, `./scripts/vendor.sh` and `make check`.
 5. Run the opt-in released-model gate on authorised hardware when scorer, tokenizer, model or backend code changed.
-6. Commit the source pin, copied changes, dependency pin, vendored closure and validation evidence together.
+6. Commit the source pin, copied changes, third-party dependency snapshot and validation evidence together.
 
 The script must never write to the upstream checkout or create commits there.
 
@@ -96,6 +98,6 @@ For NVIDIA or released-model changes, set the artifact paths documented in `docs
 - Never use `git rebase`; use merge or `git pull --no-rebase`.
 - Commit as `Rui Carmo <rui.carmo@gmail.com>`. Configure local and global Git identity before committing.
 - Keep commits focused and use `scope: concise change` subjects.
-- Do not commit model weights, tokenizers, profiles, generated benchmark databases, secrets or temporary probe code.
+- Do not commit model weights, tokenizers, GGUF artifacts, profiles, generated benchmark databases, secrets or temporary probe code. `scripts/check-no-gguf-artifacts.sh` rejects GGUF-like names and file magic.
 - Do not reformat vendored dependencies. Regenerate them with `scripts/vendor.sh`; apply whitespace checks to first-party paths.
 - Push only this repository. Verify the remote branch and CI after pushing.

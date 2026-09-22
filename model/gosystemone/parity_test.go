@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/rcarmo/go-pherence/loader/tokenizer"
-	"github.com/rcarmo/go-pherence/model"
+	"github.com/rcarmo/go-system-one/loader/tokenizer"
+	"github.com/rcarmo/go-system-one/model"
 )
 
 type llamaCppGoSystemOneFixture struct {
@@ -83,9 +83,9 @@ func TestPinnedLlamaCppFixtureContract(t *testing.T) {
 }
 
 func TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision(t *testing.T) {
-	modelPath, tokenizerDir := os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B"), os.Getenv("GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+	modelPath, tokenizerDir := os.Getenv("GO_SYSTEM_ONE_MODEL"), os.Getenv("GO_SYSTEM_ONE_TOKENIZER_DIR")
 	if modelPath == "" || tokenizerDir == "" {
-		t.Skip("set GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B and GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER")
+		t.Skip("set GO_SYSTEM_ONE_MODEL and GO_SYSTEM_ONE_TOKENIZER_DIR")
 	}
 	fixture := loadLlamaCppGoSystemOneFixture(t)
 	tok, err := tokenizer.LoadWithConfig(tokenizerDir)
