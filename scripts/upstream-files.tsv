@@ -676,3 +676,11 @@ backends/ggmlquant/ggmlquant_ggml_test.go	backends/ggmlquant/ggmlquant_ggml_test
 backends/ggmlquant/stub.go	backends/ggmlquant/stub.go
 backends/internal/ggmlutil/ggmlutil.go	backends/internal/ggmlutil/ggmlutil.go
 backends/internal/ggmlutil/ggmlutil_test.go	backends/internal/ggmlutil/ggmlutil_test.go
+loader/safetensors/advisor_lifetime_test.go	loader/safetensors/advisor_lifetime_test.go
+loader/safetensors/audit_safety_test.go	loader/safetensors/audit_safety_test.go
+loader/safetensors/mmap_advisor_test.go	loader/safetensors/mmap_advisor_test.go
+loader/safetensors/resolve.go	loader/safetensors/resolve.go
+loader/safetensors/safetensors.go	loader/safetensors/safetensors.go
+loader/safetensors/safetensors_test.go	loader/safetensors/safetensors_test.go
+loader/weights/weights.go	loader/weights/weights.go
+loader/weights/weights_test.go	loader/weights/weights_test.go

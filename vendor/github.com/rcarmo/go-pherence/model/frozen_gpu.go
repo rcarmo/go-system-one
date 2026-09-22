@@ -11,7 +11,7 @@ import (
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-pherence/internal/checked"
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
-	"github.com/rcarmo/go-pherence/loader/weights"
+	"github.com/rcarmo/go-system-one/loader/weights"
 )
 
 // FrozenGPUOptions configures the experimental compact GPU encoder.

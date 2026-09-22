@@ -1,0 +1,236 @@
+package safetensors
+
+import (
+	"encoding/binary"
+	"math"
+	"os"
+	"sort"
+	"testing"
+)
+
+func TestOpenGTESmall(t *testing.T) {
+	path := gteSmallPath(t)
+
+	f, err := Open(path)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+
+	// Check we got reasonable number of tensors
+	if len(f.Tensors) < 100 {
+		t.Fatalf("expected >100 tensors, got %d", len(f.Tensors))
+	}
+	t.Logf("Loaded %d tensors", len(f.Tensors))
+
+	// Check a known tensor
+	info, ok := f.Tensors["embeddings.word_embeddings.weight"]
+	if !ok {
+		t.Fatal("missing embeddings.word_embeddings.weight")
+	}
+	if info.DType != "F16" {
+		t.Fatalf("expected F16, got %s", info.DType)
+	}
+	if info.Shape[0] != 30522 || info.Shape[1] != 384 {
+		t.Fatalf("unexpected shape: %v", info.Shape)
+	}
+
+	// Load and check values
+	data, shape, err := f.GetFloat32("embeddings.word_embeddings.weight")
+	if err != nil {
+		t.Fatalf("GetFloat32: %v", err)
+	}
+	if len(data) != 30522*384 {
+		t.Fatalf("expected %d values, got %d", 30522*384, len(data))
+	}
+	if shape[0] != 30522 || shape[1] != 384 {
+		t.Fatalf("shape: %v", shape)
+	}
+
+	// Values should be reasonable floats (not NaN, not huge)
+	hasNonZero := false
+	for _, v := range data[:1000] {
+		if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
+			t.Fatalf("bad value: %v", v)
+		}
+		if v != 0 {
+			hasNonZero = true
+		}
+	}
+	if !hasNonZero {
+		t.Fatal("all zeros in first 1000 values")
+	}
+	t.Logf("First 5 values: %v", data[:5])
+}
+
+func gteSmallPath(t *testing.T) string {
+	t.Helper()
+	if path := os.Getenv("SAFETENSORS_PATH"); path != "" {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+		t.Skipf("model not found: %s", path)
+	}
+	for _, path := range []string{
+		"../../../gte-go/models/gte-small/model.safetensors",
+		"../../gte-go/models/gte-small/model.safetensors",
+		"../gte-go/models/gte-small/model.safetensors",
+	} {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+	t.Skip("GTE-small safetensors fixture not found")
+	return ""
+}
+
+func TestListTensors(t *testing.T) {
+	path := gteSmallPath(t)
+
+	f, err := Open(path)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+
+	names := f.Names()
+	sort.Strings(names)
+	t.Logf("Tensor count: %d", len(names))
+	for _, n := range names[:10] {
+		info := f.Tensors[n]
+		t.Logf("  %s: %s %v", n, info.DType, info.Shape)
+	}
+}
+
+func TestFloat16Conversion(t *testing.T) {
+	// Known F16 values
+	tests := []struct {
+		bits uint16
+		want float32
+	}{
+		{0x0000, 0},                     // +0
+		{0x8000, -0},                    // -0 (bit pattern)
+		{0x3C00, 1.0},                   // 1.0
+		{0xC000, -2.0},                  // -2.0
+		{0x3555, 0.333251953},           // ~1/3
+		{0x7C00, float32(math.Inf(1))},  // +Inf
+		{0xFC00, float32(math.Inf(-1))}, // -Inf
+	}
+	for _, tt := range tests {
+		got := float16ToFloat32(tt.bits)
+		if math.IsInf(float64(tt.want), 0) {
+			if !math.IsInf(float64(got), 0) {
+				t.Errorf("f16(0x%04x) = %v, want %v", tt.bits, got, tt.want)
+			}
+		} else if math.Abs(float64(got-tt.want)) > 0.001 {
+			t.Errorf("f16(0x%04x) = %v, want %v", tt.bits, got, tt.want)
+		}
+	}
+}
+
+func writeTestSafetensors(t *testing.T, header string, data []byte) string {
+	t.Helper()
+	path := t.TempDir() + "/model.safetensors"
+	var lenBuf [8]byte
+	binary.LittleEndian.PutUint64(lenBuf[:], uint64(len(header)))
+	if err := os.WriteFile(path, append(append(lenBuf[:], []byte(header)...), data...), 0644); err != nil {
+		t.Fatalf("write safetensors: %v", err)
+	}
+	return path
+}
+
+func TestOpenRejectsInvalidTensorOffsets(t *testing.T) {
+	path := writeTestSafetensors(t, `{"bad":{"dtype":"F32","shape":[1],"data_offsets":[0,8]}}`, []byte{1, 2, 3, 4})
+	if _, err := Open(path); err == nil {
+		t.Fatal("Open accepted tensor offsets past data region")
+	}
+}
+
+func TestOpenRejectsMisalignedRawLength(t *testing.T) {
+	path := writeTestSafetensors(t, `{"bad":{"dtype":"F32","shape":[1],"data_offsets":[0,3]}}`, []byte{1, 2, 3})
+	if _, err := Open(path); err == nil {
+		t.Fatal("Open accepted non-multiple-of-4 F32 data")
+	}
+}
+
+func TestOpenRejectsShapeByteMismatch(t *testing.T) {
+	path := writeTestSafetensors(t, `{"bad":{"dtype":"F32","shape":[2],"data_offsets":[0,4]}}`, []byte{1, 2, 3, 4})
+	if _, err := Open(path); err == nil {
+		t.Fatal("Open accepted shape/data byte mismatch")
+	}
+}
+
+func TestNamesAreSorted(t *testing.T) {
+	f := &File{Tensors: map[string]TensorInfo{"z": {}, "a": {}, "m": {}}}
+	if got := f.Names(); len(got) != 3 || got[0] != "a" || got[1] != "m" || got[2] != "z" {
+		t.Fatalf("File.Names=%v, want sorted", got)
+	}
+	sf := &ShardedFile{mapping: map[string]string{"z": "s", "a": "s", "m": "s"}}
+	if got := sf.Names(); len(got) != 3 || got[0] != "a" || got[1] != "m" || got[2] != "z" {
+		t.Fatalf("ShardedFile.Names=%v, want sorted", got)
+	}
+}
+
+func TestTensorInfosCloneShape(t *testing.T) {
+	f := &File{Tensors: map[string]TensorInfo{"x": {DType: "F32", Shape: []int{2, 3}, DataOffsets: [2]int{0, 24}}}}
+	infos := f.TensorInfos()
+	infos["x"].Shape[0] = 99
+	if f.Tensors["x"].Shape[0] != 2 {
+		t.Fatalf("TensorInfos leaked shape mutation: %+v", f.Tensors["x"])
+	}
+	sf := &ShardedFile{mapping: map[string]string{"x": "s"}, shards: map[string]*File{"s": f}}
+	sinfos := sf.TensorInfos()
+	if sinfos["x"].DType != "F32" || sinfos["x"].Shape[1] != 3 {
+		t.Fatalf("sharded infos=%+v", sinfos)
+	}
+}
+
+func TestCheckedSafetensorsHelpers(t *testing.T) {
+	if got, ok := checkedAddInt64(40, 2); !ok || got != 42 {
+		t.Fatalf("checkedAddInt64(40,2)=%d,%v want 42,true", got, ok)
+	}
+	if _, ok := checkedAddInt64(-1, 1); ok {
+		t.Fatal("checkedAddInt64 accepted negative lhs")
+	}
+	if _, ok := checkedAddInt64(math.MaxInt64, 1); ok {
+		t.Fatal("checkedAddInt64 accepted overflow")
+	}
+	if got, ok := shapeNumel([]int{2, 3, 4}); !ok || got != 24 {
+		t.Fatalf("shapeNumel=%d,%v want 24,true", got, ok)
+	}
+	if _, ok := shapeNumel([]int{-1, 2}); ok {
+		t.Fatal("shapeNumel accepted negative dim")
+	}
+	maxInt := int(^uint(0) >> 1)
+	if _, ok := shapeNumel([]int{maxInt/2 + 1, 3}); ok {
+		t.Fatal("shapeNumel accepted overflow")
+	}
+}
+
+func TestShardedMissingShardReturnsError(t *testing.T) {
+	var nilFile *File
+	if got := nilFile.Names(); got != nil {
+		t.Fatalf("nil file Names=%v, want nil", got)
+	}
+	var nilSF *ShardedFile
+	if err := nilSF.Close(); err != nil {
+		t.Fatalf("nil Close: %v", err)
+	}
+	if got := nilSF.Names(); got != nil {
+		t.Fatalf("nil Names=%v, want nil", got)
+	}
+	if _, _, err := nilSF.GetFloat32("x"); err == nil {
+		t.Fatal("GetFloat32 accepted nil sharded file")
+	}
+	if _, _, _, err := nilSF.GetRaw("x"); err == nil {
+		t.Fatal("GetRaw accepted nil sharded file")
+	}
+	if _, _, err := nilSF.GetBF16("x"); err == nil {
+		t.Fatal("GetBF16 accepted nil sharded file")
+	}
+	sf := &ShardedFile{mapping: map[string]string{"x": "missing.safetensors"}, shards: map[string]*File{}}
+	if _, _, _, err := sf.GetRaw("x"); err == nil {
+		t.Fatal("GetRaw accepted missing shard")
+	}
+	if _, _, err := sf.GetInt32("x"); err == nil {
+		t.Fatal("GetInt32 accepted missing shard")
+	}
+}

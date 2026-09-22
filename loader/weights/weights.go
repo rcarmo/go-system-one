@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/rcarmo/go-pherence/loader/safetensors"
+	"github.com/rcarmo/go-system-one/loader/safetensors"
 )
 
 // Source is the common tensor lookup surface used by model loaders. Converted
