@@ -43,19 +43,40 @@ vendor/                  pinned offline build closure and dependency licences
 
 - The portable CPU/SIMD scorer is the numerical oracle.
 - Preserve deterministic candidate ordering, request validation, cancellation, single admission and returned-output ownership.
-- Do not weaken numerical tolerances to admit an optimisation.
+- Keep existing pinned-reference tolerances unchanged. Floating-point differences are expected across kernels, reduction orders and precision formats; bitwise equality is a diagnostic, not a general acceptance requirement. Evaluate precision changes under the performance rules below.
 - Pin external oracle code by repository and full revision. Record model and tokenizer filenames, byte counts and SHA-256 digests.
 - Compare semantic output separately from timings. Never assert wall-clock latency in a correctness test.
 - Use synthetic repository-owned fixtures for the default suite. An absent released model may skip only with an exact setup instruction.
 - Validate delimiter forgery before tokenisation. User text must not be able to inject model control markers.
 
-## Performance rules
+## Optimisation priorities
 
-- Optimise measured whole-request bottlenecks. A kernel microbenchmark does not establish service improvement.
-- Record hardware, driver, source revision, model hash, warm/cold state, sample count, min/median/p95/max latency and resident memory.
-- Keep model weights immutable and reusable scratch session-owned and bounded.
-- Do not add speculative concurrency, unbounded caches, CGo, a llama.cpp runtime wrapper or a production CUDA-toolkit dependency.
-- Retain only changes that preserve the released-model decision and accepted numerical parity while improving repeated warm requests.
+- Maximise batch throughput and general inference performance. Prioritise the requested workloads and measured bottlenecks; do not substitute an easier optimisation merely because it passes existing tests.
+- Multi-field classification is required work, including multi-token enum trees, mixed context lengths and multiple independent entries. A faster single-boolean path does not complete the objective.
+- Pursue parallelism inside model execution: shared context/prefix work, packed projections, isolated branch attention and batched candidate-logit extraction. More HTTP workers or goroutines alone do not establish GPU parallelism.
+- Review relevant techniques in `go-pherence` read-only. Distinguish runtime improvements from prompt changes and approaches requiring trained heads or different weights.
+- Investigate projection layouts, activation precision, fusion, scratch reuse, transfers, synchronisation and graph replay according to likely impact and measured cost. Record rejected experiments and why they failed; do not dismiss a class of optimisation without assessing its trade-offs.
+
+## Precision and performance evidence
+
+- Optimise measured whole requests. Microbenchmarks guide investigation but cannot establish service improvement. Report batch latency, entries/s and single-entry latency so throughput gains do not hide latency regressions.
+- Compare the same inputs under comparable warm/cold, device-load and thermal conditions. Test batches of 1, 10, 25, 50 and 100 entries, varied positive/negative and ambiguous contexts, multi-field schemas and multi-token enums. Repeated copies of one sentence are insufficient evidence.
+- Assess lower-precision paths explicitly. Ordinary rounding differences and activation quantisation are different changes; neither is an automatic reason to accept or reject an optimisation. Weigh speed and memory gains against measured numerical and semantic effects.
+- Evaluate error for finite-choice scoring, not unrestricted text generation. Tree mode scores fixed candidate paths without feeding sampled answers into a growing continuation. Floating-point error still propagates through transformer layers and accumulates in multi-token path scores; greedy fallback can also change subsequent nodes within a field.
+- Prioritise per-field candidate ranking, conditional probability movement, top-two margins and crossings of declared decision/confidence thresholds. Report decision changes and their margins, including near ties; do not impose long-generation divergence assumptions on independent classifications.
+- Record maximum/RMS raw and centred logit error as diagnostics alongside absolute candidate-probability changes. A common additive shift across the final candidate logits at one node cancels in its softmax; unequal shifts and scale changes do not. For multi-token enums, compare complete path scores and final field distributions as well as node logits.
+- Report marginal errors even when decisions agree. Saturated probabilities can hide substantial logit changes, while raw-logit differences alone can overstate decision impact. Distinguish same-input numerical variation from genuine dependence on sibling contexts; cross-context interference is a correctness defect.
+- Reference disagreement is not a measured accuracy loss without labelled data. Use separate labelled evaluation for prompt, head or model changes; do not infer task quality from parity fixtures alone.
+- Preserve existing acceptance gates. If an experiment exceeds a tolerance, record the failure and keep it opt-in while assessing the trade-off. Define and review any new acceptance contract separately; never widen an existing tolerance just to make a result pass.
+- Record hardware, driver, source revision, model hash, precision settings, sample count, min/median/p95/max latency and device memory. Distinguish sampled memory peaks from allocation bounds and report thermal interference. Preserve reproducible requests and results.
+
+## Execution constraints
+
+- Keep weights immutable and scratch/caches owned, bounded and released correctly. Size batches by token rows and measured memory headroom, not entry count alone.
+- Preserve context and sibling-branch isolation, candidate order, cancellation and result ownership. Test reordered, unequal-length and contradictory siblings, prefix reuse, rejection and recovery.
+- Keep single-request admission until measured memory and concurrency tests justify changing it; aggressively parallelise work within that request.
+- Keep accepted fallbacks while qualifying new paths. Promote defaults only after whole-request gains and correctness/quality trade-offs are verified for the intended workloads.
+- Do not add unbounded caches, CGo, a llama.cpp runtime wrapper or a production CUDA-toolkit dependency.
 
 ## Upstream synchronisation
 
