@@ -10,13 +10,21 @@ These pins may advance together when an upstream change touches both product and
 
 ## Import a revision
 
-Use a full commit hash:
+Use a full commit hash for the complete update:
+
+```sh
+./scripts/update-upstream.sh <full-go-pherence-commit>
+```
+
+The command requires a clean `go-system-one` tree. It copies the manifest, updates both pins, regenerates `vendor/` and runs `make check`.
+
+Use the lower-level copy-only command when reviewing product files before changing the dependency pin:
 
 ```sh
 ./scripts/sync-upstream.sh <full-go-pherence-commit>
 ```
 
-The script makes a temporary partial clone by default. To avoid a network fetch, point it at an existing clean checkout:
+The copy command makes a temporary partial clone by default. To avoid a network fetch, point it at an existing clean checkout:
 
 ```sh
 GO_PHERENCE_SOURCE=/path/to/go-pherence \
@@ -38,6 +46,8 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 9. Commit the copied source, both pins, dependency snapshot and evidence as one reviewable change.
 
 ## Automation contract
+
+[`.github/workflows/upstream-update.yml`](../.github/workflows/upstream-update.yml) checks the upstream `main` head weekly and can also run manually for an explicit full commit. It opens or updates `automation/go-pherence-update`; it never commits directly to `main`.
 
 An automated update job may open a pull request, but it must:
 

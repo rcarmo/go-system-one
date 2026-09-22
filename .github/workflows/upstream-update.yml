@@ -1,0 +1,68 @@
+name: Propose upstream update
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Full go-pherence commit; defaults to its main branch head
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: go-pherence-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Resolve explicit upstream revision
+        id: upstream
+        env:
+          REQUESTED_REVISION: ${{ inputs.revision }}
+        run: |
+          if [[ -n "$REQUESTED_REVISION" ]]; then
+            revision="$REQUESTED_REVISION"
+          else
+            revision=$(git ls-remote https://github.com/rcarmo/go-pherence.git refs/heads/main | awk '{print $1}')
+          fi
+          [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+      - name: Stop when the pin is current
+        id: pin
+        env:
+          REVISION: ${{ steps.upstream.outputs.revision }}
+        run: |
+          source scripts/upstream.env
+          if [[ "$REVISION" == "$UPSTREAM_COMMIT" ]]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Import, pin, vendor and test
+        if: steps.pin.outputs.changed == 'true'
+        run: ./scripts/update-upstream.sh '${{ steps.upstream.outputs.revision }}'
+      - name: Create review pull request
+        if: steps.pin.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/go-pherence-update
+          delete-branch: true
+          commit-message: "upstream: import go-pherence ${{ steps.upstream.outputs.revision }}"
+          title: "upstream: import go-pherence ${{ steps.upstream.outputs.revision }}"
+          body: |
+            Imports manifest-listed Go System One files from `go-pherence` and pins the shared runtime to `${{ steps.upstream.outputs.revision }}`.
+
+            Automated offline checks passed. Review the complete diff and run the released-model NVIDIA parity gate before merging changes to model, tokenizer, scorer, PTX or dispatch behaviour.
+          labels: dependencies,upstream

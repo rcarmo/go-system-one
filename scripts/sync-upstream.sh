@@ -20,17 +20,18 @@ if [[ -n "$upstream" ]]; then
     exit 1
   fi
   source_repo=$(cd "$upstream" && pwd)
+  if [[ -n "$(git -C "$source_repo" status --porcelain)" ]]; then
+    printf 'refusing to sync from a dirty upstream checkout: %s\n' "$source_repo" >&2
+    exit 1
+  fi
 else
   tmp=$(mktemp -d)
   git clone --filter=blob:none --no-checkout "$UPSTREAM_REPOSITORY" "$tmp/go-pherence"
   source_repo="$tmp/go-pherence"
+  git -C "$source_repo" checkout --detach "$revision"
 fi
 
 git -C "$source_repo" cat-file -e "$revision^{commit}"
-if [[ -n "$(git -C "$source_repo" status --porcelain)" ]]; then
-  printf 'refusing to sync from a dirty upstream checkout: %s\n' "$source_repo" >&2
-  exit 1
-fi
 
 while IFS=$'\t' read -r source_path destination_path; do
   [[ -n "$source_path" && ${source_path:0:1} != "#" ]] || continue

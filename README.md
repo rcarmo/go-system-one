@@ -46,10 +46,10 @@ The default suite is offline and uses synthetic or frozen repository fixtures. R
 ## Update from go-pherence
 
 ```sh
-./scripts/sync-upstream.sh <full-go-pherence-commit>
+./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to read from an existing clean checkout. Review the resulting diff, update [`scripts/upstream.env`](scripts/upstream.env) and the module pin, run [`scripts/vendor.sh`](scripts/vendor.sh), then run `make check`. The detailed procedure is in [`docs/upstream.md`](docs/upstream.md).
+This command copies the manifest-listed product files, updates the immutable module pin, regenerates `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. A weekly GitHub workflow runs the full updater and opens a review pull request when the upstream pin changes. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
 
 ## Licence
 

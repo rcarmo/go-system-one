@@ -57,13 +57,13 @@ vendor/                  pinned offline build closure and dependency licences
 
 ## Upstream synchronisation
 
-Run the sync against a clean upstream commit:
+Run the complete update against an explicit upstream commit:
 
 ```sh
-./scripts/sync-upstream.sh <full-go-pherence-commit>
+./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to use an existing clean checkout. The script refuses a dirty source tree. After syncing:
+Use `scripts/sync-upstream.sh` only for a copy-only review before changing the runtime pin. Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to use an existing clean checkout with that lower-level script. Both scripts refuse dirty source trees. After syncing:
 
 1. Review every changed file.
 2. Update `scripts/upstream.env` to the reviewed full commit and UTC commit time.

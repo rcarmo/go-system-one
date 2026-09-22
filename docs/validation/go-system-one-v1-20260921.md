@@ -56,12 +56,15 @@ The handler limits requests to 1 MiB, rejects unknown fields and models, seriali
 
 The independently authored page is served at `/go-system-one`; it calls only `/v1/decision` and `/go-system-one/v1/status`. Chromium checks cover page load, request submission, decision rendering, constrained probability rendering and the existing embedded chat UI.
 
+The source evaluation ran the browser command from `go-pherence/webui/frontend` at commit `559d10b4eb558da20552edf442dbd46ccbee78c1`:
+
 ```sh
-cd webui/frontend
 bun x playwright test --config playwright.go.config.ts
 ```
 
-Three Chromium scenarios passed, including the Go System One page. The final repository gates also passed: `go test ./...`, `go vet ./...`, `go test -race ./model/gosystemone ./webui ./cmd/llm/go-system-one`, `git diff --check`, the released-model NVIDIA/llama.cpp parity test above, and compile-only `linux/arm64` and `linux/riscv64` builds of `go-system-one`, `model/gosystemone` and `webui`.
+Three Chromium scenarios passed, including the Go System One page. The source evaluation gates also passed: `go test ./...`, `go vet ./...`, `go test -race ./model/gosystemone ./webui ./cmd/llm/go-system-one`, `git diff --check`, the released-model NVIDIA/llama.cpp parity test above, and compile-only `linux/arm64` and `linux/riscv64` builds of `go-system-one`, `model/gosystemone` and `webui`.
+
+The standalone repository preserves the same page and Go handler tests. Its default CI runs offline against `vendor/`; browser automation has not yet been ported into this repository.
 
 ## Native and compile-only scope
 

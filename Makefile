@@ -1,4 +1,4 @@
-.PHONY: build test race vet fmt-check vendor-check check clean
+.PHONY: build test race vet fmt-check scripts-check vendor-check check clean
 
 GO ?= go
 
@@ -18,10 +18,13 @@ fmt-check:
 	@test -z "$$(gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'))" || \
 		{ echo 'gofmt required for:'; gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'); exit 1; }
 
+scripts-check:
+	bash -n scripts/*.sh
+
 vendor-check:
 	GOPROXY=off GOSUMDB=off $(GO) test -mod=vendor ./...
 
-check: fmt-check vendor-check vet build
+check: fmt-check scripts-check vendor-check vet build
 	@git diff --check -- . ':(exclude)vendor/**'
 
 clean:
