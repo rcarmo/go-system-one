@@ -1,5 +1,11 @@
 /bin/
 /dist/
+*.gguf
+*.GGUF
+*.gguf.*
+*.GGUF.*
+/checkpoints/
+/models/
 /coverage.out
 *.prof
 *.nsys-rep

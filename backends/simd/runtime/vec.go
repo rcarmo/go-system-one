@@ -1,0 +1,152 @@
+package simd
+
+// Vector operations for inference hot paths.
+// Public entrypoints are implemented by architecture-specific dispatch files
+// plus scalar fallback files. This file holds shared scalar helpers.
+
+import (
+	"math"
+
+	"github.com/rcarmo/go-system-one/backends/simd/kernels"
+)
+
+// HasVecAsm is true if vector assembly kernels are available at runtime.
+var HasVecAsm bool
+
+// hasActivationAsm stays false until real AVX2/NEON polynomial activation
+// kernels land. Existing assembly stubs intentionally are not advertised as
+// optimized activations because they just call the Go math path.
+const hasActivationAsm = false
+
+// Go fallback implementations (used by vec_other.go or when assembly not available)
+func snrm2Go(x []float32) float32 {
+	ss := float32(0)
+	for _, v := range x {
+		ss += v * v
+	}
+	return float32(math.Sqrt(float64(ss)))
+}
+
+func vecAddGo(dst, a, b []float32) {
+	n := min3(len(dst), len(a), len(b))
+	for i := 0; i < n; i++ {
+		dst[i] = a[i] + b[i]
+	}
+}
+
+func vecMulGo(dst, a, b []float32) {
+	n := min3(len(dst), len(a), len(b))
+	for i := 0; i < n; i++ {
+		dst[i] = a[i] * b[i]
+	}
+}
+
+func vecScaleAddGo(dst, a, b []float32, scale float32) {
+	n := min3(len(dst), len(a), len(b))
+	for i := 0; i < n; i++ {
+		dst[i] = a[i] + scale*b[i]
+	}
+}
+
+func vecScaleGo(dst, a []float32, scale float32) {
+	n := len(dst)
+	if len(a) < n {
+		n = len(a)
+	}
+	for i := 0; i < n; i++ {
+		dst[i] = a[i] * scale
+	}
+}
+
+func vecSiLUMulGo(dst, a, b []float32) { kernels.SiLUMul(dst, a, b) }
+
+func geluTanhMulGo(dst, a, b []float32) { kernels.GELUTanhMul(dst, a, b) }
+
+func rmsNormGo(x, w []float32, eps float32) {
+	n := len(x)
+	if n == 0 || len(w) < n {
+		return
+	}
+	var sum float64
+	for _, v := range x {
+		fv := float64(v)
+		sum += fv * fv
+	}
+	mean := float32(sum / float64(n))
+	scale := float32(1.0 / math.Sqrt(float64(mean+eps)))
+	for i := range x {
+		x[i] = w[i] * x[i] * scale
+	}
+}
+
+func rmsNormBF16Go(x, w []float32, eps float32) {
+	rmsNormGo(x, w, eps)
+	toBF16Go(x)
+}
+
+func rmsNormNoScaleGo(x []float32, eps float32) {
+	n := len(x)
+	if n == 0 {
+		return
+	}
+	var sum float64
+	for _, v := range x {
+		fv := float64(v)
+		sum += fv * fv
+	}
+	mean := float32(sum / float64(n))
+	scale := float32(1.0 / math.Sqrt(float64(mean+eps)))
+	for i := range x {
+		x[i] *= scale
+	}
+}
+
+func toBF16Go(x []float32) {
+	for i := range x {
+		x[i] = toBF16Single(x[i])
+	}
+}
+
+func toBF16Single(x float32) float32 {
+	bits := math.Float32bits(x)
+	// Round-to-nearest-even when narrowing F32 to BF16. This matches GGML/llama.cpp
+	// BF16 conversion semantics and avoids systematic truncation drift in Gemma4
+	// layer-scalar outputs.
+	lsb := (bits >> 16) & 1
+	bits += 0x7FFF + lsb
+	return math.Float32frombits(bits & 0xFFFF0000)
+}
+
+func float32Sqrt(x float32) float32 {
+	return float32(math.Sqrt(float64(x)))
+}
+
+func bf16WidenToF32Go(dst []float32, src []uint16) {
+	n := len(dst)
+	if len(src) < n {
+		n = len(src)
+	}
+	for i := 0; i < n; i++ {
+		dst[i] = BF16ToF32(src[i])
+	}
+}
+
+func bf16NarrowFromF32Go(dst []uint16, src []float32) {
+	n := len(dst)
+	if len(src) < n {
+		n = len(src)
+	}
+	for i := 0; i < n; i++ {
+		dst[i] = F32ToBF16(src[i])
+	}
+}
+
+func min3(a, b, c int) int {
+	if b < a {
+		a = b
+	}
+	if c < a {
+		a = c
+	}
+	return a
+}

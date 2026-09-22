@@ -1,0 +1,719 @@
+package nvidia
+
+// Pure Go CUDA bindings via dlopen — no CGo required.
+// Loads libcuda.so.1 at runtime; falls back gracefully if not present.
+//
+// This wraps just the minimal CUDA Driver API needed for GEMM:
+//   cuInit, cuDeviceGet, cuDeviceGetName, cuDeviceGetAttribute,
+//   cuCtxCreate, cuMemAlloc, cuMemcpyHtoD, cuMemcpyDtoH, cuMemFree,
+//   cuModuleLoadData, cuModuleGetFunction, cuLaunchKernel, cuCtxSynchronize
+
+import (
+	"fmt"
+	"github.com/rcarmo/go-system-one/backends/nvidia/internal/debuglog"
+	"os"
+	"runtime"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"unsafe"
+
+	"github.com/ebitengine/purego"
+)
+
+// CUDA types
+type CUdevice int32
+type CUcontext uintptr
+type CUmodule uintptr
+type CUfunction uintptr
+type CUdeviceptr uint64
+type CUresult int32
+
+const (
+	CUDA_SUCCESS CUresult = 0
+
+	cuDeviceAttributeMultiprocessorCount    = 16
+	cuDeviceAttributeComputeCapabilityMajor = 75
+	cuDeviceAttributeComputeCapabilityMinor = 76
+)
+
+// Function pointers (populated by dlopen)
+var (
+	cuInit                   func(uint32) CUresult
+	cuDeviceGet              func(*CUdevice, int32) CUresult
+	cuDeviceGetName          func(unsafe.Pointer, int32, CUdevice) CUresult
+	cuDeviceGetAttribute     func(*int32, int32, CUdevice) CUresult
+	cuCtxCreate              func(*CUcontext, uint32, CUdevice) CUresult
+	cuCtxDestroy             func(CUcontext) CUresult
+	cuDevicePrimaryCtxRetain func(*CUcontext, CUdevice) CUresult
+	cuMemAlloc               func(*CUdeviceptr, uint64) CUresult
+	cuMemFree                func(CUdeviceptr) CUresult
+	cuMemcpyHtoD             func(CUdeviceptr, unsafe.Pointer, uint64) CUresult
+	cuMemcpyDtoH             func(unsafe.Pointer, CUdeviceptr, uint64) CUresult
+	cuMemcpyHtoDAsync        func(CUdeviceptr, unsafe.Pointer, uint64, uintptr) CUresult
+	cuMemcpyDtoHAsync        func(unsafe.Pointer, CUdeviceptr, uint64, uintptr) CUresult
+	cuModuleLoadData         func(*CUmodule, unsafe.Pointer) CUresult
+	cuModuleLoadDataEx       func(*CUmodule, unsafe.Pointer, uint32, unsafe.Pointer, unsafe.Pointer) CUresult
+	cuModuleUnload           func(CUmodule) CUresult
+	cuModuleGetFunction      func(*CUfunction, CUmodule, unsafe.Pointer) CUresult
+	cuLaunchKernel           func(CUfunction, uint32, uint32, uint32, uint32, uint32, uint32, uint32, uintptr, unsafe.Pointer, unsafe.Pointer) CUresult
+	cuCtxSynchronize         func() CUresult
+	cuCtxSetCurrent          func(CUcontext) CUresult
+	cuMemcpyDtoD             func(CUdeviceptr, CUdeviceptr, uint64) CUresult
+	cuMemcpyDtoDAsync        func(CUdeviceptr, CUdeviceptr, uint64, uintptr) CUresult
+	cuMemsetD32              func(CUdeviceptr, uint32, uint64) CUresult
+)
+
+type Stats struct {
+	KernelLaunches      uint64
+	HostToDevice        uint64
+	HostToDeviceBytes   uint64
+	DeviceToHost        uint64
+	DeviceToHostBytes   uint64
+	DeviceToDevice      uint64
+	DeviceToDeviceBytes uint64
+	Mallocs             uint64
+	MallocBytes         uint64
+	Frees               uint64
+	FreeBytes           uint64
+	Syncs               uint64
+}
+
+var gpuStatsEnabled atomic.Bool
+var gpuStatsKernelLaunches atomic.Uint64
+var gpuStatsHostToDevice atomic.Uint64
+var gpuStatsDeviceToHost atomic.Uint64
+var gpuStatsDeviceToDevice atomic.Uint64
+var gpuStatsHostToDeviceBytes atomic.Uint64
+var gpuStatsDeviceToHostBytes atomic.Uint64
+var gpuStatsDeviceToDeviceBytes atomic.Uint64
+var gpuStatsMallocs atomic.Uint64
+var gpuStatsMallocBytes atomic.Uint64
+var gpuStatsFrees atomic.Uint64
+var gpuStatsFreeBytes atomic.Uint64
+var gpuStatsSyncs atomic.Uint64
+
+func SetStatsEnabled(enabled bool) bool {
+	return gpuStatsEnabled.Swap(enabled)
+}
+
+func StatsSnapshot() Stats {
+	return Stats{
+		KernelLaunches:      gpuStatsKernelLaunches.Load(),
+		HostToDevice:        gpuStatsHostToDevice.Load(),
+		HostToDeviceBytes:   gpuStatsHostToDeviceBytes.Load(),
+		DeviceToHost:        gpuStatsDeviceToHost.Load(),
+		DeviceToHostBytes:   gpuStatsDeviceToHostBytes.Load(),
+		DeviceToDevice:      gpuStatsDeviceToDevice.Load(),
+		DeviceToDeviceBytes: gpuStatsDeviceToDeviceBytes.Load(),
+		Mallocs:             gpuStatsMallocs.Load(),
+		MallocBytes:         gpuStatsMallocBytes.Load(),
+		Frees:               gpuStatsFrees.Load(),
+		FreeBytes:           gpuStatsFreeBytes.Load(),
+		Syncs:               gpuStatsSyncs.Load(),
+	}
+}
+
+func recordDeviceToDeviceCopyBytes(bytes uint64) {
+	if gpuStatsEnabled.Load() {
+		gpuStatsDeviceToDevice.Add(1)
+		gpuStatsDeviceToDeviceBytes.Add(bytes)
+	}
+}
+
+var (
+	gpuOnce    sync.Once
+	gpuOK      bool
+	gpuDev     CUdevice
+	gpuCtx     CUcontext
+	gpuName    string
+	gpuSMs     int32
+	gpuCCMajor int32
+	gpuCCMinor int32
+
+	// CUDA driver contexts are thread-local and purego calls are not a
+	// synchronization boundary. Serialize driver entry and pin each operation to
+	// one OS thread so EnsureContext and the following driver call cannot be
+	// separated by goroutine migration under concurrent inference.
+	cudaMu sync.Mutex
+)
+
+// Init attempts to load CUDA and initialize the GPU.
+func Init() bool {
+	gpuOnce.Do(func() {
+		if os.Getenv("GO_PHERENCE_DISABLE_NVIDIA") != "" {
+			debuglog.Println("[gpu] NVIDIA backend disabled by GO_PHERENCE_DISABLE_NVIDIA")
+			return
+		}
+		runtime.LockOSThread()         // CUDA context is thread-local
+		defer runtime.UnlockOSThread() // do not strand/terminate caller OS threads
+		lib, err := purego.Dlopen("libcuda.so.1", purego.RTLD_LAZY)
+		if err != nil {
+			// Try versioned names
+			lib, err = purego.Dlopen("libcuda.so", purego.RTLD_LAZY)
+			if err != nil {
+				return // No CUDA driver
+			}
+		}
+
+		// Register all function pointers
+		// Use helper to try versioned then non-versioned names
+		regFn := func(fptr interface{}, lib uintptr, names ...string) bool {
+			for _, name := range names {
+				ok := false
+				func() {
+					defer func() { recover() }()
+					purego.RegisterLibFunc(fptr, lib, name)
+					ok = true
+				}()
+				if ok {
+					return true // stop at first successful registration
+				}
+			}
+			return false
+		}
+
+		purego.RegisterLibFunc(&cuInit, lib, "cuInit")
+		regFn(&cuDeviceGet, lib, "cuDeviceGet")
+		regFn(&cuDeviceGetName, lib, "cuDeviceGetName_v2", "cuDeviceGetName")
+		regFn(&cuDeviceGetAttribute, lib, "cuDeviceGetAttribute")
+		regFn(&cuCtxCreate, lib, "cuCtxCreate_v2", "cuCtxCreate")
+		regFn(&cuCtxDestroy, lib, "cuCtxDestroy_v2", "cuCtxDestroy")
+		regFn(&cuDevicePrimaryCtxRetain, lib, "cuDevicePrimaryCtxRetain")
+		regFn(&cuMemAlloc, lib, "cuMemAlloc_v2", "cuMemAlloc")
+		regFn(&cuMemFree, lib, "cuMemFree_v2", "cuMemFree")
+		regFn(&cuMemcpyHtoD, lib, "cuMemcpyHtoD_v2", "cuMemcpyHtoD")
+		regFn(&cuMemcpyDtoH, lib, "cuMemcpyDtoH_v2", "cuMemcpyDtoH")
+		regFn(&cuMemcpyHtoDAsync, lib, "cuMemcpyHtoDAsync_v2", "cuMemcpyHtoDAsync")
+		regFn(&cuMemcpyDtoHAsync, lib, "cuMemcpyDtoHAsync_v2", "cuMemcpyDtoHAsync")
+		regFn(&cuModuleLoadData, lib, "cuModuleLoadData")
+		regFn(&cuModuleLoadDataEx, lib, "cuModuleLoadDataEx")
+		regFn(&cuModuleUnload, lib, "cuModuleUnload")
+		regFn(&cuModuleGetFunction, lib, "cuModuleGetFunction")
+		regFn(&cuLaunchKernel, lib, "cuLaunchKernel")
+		regFn(&cuCtxSynchronize, lib, "cuCtxSynchronize")
+		regFn(&cuCtxSetCurrent, lib, "cuCtxSetCurrent")
+		regFn(&cuMemcpyDtoD, lib, "cuMemcpyDtoD_v2", "cuMemcpyDtoD")
+		regFn(&cuMemcpyDtoDAsync, lib, "cuMemcpyDtoDAsync_v2", "cuMemcpyDtoDAsync")
+		regFn(&cuMemsetD32, lib, "cuMemsetD32_v2", "cuMemsetD32")
+
+		// Streams, events, graphs
+		regFn(&cuMemGetInfo, lib, "cuMemGetInfo_v2", "cuMemGetInfo")
+		regFn(&cuStreamCreate, lib, "cuStreamCreate")
+		regFn(&cuStreamDestroy, lib, "cuStreamDestroy_v2", "cuStreamDestroy")
+		regFn(&cuStreamSynchronize, lib, "cuStreamSynchronize")
+		regFn(&cuEventCreate, lib, "cuEventCreate")
+		regFn(&cuEventRecord, lib, "cuEventRecord")
+		regFn(&cuEventSynchronize, lib, "cuEventSynchronize")
+		regFn(&cuStreamWaitEvent, lib, "cuStreamWaitEvent")
+		regFn(&cuEventDestroy, lib, "cuEventDestroy_v2", "cuEventDestroy")
+		regFn(&cuStreamBeginCapture, lib, "cuStreamBeginCapture")
+		regFn(&cuStreamEndCapture, lib, "cuStreamEndCapture")
+		regFn(&cuGraphInstantiate, lib, "cuGraphInstantiate_v2", "cuGraphInstantiate")
+		regFn(&cuGraphLaunch, lib, "cuGraphLaunch")
+		regFn(&cuGraphDestroy, lib, "cuGraphDestroy")
+		regFn(&cuGraphExecDestroy, lib, "cuGraphExecDestroy")
+
+		// Initialize CUDA
+		if r := cuInit(0); r != CUDA_SUCCESS {
+			debuglog.Printf("[gpu] cuInit failed: %d\n", r)
+			return
+		}
+
+		// Get device 0
+		if r := cuDeviceGet(&gpuDev, 0); r != CUDA_SUCCESS {
+			debuglog.Printf("[gpu] cuDeviceGet failed: %d\n", r)
+			return
+		}
+
+		// Get device name
+		nameBuf := make([]byte, 256)
+		if r := cuDeviceGetName(unsafe.Pointer(&nameBuf[0]), 256, gpuDev); r == CUDA_SUCCESS {
+			for i, b := range nameBuf {
+				if b == 0 {
+					gpuName = string(nameBuf[:i])
+					break
+				}
+			}
+		}
+
+		cuDeviceGetAttribute(&gpuSMs, cuDeviceAttributeMultiprocessorCount, gpuDev)
+		cuDeviceGetAttribute(&gpuCCMajor, cuDeviceAttributeComputeCapabilityMajor, gpuDev)
+		cuDeviceGetAttribute(&gpuCCMinor, cuDeviceAttributeComputeCapabilityMinor, gpuDev)
+
+		// Create context
+		if r := cuCtxCreate(&gpuCtx, 0, gpuDev); r != CUDA_SUCCESS {
+			debuglog.Printf("[gpu] cuCtxCreate failed: %d\n", r)
+			return
+		}
+
+		gpuOK = true
+		debuglog.Printf("[gpu] %s (%d SMs) — pure Go, no CGo\n", gpuName, gpuSMs)
+	})
+	return gpuOK
+}
+
+func ensureContextLocked() {
+	if gpuOK && gpuCtx != 0 && cuCtxSetCurrent != nil {
+		cuCtxSetCurrent(gpuCtx)
+	}
+}
+
+// EnsureContext sets the CUDA context on the calling thread. It does not pin
+// a subsequent driver call. Internal driver wrappers must instead hold an
+// OS-thread pin and cudaMu across ensureContextLocked and the driver operation,
+// as the checked buffer/launch methods do.
+func EnsureContext() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	defer cudaMu.Unlock()
+	ensureContextLocked()
+}
+
+// Available returns true if CUDA GPU is accessible.
+func Available() bool {
+	return Init()
+}
+
+// DeviceName returns the GPU name.
+func DeviceName() string { return gpuName }
+
+// SMCount returns the number of streaming multiprocessors.
+func SMCount() int { return int(gpuSMs) }
+
+// ComputeCapability returns the CUDA compute capability for device 0.
+func ComputeCapability() (major, minor int) { return int(gpuCCMajor), int(gpuCCMinor) }
+
+// Buffer holds GPU device memory.
+type Buffer struct {
+	Ptr  CUdeviceptr
+	Size int
+}
+
+// Malloc allocates GPU memory for n float32s.
+func Malloc(n int) (*Buffer, error) {
+	if n <= 0 {
+		return &Buffer{}, nil
+	}
+	size, err := checkedByteSize(n, -1)
+	if err != nil {
+		return nil, fmt.Errorf("cuMemAlloc size overflow for %d float32s", n)
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	defer cudaMu.Unlock()
+	ensureContextLocked()
+	var ptr CUdeviceptr
+	if r := cuMemAlloc(&ptr, size); r != CUDA_SUCCESS {
+		return nil, fmt.Errorf("cuMemAlloc(%d): error %d", size, r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsMallocs.Add(1)
+		gpuStatsMallocBytes.Add(size)
+	}
+	return &Buffer{Ptr: ptr, Size: int(size)}, nil
+}
+
+// Free releases GPU memory.
+func (b *Buffer) Free() {
+	if b == nil {
+		return
+	}
+	if b.Ptr != 0 {
+		if gpuStatsEnabled.Load() {
+			gpuStatsFrees.Add(1)
+			gpuStatsFreeBytes.Add(uint64(b.Size))
+		}
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+		cudaMu.Lock()
+		defer cudaMu.Unlock()
+		ensureContextLocked()
+		cuMemFree(b.Ptr)
+		b.Ptr = 0
+	}
+}
+
+func checkedByteSize(elements, capacityBytes int) (uint64, error) {
+	if elements < 0 {
+		return 0, fmt.Errorf("negative element count %d", elements)
+	}
+	if capacityBytes < -1 {
+		return 0, fmt.Errorf("negative buffer size %d", capacityBytes)
+	}
+	maxInt := int(^uint(0) >> 1)
+	if elements > maxInt/4 {
+		return 0, fmt.Errorf("copy size overflow for %d float32s", elements)
+	}
+	bytes := elements * 4
+	// capacityBytes >= 0 means the caller is checking a real buffer capacity.
+	// capacityBytes < 0 disables the capacity check for pure offset/size math.
+	if capacityBytes >= 0 && bytes > capacityBytes {
+		return 0, fmt.Errorf("copy size %d exceeds buffer size %d", bytes, capacityBytes)
+	}
+	return uint64(bytes), nil
+}
+
+// Upload copies host data to GPU.
+func (b *Buffer) Upload(data []float32) error {
+	if b == nil {
+		return fmt.Errorf("nil GPU buffer")
+	}
+	if len(data) == 0 {
+		return nil
+	}
+	size, err := checkedByteSize(len(data), b.Size)
+	if err != nil {
+		return err
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	ensureContextLocked()
+	r := cuMemcpyHtoD(b.Ptr, unsafe.Pointer(&data[0]), size)
+	runtime.KeepAlive(data) // prevent GC from moving data during CUDA memcpy
+	cudaMu.Unlock()
+	if r != CUDA_SUCCESS {
+		return fmt.Errorf("cuMemcpyHtoD: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsHostToDevice.Add(1)
+		gpuStatsHostToDeviceBytes.Add(size)
+	}
+	return nil
+}
+
+// UploadBytes copies raw host bytes to GPU. The destination buffer is sized in
+// bytes even though Malloc takes float32-element slots.
+func (b *Buffer) UploadBytes(data []byte) error {
+	if b == nil {
+		return fmt.Errorf("nil GPU buffer")
+	}
+	if len(data) == 0 {
+		return nil
+	}
+	if len(data) > b.Size {
+		return fmt.Errorf("copy size %d exceeds buffer size %d", len(data), b.Size)
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	ensureContextLocked()
+	r := cuMemcpyHtoD(b.Ptr, unsafe.Pointer(&data[0]), uint64(len(data)))
+	runtime.KeepAlive(data)
+	cudaMu.Unlock()
+	if r != CUDA_SUCCESS {
+		return fmt.Errorf("cuMemcpyHtoD: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsHostToDevice.Add(1)
+		gpuStatsHostToDeviceBytes.Add(uint64(len(data)))
+	}
+	return nil
+}
+
+// UploadUint32 copies host uint32 data to GPU without repacking. The destination
+// buffer is still sized in 4-byte elements, so uint32 and float32 slices have the
+// same byte footprint.
+func (b *Buffer) UploadUint32(data []uint32) error {
+	if b == nil {
+		return fmt.Errorf("nil GPU buffer")
+	}
+	if len(data) == 0 {
+		return nil
+	}
+	size, err := checkedByteSize(len(data), b.Size)
+	if err != nil {
+		return err
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	ensureContextLocked()
+	r := cuMemcpyHtoD(b.Ptr, unsafe.Pointer(&data[0]), size)
+	runtime.KeepAlive(data)
+	cudaMu.Unlock()
+	if r != CUDA_SUCCESS {
+		return fmt.Errorf("cuMemcpyHtoD: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsHostToDevice.Add(1)
+		gpuStatsHostToDeviceBytes.Add(size)
+	}
+	return nil
+}
+
+// DownloadBytes copies raw GPU bytes to host.
+func (b *Buffer) DownloadBytes(data []byte) error {
+	if b == nil {
+		return fmt.Errorf("nil GPU buffer")
+	}
+	if len(data) == 0 {
+		return nil
+	}
+	if len(data) > b.Size {
+		return fmt.Errorf("copy size %d exceeds buffer size %d", len(data), b.Size)
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	ensureContextLocked()
+	r := cuMemcpyDtoH(unsafe.Pointer(&data[0]), b.Ptr, uint64(len(data)))
+	runtime.KeepAlive(data)
+	cudaMu.Unlock()
+	if r != CUDA_SUCCESS {
+		return fmt.Errorf("cuMemcpyDtoH: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsDeviceToHost.Add(1)
+		gpuStatsDeviceToHostBytes.Add(uint64(len(data)))
+	}
+	return nil
+}
+
+// Download copies GPU data to host.
+func (b *Buffer) Download(data []float32) error {
+	if b == nil {
+		return fmt.Errorf("nil GPU buffer")
+	}
+	if len(data) == 0 {
+		return nil
+	}
+	size, err := checkedByteSize(len(data), b.Size)
+	if err != nil {
+		return err
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	ensureContextLocked()
+	r := cuMemcpyDtoH(unsafe.Pointer(&data[0]), b.Ptr, size)
+	runtime.KeepAlive(data)
+	cudaMu.Unlock()
+	if r != CUDA_SUCCESS {
+		return fmt.Errorf("cuMemcpyDtoH: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsDeviceToHost.Add(1)
+		gpuStatsDeviceToHostBytes.Add(size)
+	}
+	return nil
+}
+
+func syncCounted(count bool) CUresult {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	defer cudaMu.Unlock()
+	ensureContextLocked()
+	r := cuCtxSynchronize()
+	if count && r == CUDA_SUCCESS && gpuStatsEnabled.Load() {
+		gpuStatsSyncs.Add(1)
+	}
+	return r
+}
+
+// Sync waits for all GPU operations to complete.
+func Sync() {
+	syncCounted(true)
+}
+
+// SyncForTiming waits for GPU operations before/after a timed section without
+// incrementing GPU operation counters. Use this for profiling fences so the
+// diagnostic sync counter reflects model work, not measurement overhead.
+func SyncForTiming() {
+	syncCounted(false)
+}
+
+// SyncErr waits for all GPU operations and reports CUDA driver errors.
+func SyncErr() error {
+	if r := syncCounted(true); r != CUDA_SUCCESS {
+		return fmt.Errorf("cuCtxSynchronize: error %d", r)
+	}
+	return nil
+}
+
+var extraModules []CUmodule
+
+// Two pointer-sized CUDA option slots. Only buffer is a Go pointer; size is
+// an integer passed by value, not a pointer to an integer or a Go pointer.
+type jitErrorLogOptionValues struct {
+	buffer unsafe.Pointer
+	size   uintptr
+}
+
+func jitErrorLogOptions(buf []byte) jitErrorLogOptionValues {
+	return jitErrorLogOptionValues{buffer: unsafe.Pointer(unsafe.SliceData(buf)), size: uintptr(len(buf))}
+}
+
+func loadModuleDataWithLog(mod *CUmodule, image unsafe.Pointer) CUresult {
+	if cuModuleLoadDataEx == nil {
+		return cuModuleLoadData(mod, image)
+	}
+	const (
+		cuJITErrorLogBuffer          = 5
+		cuJITErrorLogBufferSizeBytes = 6
+	)
+	errLog := make([]byte, 8192)
+	opts := []uint32{cuJITErrorLogBuffer, cuJITErrorLogBufferSizeBytes}
+	// CUDA's void** optionValues mixes pointer-valued entries and integers
+	// encoded directly in pointer-sized slots. Keep the latter as uintptr,
+	// not fabricated Go pointers (invalid under vet/checkptr).
+	vals := jitErrorLogOptions(errLog)
+	r := cuModuleLoadDataEx(mod, image, uint32(len(opts)), unsafe.Pointer(&opts[0]), unsafe.Pointer(&vals))
+	// Retain the actual buffer owner until the synchronous call has returned.
+	runtime.KeepAlive(errLog)
+	if r != CUDA_SUCCESS {
+		if msg := strings.TrimRight(string(errLog), "\x00"); msg != "" {
+			fmt.Printf("[gpu] PTX JIT error: %s\n", msg)
+		}
+	}
+	return r
+}
+
+func loadPTXModule(ptx string, kernelName string) (CUmodule, CUfunction, error) {
+	if ptx == "" {
+		return 0, 0, fmt.Errorf("empty PTX module")
+	}
+	if kernelName == "" {
+		return 0, 0, fmt.Errorf("empty CUDA kernel name")
+	}
+	release := lockDriver()
+	defer release()
+	return loadPTXModuleLocked(ptx, kernelName)
+}
+
+// loadPTXModuleLocked requires lockDriver and validated nonempty strings.
+func loadPTXModuleLocked(ptx, kernelName string) (CUmodule, CUfunction, error) {
+	ptxBytes := append([]byte(ptx), 0) // null-terminate
+	defer runtime.KeepAlive(ptxBytes)
+	var mod CUmodule
+	if r := loadModuleDataWithLog(&mod, unsafe.Pointer(&ptxBytes[0])); r != CUDA_SUCCESS {
+		return 0, 0, fmt.Errorf("cuModuleLoadData: error %d", r)
+	}
+	nameBytes := append([]byte(kernelName), 0)
+	defer runtime.KeepAlive(nameBytes)
+	var fn CUfunction
+	if r := cuModuleGetFunction(&fn, mod, unsafe.Pointer(&nameBytes[0])); r != CUDA_SUCCESS {
+		if cuModuleUnload != nil {
+			cuModuleUnload(mod)
+		}
+		return 0, 0, fmt.Errorf("cuModuleGetFunction(%s): error %d", kernelName, r)
+	}
+	return mod, fn, nil
+}
+
+// LoadPTX loads a PTX module and returns a kernel function by name.
+// The backing module is retained until Shutdown() so the function pointer stays valid.
+func LoadPTX(ptx string, kernelName string) (CUfunction, error) {
+	if ptx == "" || kernelName == "" {
+		return 0, fmt.Errorf("PTX and kernel name required")
+	}
+	release := lockDriver()
+	defer release()
+	mod, fn, err := loadPTXModuleLocked(ptx, kernelName)
+	if err != nil {
+		return 0, err
+	}
+	extraModules = append(extraModules, mod)
+	return fn, nil
+}
+
+// LaunchKernel launches a CUDA kernel.
+func LaunchKernel(fn CUfunction, gridX, gridY, gridZ, blockX, blockY, blockZ uint32, sharedMem uint32, args ...unsafe.Pointer) error {
+	if cuLaunchKernel == nil {
+		return fmt.Errorf("cuLaunchKernel unavailable")
+	}
+	if fn == 0 {
+		return fmt.Errorf("invalid CUDA function")
+	}
+	if gridX == 0 || gridY == 0 || gridZ == 0 || blockX == 0 || blockY == 0 || blockZ == 0 {
+		return fmt.Errorf("invalid CUDA launch dimensions grid=(%d,%d,%d) block=(%d,%d,%d)", gridX, gridY, gridZ, blockX, blockY, blockZ)
+	}
+	var argPtrs unsafe.Pointer
+	if len(args) > 0 {
+		argPtrs = unsafe.Pointer(&args[0])
+	}
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	defer cudaMu.Unlock()
+	ensureContextLocked()
+	stream := uintptr(captureLaunchStream)
+	if r := cuLaunchKernel(fn, gridX, gridY, gridZ, blockX, blockY, blockZ, sharedMem, stream, argPtrs, nil); r != CUDA_SUCCESS {
+		return fmt.Errorf("cuLaunchKernel: error %d", r)
+	}
+	if gpuStatsEnabled.Load() {
+		gpuStatsKernelLaunches.Add(1)
+	}
+	// Diagnostic only: CUDA launch errors can otherwise surface on a later
+	// operation, obscuring the first failing kernel. Never use this timing mode
+	// for performance reports, or during graph capture.
+	if stream == 0 && os.Getenv("GO_PHERENCE_CUDA_LAUNCH_CHECK") == "1" {
+		if r := cuCtxSynchronize(); r != CUDA_SUCCESS {
+			return fmt.Errorf("CUDA post-launch sync fn=%#x grid=(%d,%d,%d) block=(%d,%d,%d): error %d", fn, gridX, gridY, gridZ, blockX, blockY, blockZ, r)
+		}
+	}
+	return nil
+}
+
+var cuMemGetInfo func(*uint64, *uint64) CUresult
+
+func init() {
+	// Will be registered in Init()
+}
+
+// MemInfo returns (free, total) GPU memory in bytes.
+func MemInfo() (uint64, uint64) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	cudaMu.Lock()
+	defer cudaMu.Unlock()
+	ensureContextLocked()
+	var free, total uint64
+	if cuMemGetInfo == nil {
+		return 0, 0
+	}
+	if cuMemGetInfo(&free, &total) != CUDA_SUCCESS {
+		return 0, 0
+	}
+	return free, total
+}
+
+// Shutdown releases global CUDA-side resources so a fresh context can be created.
+// Intended for a quiescent process owner only: stop/join all inference and
+// release every encoder first. Per-driver locks cannot make global handle/cache
+// teardown safe against arbitrary concurrent model execution.
+func Shutdown() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	if gpuOK {
+		EnsureContext()
+		SyncAll()
+	}
+	shutdownCompiledKernels()
+	shutdownNativeBF16()
+	shutdownMegaModule()
+	shutdownStreams()
+	resetLazyKernelHandles()
+	release := lockDriver()
+	defer release()
+	for _, mod := range extraModules {
+		if mod != 0 && cuModuleUnload != nil {
+			cuModuleUnload(mod)
+		}
+	}
+	extraModules = nil
+	if gpuCtx != 0 && cuCtxDestroy != nil {
+		cuCtxDestroy(gpuCtx)
+	}
+	gpuCtx = 0
+	gpuDev = 0
+	gpuOK = false
+	gpuName = ""
+	gpuSMs = 0
+	gpuCCMajor, gpuCCMinor = 0, 0
+	gpuOnce = sync.Once{}
+}

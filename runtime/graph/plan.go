@@ -1,0 +1,178 @@
+package graph
+
+import (
+	"fmt"
+	"github.com/rcarmo/go-system-one/internal/checked"
+)
+
+// BufferID identifies a planned transient buffer slot.
+type BufferID int
+
+// Step is a planned node plus its transient buffer assignment.
+type Step struct {
+	Node       Node
+	InputBufs  []BufferID // -1 means external/persistent value
+	OutputBufs []BufferID // -1 means external/persistent value
+}
+
+// Buffer is a reusable transient allocation slot.
+type Buffer struct {
+	ID    BufferID
+	Name  string
+	Shape Shape
+	DType DType
+	Bytes int
+}
+
+// Plan is a topologically ordered, lifetime-aware execution plan.
+type Plan struct {
+	Graph   *Graph
+	Steps   []Step
+	Buffers []Buffer
+	LastUse map[ValueID]int
+}
+
+// DTypeSize returns an approximate byte size for physical planning.
+func DTypeSize(t DType) int {
+	switch t {
+	case F32, I32:
+		return 4
+	case F16, BF16:
+		return 2
+	case I64:
+		return 8
+	case Q2K, Q3K, Q6K, Q8K, Q4G:
+		// Quantized weights are persistent. Transients should not use this path.
+		return 1
+	default:
+		return 4
+	}
+}
+
+func valueBytes(v Value) int {
+	n := v.Shape.Numel()
+	if n <= 0 {
+		return 0
+	}
+	return n * DTypeSize(v.DType)
+}
+
+// BuildPlan validates g and assigns reusable transient buffers. The graph and
+// its nested attributes must remain immutable for the lifetime of the plan.
+// View-like operations conservatively retain backing inputs through their
+// descendants, even when a backend elects to materialise a copy instead.
+func BuildPlan(g *Graph) (*Plan, error) {
+	if g == nil {
+		return nil, fmt.Errorf("nil graph")
+	}
+	if err := g.Validate(); err != nil {
+		return nil, err
+	}
+	lastUse := make(map[ValueID]int)
+	for i, n := range g.Nodes {
+		for _, in := range n.Inputs {
+			lastUse[in] = i
+		}
+	}
+
+	// View/reshape/slice/transpose may alias input storage in a lowering. Walk
+	// backwards so view chains extend the original backing value's lifetime too.
+	for i := len(g.Nodes) - 1; i >= 0; i-- {
+		node := g.Nodes[i]
+		if node.Op != OpView && node.Op != OpReshape && node.Op != OpSlice && node.Op != OpTranspose && node.Op != OpContiguous {
+			continue
+		}
+		end := i
+		for _, out := range node.Outputs {
+			use, ok := lastUse[out]
+			if !ok {
+				use = len(g.Nodes)
+			}
+			if use > end {
+				end = use
+			}
+		}
+		for _, in := range node.Inputs {
+			if end > lastUse[in] {
+				lastUse[in] = end
+			}
+		}
+	}
+	releaseAt := make([][]ValueID, len(g.Nodes))
+	for _, v := range g.Values {
+		if step, ok := lastUse[v.ID]; ok && step < len(g.Nodes) && !v.Persistent {
+			releaseAt[step] = append(releaseAt[step], v.ID)
+		}
+	}
+
+	valueBuf := make(map[ValueID]BufferID)
+	free := []BufferID{}
+	buffers := []Buffer{}
+	steps := make([]Step, 0, len(g.Nodes))
+
+	alloc := func(v Value) BufferID {
+		if v.Persistent {
+			return -1
+		}
+		need := valueBytes(v)
+		// First-fit reuse: same dtype and enough bytes.
+		for i, bid := range free {
+			b := buffers[bid]
+			if b.DType == v.DType && b.Bytes >= need {
+				free = append(free[:i], free[i+1:]...)
+				return bid
+			}
+		}
+		bid := BufferID(len(buffers))
+		buffers = append(buffers, Buffer{ID: bid, Name: v.Name, Shape: append(Shape(nil), v.Shape...), DType: v.DType, Bytes: need})
+		return bid
+	}
+
+	for i, n := range g.Nodes {
+		step := Step{Node: n}
+		for _, in := range n.Inputs {
+			if g.Values[in].Persistent {
+				step.InputBufs = append(step.InputBufs, -1)
+			} else {
+				step.InputBufs = append(step.InputBufs, valueBuf[in])
+			}
+		}
+		for _, out := range n.Outputs {
+			v := g.Values[out]
+			bid := alloc(v)
+			valueBuf[out] = bid
+			step.OutputBufs = append(step.OutputBufs, bid)
+		}
+		steps = append(steps, step)
+
+		// Release each value once, including backing storage whose final use was
+		// extended to a descendant view consumer rather than a direct input here.
+		for _, in := range releaseAt[i] {
+			if bid, ok := valueBuf[in]; ok {
+				free = append(free, bid)
+				delete(valueBuf, in)
+			}
+		}
+	}
+	plan := &Plan{Graph: g, Steps: steps, Buffers: buffers, LastUse: lastUse}
+	if plan.WorkspaceBytes() < 0 {
+		return nil, fmt.Errorf("workspace byte sum overflows")
+	}
+	return plan, nil
+}
+
+// WorkspaceBytes returns the total transient workspace bytes.
+func (p *Plan) WorkspaceBytes() int {
+	if p == nil {
+		return 0
+	}
+	var n int
+	for _, b := range p.Buffers {
+		var ok bool
+		n, ok = checked.AddInt(n, b.Bytes)
+		if !ok {
+			return -1
+		}
+	}
+	return n
+}

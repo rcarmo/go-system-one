@@ -1,0 +1,469 @@
+package model
+
+import (
+	"math"
+	"strings"
+	"testing"
+
+	"github.com/rcarmo/go-system-one/backends/mlx"
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
+	"github.com/rcarmo/go-system-one/runtime/kv"
+	"github.com/rcarmo/go-system-one/tensor"
+)
+
+func TestForwardMTPPromptLayerRejectsQuantProjectionFailure(t *testing.T) {
+	m := &LlamaModel{
+		Config: LlamaConfig{ModelType: "gemma4_text", HiddenSize: 2, NumLayers: 1, NumHeads: 1, NumKVHeads: 1, HeadDim: 2, Intermediate: 2, RMSNormEps: 1e-6},
+		Layers: []LlamaLayer{{
+			InputNorm: tensor.Ones([]int{2}),
+			PostNorm:  tensor.Ones([]int{2}),
+			HasKV:     true,
+			QWq:       &QuantWeight{InDim: 2, OutDim: 2, QWeight: []int32{0}, GIdx: []int32{0, 0}, Scales: []float32{1, 1}},
+		}},
+	}
+	_, err := m.forwardMTPPromptLayer([]float32{0.5, 0.25}, nil, 0, 0, make([][]float32, 1), make([][]float32, 1), make([]float32, 1), make([]float32, 2))
+	if err == nil || !strings.Contains(err.Error(), "quantized Q projection failed") {
+		t.Fatalf("forwardMTPPromptLayer malformed quantized err=%v, want Q projection failure", err)
+	}
+}
+
+// Gemma4's current CPU path keeps the residual/scalar in F32 (unlike Gemma3).
+// The old fixture expected a removed BF16 boundary and silently passed NaNs.
+func TestForwardMTPPromptLayerGemma4LayerScalarKeepsF32(t *testing.T) {
+	m := &LlamaModel{
+		Config: LlamaConfig{ModelType: "gemma4_text", VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumHeads: 1, NumKVHeads: 1, HeadDim: 2, Intermediate: 2, RMSNormEps: 1e-6, HiddenAct: "gelu_pytorch_tanh"},
+		Layers: []LlamaLayer{{
+			InputNorm:   tensor.Ones([]int{2}),
+			PostNorm:    tensor.Ones([]int{2}),
+			PreFFNNorm:  tensor.Ones([]int{2}),
+			PostFFNNorm: tensor.Ones([]int{2}),
+			HasKV:       true,
+			QW:          tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			KW:          tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			VW:          tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			OW:          tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			GateW:       tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			UpW:         tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			DownW:       tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			QNorm:       tensor.Ones([]int{2}),
+			KNorm:       tensor.Ones([]int{2}),
+			LayerScalar: 0.3,
+		}},
+	}
+	got, err := m.forwardMTPPromptLayer([]float32{1.001, 0.25}, nil, 0, 0, make([][]float32, 1), make([][]float32, 1), make([]float32, 1), make([]float32, 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []float32{1.001, 0.25}
+	for i := range want {
+		want[i] *= 0.3
+	}
+	oldOrder := []float32{1.001, 0.25}
+	simd.ToBF16(oldOrder)
+	for i := range oldOrder {
+		oldOrder[i] *= 0.3
+	}
+	if sameFloat32s(want, oldOrder) {
+		t.Fatalf("test values do not distinguish F32 scalar from BF16-first: %v", want)
+	}
+	if !sameFloat32s(got, want) {
+		t.Fatalf("Gemma4 MTP layer output=%v want F32 scalar %v; BF16-before-scalar would be %v", got, want, oldOrder)
+	}
+}
+
+func TestForwardMTPPromptLayerGemma4AttentionUsesUnitScale(t *testing.T) {
+	// This fixture compares the F32 GQA path. F16-KV flash has separate parity
+	// tests and intentionally different rounding; do not mix those oracles.
+	t.Setenv("GO_PHERENCE_MTP_PURE_FLASH", "0")
+	m := &LlamaModel{
+		Config: LlamaConfig{ModelType: "gemma4_text", VocabSize: 4, HiddenSize: 2, NumLayers: 1, NumHeads: 1, NumKVHeads: 1, HeadDim: 2, Intermediate: 2, RMSNormEps: 1e-6, HiddenAct: "gelu_pytorch_tanh"},
+		Layers: []LlamaLayer{{
+			InputNorm:   tensor.Ones([]int{2}),
+			PostNorm:    tensor.Ones([]int{2}),
+			PreFFNNorm:  tensor.Ones([]int{2}),
+			PostFFNNorm: tensor.Ones([]int{2}),
+			HasKV:       true,
+			QW:          tensor.FromFloat32([]float32{1, 0, 0, 1}, []int{2, 2}),
+			KW:          tensor.FromFloat32([]float32{1, 0, 0, 1}, []int{2, 2}),
+			VW:          tensor.FromFloat32([]float32{1, 0, 0, 1}, []int{2, 2}),
+			OW:          tensor.FromFloat32([]float32{1, 0, 0, 1}, []int{2, 2}),
+			GateW:       tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			UpW:         tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			DownW:       tensor.FromFloat32([]float32{0, 0, 0, 0}, []int{2, 2}),
+			QNorm:       tensor.Ones([]int{2}),
+			KNorm:       tensor.Ones([]int{2}),
+			LayerScalar: 1,
+		}},
+	}
+	// Isolate attention scaling from the on-demand RoPE cache (which now rotates
+	// pos=1 even with an initially empty cache). This fixture supplies identity RoPE.
+	m.RopeHalfSWA, m.RopeHalfFull = 1, 1
+	m.RopeFreqsSWA = []float32{1, 0, 1, 0}
+	m.RopeFreqsFull = []float32{1, 0, 1, 0}
+	prev := float32(math.Sqrt2)
+	kvK := [][]float32{{0, prev}}
+	kvV := [][]float32{{0, prev}}
+	hiddenIn := []float32{1, 0}
+	got, err := m.forwardMTPPromptLayer(append([]float32(nil), hiddenIn...), nil, 0, 1, kvK, kvV, make([]float32, 2), make([]float32, 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Independent scalar normalization for input projection followed by Q/K/V
+	// normalization. Positive epsilon keeps the zero FFN branch finite too.
+	eps := float32(m.Config.RMSNormEps)
+	projected := float32(1 / math.Sqrt(float64(float32(0.5)+eps)))
+	normalized := projected * float32(1/math.Sqrt(float64(projected*projected/2+eps)))
+	q := []float32{normalized, 0}
+	k := []float32{0, prev, normalized, 0}
+	v := []float32{0, prev, normalized, 0}
+	attnUnit := gqaAttentionScale(q, k, v, 2, 1, 1, 2, 1.0)
+	attnDefault := gqaAttention(q, k, v, 2, 1, 1, 2)
+	if sameFloat32s(attnUnit, attnDefault) {
+		t.Fatalf("unit and default attention unexpectedly equal: %v", attnUnit)
+	}
+	rmsNormInPlace(attnUnit, []float32{1, 1}, float32(m.Config.RMSNormEps))
+	want := []float32{1 + attnUnit[0], attnUnit[1]}
+	if !sameFloat32s(got, want) {
+		t.Fatalf("Gemma4 verifier attention hidden=%v want unit-scale path %v; default attention would be %v", got, want, attnDefault)
+	}
+}
+
+func TestForwardMTPPromptLayerRejectsMLXProjectionFailure(t *testing.T) {
+	m := &LlamaModel{
+		Config: LlamaConfig{ModelType: "gemma4_text", HiddenSize: 2, NumLayers: 1, NumHeads: 1, NumKVHeads: 1, HeadDim: 2, Intermediate: 2, RMSNormEps: 1e-6},
+		Layers: []LlamaLayer{{
+			InputNorm: tensor.Ones([]int{2}),
+			PostNorm:  tensor.Ones([]int{2}),
+			HasKV:     true,
+			QWm:       &mlx.QuantWeight{OutDim: 2, InDim: 2, Bits: 4, GroupSize: 8, Groups: 1, Weight: []uint32{0}, Scales: []float32{1, 1}, Biases: []float32{0, 0}},
+		}},
+	}
+	_, err := m.forwardMTPPromptLayer([]float32{0.5, 0.25}, nil, 0, 0, make([][]float32, 1), make([][]float32, 1), make([]float32, 1), make([]float32, 2))
+	if err == nil || !strings.Contains(err.Error(), "MLX Q projection failed") {
+		t.Fatalf("forwardMTPPromptLayer malformed MLX err=%v, want Q projection failure", err)
+	}
+}
+
+func TestRunMTPVerifierForwardZeroDraftZeroLayer(t *testing.T) {
+	m := newZeroLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 1, nil, 7)
+	result, err := m.RunMTPVerifierForward(plan, nil, nil)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	if !sameInts(result.VerifierTokens, []int{1}) {
+		t.Fatalf("VerifierTokens=%v want [1]", result.VerifierTokens)
+	}
+	if !sameInts(result.Acceptance.OutputTokens, []int{0}) {
+		t.Fatalf("OutputTokens=%v want [0]", result.Acceptance.OutputTokens)
+	}
+	if len(result.Logits) != 1 || len(result.Logits[0]) != m.Config.VocabSize {
+		t.Fatalf("logits shape=%d/%d", len(result.Logits), len(result.Logits[0]))
+	}
+	wantActivation := []float32{0, float32(math.Sqrt(2))}
+	if !sameFloat32s(result.FinalActivation, wantActivation) {
+		t.Fatalf("FinalActivation=%v want %v", result.FinalActivation, wantActivation)
+	}
+}
+
+func TestRunMTPVerifierForwardOneDraftZeroLayer(t *testing.T) {
+	m := newZeroLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 0, []int{1}, 4)
+	result, err := m.RunMTPVerifierForward(plan, nil, nil)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	if !result.Acceptance.AllDraftsAccepted || result.Acceptance.AcceptedPrefixLen != 1 || result.Acceptance.BonusToken != 0 {
+		t.Fatalf("acceptance=%+v, want all accepted prefix=1 bonus=0", result.Acceptance)
+	}
+	if !sameInts(result.Acceptance.OutputTokens, []int{1, 0}) {
+		t.Fatalf("OutputTokens=%v want [1 0]", result.Acceptance.OutputTokens)
+	}
+}
+
+func TestRunMTPVerifierForwardFirstTokenRejectionZeroLayer(t *testing.T) {
+	m := newZeroLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 0, []int{2}, 4)
+	result, err := m.RunMTPVerifierForward(plan, nil, nil)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	if result.Acceptance.AllDraftsAccepted || result.Acceptance.AcceptedPrefixLen != 0 || result.Acceptance.BonusToken != 1 {
+		t.Fatalf("acceptance=%+v, want first rejection bonus=1", result.Acceptance)
+	}
+	if !sameInts(result.Acceptance.OutputTokens, []int{1}) {
+		t.Fatalf("OutputTokens=%v want [1]", result.Acceptance.OutputTokens)
+	}
+}
+
+func TestRunMTPVerifierForwardOneLayerDeterministicAcceptance(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 0, []int{0}, 0)
+	kvCacheK := make([][]float32, len(m.Layers))
+	kvCacheV := make([][]float32, len(m.Layers))
+	result, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	if !result.Acceptance.AllDraftsAccepted || result.Acceptance.AcceptedPrefixLen != 1 {
+		t.Fatalf("acceptance=%+v, want deterministic all-accepted one-token draft", result.Acceptance)
+	}
+	if !sameInts(result.Acceptance.OutputTokens, []int{0, 0}) {
+		t.Fatalf("OutputTokens=%v want [0 0]", result.Acceptance.OutputTokens)
+	}
+	kvDim, err := m.LayerKVDim(0)
+	if err != nil {
+		t.Fatalf("LayerKVDim: %v", err)
+	}
+	if got, want := len(kvCacheK[0]), len(plan.VerifierTokens)*kvDim; got != want {
+		t.Fatalf("staged K len=%d want %d", got, want)
+	}
+	if len(result.FinalActivation) != m.Config.HiddenSize {
+		t.Fatalf("FinalActivation len=%d want %d", len(result.FinalActivation), m.Config.HiddenSize)
+	}
+}
+
+func TestRunMTPVerifierForwardFloatKVCommitKeepsAcceptedPrefix(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 0, []int{2}, 0)
+	kvCacheK := make([][]float32, len(m.Layers))
+	kvCacheV := make([][]float32, len(m.Layers))
+	cp := kv.CheckpointFloatKV(kvCacheK, kvCacheV)
+	result, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	kvDim, err := m.LayerKVDim(0)
+	if err != nil {
+		t.Fatalf("LayerKVDim: %v", err)
+	}
+	if got, want := len(kvCacheK[0]), len(plan.VerifierTokens)*kvDim; got != want {
+		t.Fatalf("staged K len=%d want %d", got, want)
+	}
+	keep := result.Acceptance.KVKeepTokens()
+	if err := result.CommitFloatKV(m, kvCacheK, kvCacheV, cp); err != nil {
+		t.Fatalf("CommitFloatKV: %v", err)
+	}
+	if got, want := len(kvCacheK[0]), keep*kvDim; got != want {
+		t.Fatalf("committed K len=%d want %d acceptance=%+v", got, want, result.Acceptance)
+	}
+	if got, want := len(kvCacheV[0]), keep*kvDim; got != want {
+		t.Fatalf("committed V len=%d want %d acceptance=%+v", got, want, result.Acceptance)
+	}
+}
+
+func TestRunMTPVerifierForwardRequiresPromptHistoryKV(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	kvDim, err := m.LayerKVDim(0)
+	if err != nil {
+		t.Fatalf("LayerKVDim: %v", err)
+	}
+	plan := mustMTPVerifierPlan(t, m, 0, []int{2}, 1)
+	if _, err := m.RunMTPVerifierForward(plan, make([][]float32, len(m.Layers)), make([][]float32, len(m.Layers))); err == nil {
+		t.Fatal("accepted missing prompt/history KV for non-zero start position")
+	}
+	kvCacheK := [][]float32{make([]float32, kvDim)}
+	kvCacheV := [][]float32{make([]float32, kvDim)}
+	result, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward with history: %v", err)
+	}
+	if got, want := len(kvCacheK[0]), (plan.StartPos+len(plan.VerifierTokens))*kvDim; got != want {
+		t.Fatalf("staged history K len=%d want %d", got, want)
+	}
+	if result.InputToken != 0 {
+		t.Fatalf("result input token=%d want 0", result.InputToken)
+	}
+}
+
+func TestRunMTPVerifierForwardSupportsGemma4PLI(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	m.Config.ModelType = "gemma4_text"
+	m.Config.HiddenPerLayer = 2
+	m.PerLayerModelProj = []float32{1, 0, 0, 1}
+	m.PerLayerProjNorm = []float32{1, 1}
+	m.PerLayerProjScale = 1
+	m.PerLayerInputScale = 1
+	m.EmbedPerLayerScale = 1
+	m.Layers[0].PLIGate = []float32{1, 0, 0, 1}
+	m.Layers[0].PLIProj = []float32{1, 0, 0, 1}
+	m.Layers[0].PLIPostNorm = []float32{1, 1}
+	plan := mustMTPVerifierPlan(t, m, 0, []int{1}, 0)
+	kvCacheK := make([][]float32, len(m.Layers))
+	kvCacheV := make([][]float32, len(m.Layers))
+	result, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward with PLI: %v", err)
+	}
+	if len(result.Logits) != 2 || len(result.FinalActivation) != m.Config.HiddenSize {
+		t.Fatalf("result logits=%d activation=%d", len(result.Logits), len(result.FinalActivation))
+	}
+	kvDim, err := m.LayerKVDim(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(kvCacheK[0]), len(plan.VerifierTokens)*kvDim; got != want {
+		t.Fatalf("PLI verifier K len=%d want %d", got, want)
+	}
+}
+
+func TestRunMTPVerifierForwardRejectsMalformedSharedKVLayers(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	m.Config.NumLayers = 2
+	m.Layers = append(m.Layers, LlamaLayer{HasKV: false, KVSourceLayer: -1})
+	plan := mustMTPVerifierPlan(t, m, 0, nil, 0)
+	if _, err := m.RunMTPVerifierForward(plan, make([][]float32, len(m.Layers)), make([][]float32, len(m.Layers))); err == nil {
+		t.Fatal("accepted shared-KV layer with invalid source")
+	}
+	m.Layers[1].KVSourceLayer = 1
+	if _, err := m.RunMTPVerifierForward(plan, make([][]float32, len(m.Layers)), make([][]float32, len(m.Layers))); err == nil {
+		t.Fatal("accepted shared-KV layer whose source is also shared")
+	}
+	m.Layers[1].KVSourceLayer = 0
+	kvCacheK := make([][]float32, len(m.Layers))
+	kvCacheV := make([][]float32, len(m.Layers))
+	kvCacheK[1] = []float32{1}
+	if _, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV); err == nil {
+		t.Fatal("accepted shared-KV layer with owned K cache entries")
+	}
+}
+
+func TestRunMTPVerifierForwardCompressedKVCommitKeepsAcceptedPrefix(t *testing.T) {
+	m := newSingleLayerVerifierModel()
+	plan := mustMTPVerifierPlan(t, m, 0, []int{2}, 0)
+	kvCacheK := make([][]float32, len(m.Layers))
+	kvCacheV := make([][]float32, len(m.Layers))
+	result, err := m.RunMTPVerifierForward(plan, kvCacheK, kvCacheV)
+	if err != nil {
+		t.Fatalf("RunMTPVerifierForward: %v", err)
+	}
+	cache := kv.NewCompressedKVCache(2, 1, 2, nil, true)
+	cp := kv.CheckpointCompressedKV([]*kv.CompressedKVCache{cache})
+	for i := 0; i < len(plan.VerifierTokens); i++ {
+		base := float32(i*10 + 1)
+		cache.Append([]float32{base, base + 1}, []float32{base + 100, base + 101})
+	}
+	if got, want := cache.SeqLen(), len(plan.VerifierTokens); got != want {
+		t.Fatalf("staged compressed seq len=%d want %d", got, want)
+	}
+	keep := result.Acceptance.KVKeepTokens()
+	if err := result.CommitCompressedKV([]*kv.CompressedKVCache{cache}, cp); err != nil {
+		t.Fatalf("CommitCompressedKV: %v", err)
+	}
+	if got, want := cache.SeqLen(), keep; got != want {
+		t.Fatalf("committed compressed seq len=%d want %d acceptance=%+v", got, want, result.Acceptance)
+	}
+	if got, want := len(cache.GetK()), keep*2; got != want {
+		t.Fatalf("committed compressed K len=%d want %d", got, want)
+	}
+}
+
+func TestRunMTPVerifierForwardScaffoldRejectsMalformedInputs(t *testing.T) {
+	m := newZeroLayerVerifierModel()
+	base := mustMTPVerifierPlan(t, m, 1, []int{2}, 5)
+	if _, err := (*LlamaModel)(nil).RunMTPVerifierForward(base, nil, nil); err == nil {
+		t.Fatal("accepted nil model")
+	}
+	if _, err := m.RunMTPVerifierForward(MTPVerifierPlan{}, nil, nil); err == nil {
+		t.Fatal("accepted empty plan")
+	}
+	bad := cloneMTPVerifierPlan(base)
+	bad.Positions = bad.Positions[:1]
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted plan with mismatched positions")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.VerifierTokens[0] = 3
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted plan with wrong input token")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.DraftedTokens = append(bad.DraftedTokens, 4)
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted plan with wrong drafted token count")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.DraftedTokens[0] = 4
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted drafted token mismatch with verifier suffix")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.VerifierTokens[1] = 3
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted out-of-vocab verifier token")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.Positions[1] = 99
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted non-contiguous verifier positions")
+	}
+	bad = cloneMTPVerifierPlan(base)
+	bad.StartPos = int(^uint(0) >> 1)
+	if _, err := m.RunMTPVerifierForward(bad, nil, nil); err == nil {
+		t.Fatal("accepted overflowing verifier positions")
+	}
+	withLayer := newZeroLayerVerifierModel()
+	withLayer.Config.NumLayers = 1
+	withLayer.Layers = []LlamaLayer{{}}
+	layerPlan := mustMTPVerifierPlan(t, withLayer, 1, nil, 0)
+	if _, err := withLayer.RunMTPVerifierForward(layerPlan, nil, nil); err == nil {
+		t.Fatal("accepted nil/short KV caches")
+	}
+}
+
+func newZeroLayerVerifierModel() *LlamaModel {
+	return &LlamaModel{
+		Config: LlamaConfig{VocabSize: 3, HiddenSize: 2, NumLayers: 0, NumHeads: 1, NumKVHeads: 1, HeadDim: 2, RMSNormEps: 0},
+		EmbedTokens: tensor.FromFloat32([]float32{
+			1, 0,
+			0, 1,
+			1, 1,
+		}, []int{3, 2}),
+		Norm: tensor.Ones([]int{2}),
+		LMHead: tensor.FromFloat32([]float32{
+			0, 1,
+			1, 1,
+			1, 0,
+		}, []int{3, 2}),
+	}
+}
+
+func newSingleLayerVerifierModel() *LlamaModel {
+	m := newZeroLayerVerifierModel()
+	// The layered fixtures can produce zero projection vectors. A positive
+	// epsilon is required: eps=0 makes RMSNorm(0) NaN, formerly hidden by
+	// sameFloat32s accepting NaN comparisons. These are finite parity fixtures.
+	m.Config.RMSNormEps = 1e-6
+	m.Config.NumLayers = 1
+	m.Config.Intermediate = 2
+	identity := []float32{1, 0, 0, 1}
+	m.Layers = []LlamaLayer{{
+		InputNorm: tensor.Ones([]int{2}),
+		PostNorm:  tensor.Ones([]int{2}),
+		HasKV:     true,
+		QW:        tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		KW:        tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		VW:        tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		OW:        tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		GateW:     tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		UpW:       tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+		DownW:     tensor.FromFloat32(append([]float32(nil), identity...), []int{2, 2}),
+	}}
+	return m
+}
+
+func mustMTPVerifierPlan(t *testing.T, m *LlamaModel, inputToken int, drafted []int, startPos int) MTPVerifierPlan {
+	t.Helper()
+	plan, err := NewMTPVerifierPlan(m, inputToken, drafted, startPos)
+	if err != nil {
+		t.Fatalf("NewMTPVerifierPlan: %v", err)
+	}
+	return plan
+}
+
+func cloneMTPVerifierPlan(plan MTPVerifierPlan) MTPVerifierPlan {
+	plan.DraftedTokens = append([]int(nil), plan.DraftedTokens...)
+	plan.VerifierTokens = append([]int(nil), plan.VerifierTokens...)
+	plan.Positions = append([]int(nil), plan.Positions...)
+	return plan
+}

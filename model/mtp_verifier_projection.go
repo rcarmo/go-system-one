@@ -1,0 +1,222 @@
+package model
+
+import (
+	"fmt"
+
+	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
+)
+
+type MTPVerifierLayerQKVBatch struct {
+	Q        []float32
+	K        []float32
+	V        []float32
+	QDim     int
+	KVDim    int
+	HeadDim  int
+	KVHeads  int
+	HasKV    bool
+	NormedIn []float32
+}
+
+// ProjectMTPVerifierLayerQKVBatch computes the verifier layer's input norm and
+// Q/K/V projections for all verifier rows in one batch contract. Dense/MLX
+// weights use batched projection helpers. Dense batch GEMM and singleton GEMV
+// may differ by floating-point reduction/FMA rounding; they are not a bitwise
+// identity contract. Quantized QAT weights currently keep
+// the exact per-row m.mvQ path as the SIMD oracle until a true quantized batch
+// kernel is introduced.
+func (m *LlamaModel) ProjectMTPVerifierLayerQKVBatch(batch MTPVerifierBatchInputs, layerIdx int, hiddenFlat []float32) (MTPVerifierLayerQKVBatch, error) {
+	if err := validateMTPVerifierPlanForModel(m, batch.Plan); err != nil {
+		return MTPVerifierLayerQKVBatch{}, err
+	}
+	return m.projectMTPVerifierLayerQKVRows(batch.Plan.VerifierTokens, batch.Plan.Positions, layerIdx, hiddenFlat)
+}
+
+// projectMTPVerifierLayerQKVRows is shared by contiguous MTP verification and
+// independent sibling branches. Unlike MTPVerifierPlan, sibling positions may
+// repeat because every branch starts at the same immutable trunk boundary.
+func (m *LlamaModel) projectMTPVerifierLayerQKVRows(tokens, positions []int, layerIdx int, hiddenFlat []float32) (MTPVerifierLayerQKVBatch, error) {
+	if m == nil {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("nil model")
+	}
+	if layerIdx < 0 || layerIdx >= m.Config.NumLayers || layerIdx >= len(m.Layers) {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer index %d out of range", layerIdx)
+	}
+	B := len(tokens)
+	h := m.Config.HiddenSize
+	if B <= 0 || len(positions) != B || h <= 0 || len(hiddenFlat) < B*h {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("invalid verifier QKV rows tokens=%d positions=%d hidden len=%d hidden=%d", B, len(positions), len(hiddenFlat), h)
+	}
+	for i, tok := range tokens {
+		if tok < 0 || tok >= m.Config.VocabSize || positions[i] < 0 {
+			return MTPVerifierLayerQKVBatch{}, fmt.Errorf("invalid verifier QKV row %d token=%d position=%d", i, tok, positions[i])
+		}
+	}
+	layer := &m.Layers[layerIdx]
+	if layer.InputNorm == nil {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d missing input norm", layerIdx)
+	}
+	headDim, err := m.LayerHeadDim(layerIdx)
+	if err != nil {
+		return MTPVerifierLayerQKVBatch{}, err
+	}
+	kvHeads := gemmacfg.LayerKVHeads(m.Config, layerIdx)
+	qDim, okQ := checkedProduct(m.Config.NumHeads, headDim)
+	kvDim, okKV := checkedProduct(kvHeads, headDim)
+	if headDim <= 0 || kvHeads < 0 || !okQ || !okKV {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("invalid verifier QKV dims layer=%d heads=%d kvHeads=%d headDim=%d", layerIdx, m.Config.NumHeads, kvHeads, headDim)
+	}
+	normed := make([]float32, B*h)
+	copy(normed, hiddenFlat[:B*h])
+	isGemma3 := m.Config.ModelType == "gemma3_text"
+	for b := 0; b < B; b++ {
+		row := normed[b*h : (b+1)*h]
+		if isGemma3 {
+			simd.RMSNormBF16(row, layer.InputNorm.Data(), float32(m.Config.RMSNormEps))
+		} else {
+			rmsNormInPlace(row, layer.InputNorm.Data(), float32(m.Config.RMSNormEps))
+		}
+	}
+	q := make([]float32, B*qDim)
+	if layer.QWq != nil {
+		for b := 0; b < B; b++ {
+			if !m.mvQ(q[b*qDim:(b+1)*qDim], normed[b*h:(b+1)*h], layer.QWq) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d Q quantized projection rejected", layerIdx)
+			}
+		}
+	} else if layer.QWGGUF != nil {
+		if !m.projBatchAny(q, normed, B, nil, nil, nil, layer.QWGGUF, h, qDim) {
+			return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d Q GGUF projection rejected", layerIdx)
+		}
+	} else if !m.projBatch(q, normed, B, layer.QW, layer.QWm, h, qDim) {
+		return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d Q batch projection rejected", layerIdx)
+	}
+	var k, v []float32
+	if layer.HasKV {
+		k = make([]float32, B*kvDim)
+		v = make([]float32, B*kvDim)
+		if layer.KWq != nil {
+			for b := 0; b < B; b++ {
+				if !m.mvQ(k[b*kvDim:(b+1)*kvDim], normed[b*h:(b+1)*h], layer.KWq) {
+					return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d K quantized projection rejected", layerIdx)
+				}
+				if m.Config.AttentionKEqV && (layer.VWq == nil || layer.VWq == layer.KWq) {
+					copy(v[b*kvDim:(b+1)*kvDim], k[b*kvDim:(b+1)*kvDim])
+				} else if layer.VWq != nil {
+					if !m.mvQ(v[b*kvDim:(b+1)*kvDim], normed[b*h:(b+1)*h], layer.VWq) {
+						return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d V quantized projection rejected", layerIdx)
+					}
+				} else {
+					return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d missing quantized V projection", layerIdx)
+				}
+			}
+		} else if layer.KWGGUF != nil {
+			if !m.projBatchAny(k, normed, B, nil, nil, nil, layer.KWGGUF, h, kvDim) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d K GGUF projection rejected", layerIdx)
+			}
+			if m.Config.AttentionKEqV && (layer.VWGGUF == nil || layer.VWGGUF == layer.KWGGUF) {
+				copy(v, k)
+			} else if layer.VWGGUF != nil {
+				if !m.projBatchAny(v, normed, B, nil, nil, nil, layer.VWGGUF, h, kvDim) {
+					return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d V GGUF projection rejected", layerIdx)
+				}
+			} else {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d missing GGUF V projection", layerIdx)
+			}
+		} else if layer.KWm != nil {
+			if !m.projBatch(k, normed, B, layer.KW, layer.KWm, h, kvDim) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d K batch projection rejected", layerIdx)
+			}
+			if m.Config.AttentionKEqV && (layer.VWm == nil || layer.VWm == layer.KWm) {
+				copy(v, k)
+			} else if !m.projBatch(v, normed, B, layer.VW, layer.VWm, h, kvDim) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d V batch projection rejected", layerIdx)
+			}
+		} else {
+			if !m.projBatch(k, normed, B, layer.KW, nil, h, kvDim) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d K batch projection rejected", layerIdx)
+			}
+			if m.Config.AttentionKEqV && (layer.VW == nil || layer.VW == layer.KW) {
+				copy(v, k)
+			} else if !m.projBatch(v, normed, B, layer.VW, nil, h, kvDim) {
+				return MTPVerifierLayerQKVBatch{}, fmt.Errorf("layer %d V batch projection rejected", layerIdx)
+			}
+		}
+	}
+	for b := 0; b < B; b++ {
+		qRow := q[b*qDim : (b+1)*qDim]
+		var kRow, vRow []float32
+		if k != nil {
+			kRow = k[b*kvDim : (b+1)*kvDim]
+			vRow = v[b*kvDim : (b+1)*kvDim]
+		}
+		if err := postProcessMTPVerifierQKV(m, layer, layerIdx, qRow, kRow, vRow, positions[b], headDim, kvHeads); err != nil {
+			return MTPVerifierLayerQKVBatch{}, err
+		}
+	}
+	return MTPVerifierLayerQKVBatch{Q: q, K: k, V: v, QDim: qDim, KVDim: kvDim, HeadDim: headDim, KVHeads: kvHeads, HasKV: layer.HasKV, NormedIn: normed}, nil
+}
+
+func postProcessMTPVerifierQKV(m *LlamaModel, layer *LlamaLayer, layerIdx int, q, k, v []float32, pos, headDim, kvHeads int) error {
+	cfg := m.Config
+	isGemma3 := cfg.ModelType == "gemma3_text"
+	if isGemma3 {
+		simd.ToBF16(q)
+		if k != nil {
+			simd.ToBF16(k)
+			simd.ToBF16(v)
+		}
+	}
+	if layer.QB != nil {
+		simd.VecAdd(q, q, layer.QB.Data())
+		if k != nil {
+			simd.VecAdd(k, k, layer.KB.Data())
+			simd.VecAdd(v, v, layer.VB.Data())
+		}
+	}
+	normFn := rmsNormInPlace
+	if isGemma3 {
+		normFn = rmsNormBF16
+	}
+	if cfg.ModelType == "gemma4_text" && v != nil {
+		eps := float32(cfg.RMSNormEps)
+		for head := 0; head < kvHeads; head++ {
+			simd.RMSNormNoScale(v[head*headDim:(head+1)*headDim], eps)
+		}
+	} else if layer.VNorm != nil && v != nil {
+		vnorm := layer.VNorm.Data()
+		for head := 0; head < kvHeads; head++ {
+			normFn(v[head*headDim:(head+1)*headDim], vnorm, float32(cfg.RMSNormEps))
+		}
+	}
+	if layer.QNorm != nil {
+		qNorm := layer.QNorm.Data()
+		for head := 0; head < cfg.NumHeads; head++ {
+			normFn(q[head*headDim:(head+1)*headDim], qNorm, float32(cfg.RMSNormEps))
+		}
+		if k != nil {
+			if layer.KNorm == nil {
+				return fmt.Errorf("layer %d missing K norm", layerIdx)
+			}
+			kNorm := layer.KNorm.Data()
+			for head := 0; head < kvHeads; head++ {
+				normFn(k[head*headDim:(head+1)*headDim], kNorm, float32(cfg.RMSNormEps))
+			}
+		}
+	}
+	if cfg.ModelType == "gemma4_text" {
+		freqs, rotHalf := m.ensureGemma4RoPE(layerIdx, pos)
+		applyRoPEPartial(q, freqs, pos, cfg.NumHeads, headDim, rotHalf)
+		if k != nil {
+			applyRoPEPartial(k, freqs, pos, kvHeads, headDim, rotHalf)
+		}
+	} else {
+		freqs := m.ensureRoPE(pos)
+		applyRoPE(q, freqs, pos, cfg.NumHeads, headDim)
+		if k != nil {
+			applyRoPE(k, freqs, pos, kvHeads, headDim)
+		}
+	}
+	return nil
+}

@@ -1,0 +1,655 @@
+package safetensors
+
+import (
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"syscall"
+
+	"github.com/rcarmo/go-system-one/half"
+	"github.com/rcarmo/go-system-one/runtime/memory"
+)
+
+// TensorInfo describes a tensor stored in a safetensors file.
+type TensorInfo struct {
+	DType       string `json:"dtype"`
+	Shape       []int  `json:"shape"`
+	DataOffsets [2]int `json:"data_offsets"`
+}
+
+// File owns a mapping. Do not copy File after use or mutate Tensors/Advisor.
+// Copying getters and EagerLoad coordinate with Close. GetRaw bytes remain
+// borrowed: their users must finish before Close. Retained Advisor handles are
+// detached before unmap; obtaining the Advisor field must not race with Close.
+type File struct {
+	mu         sync.RWMutex
+	closed     bool
+	Tensors    map[string]TensorInfo
+	data       []byte // tensor data region (after header)
+	headerSize int
+	mmapData   []byte              // full mmap'd region (nil if not mmap'd)
+	mmapFd     *os.File            // file handle for mmap'd file (nil if not mmap'd)
+	Advisor    *memory.MmapAdvisor // madvise tracking (nil if not mmap'd)
+}
+
+var eagerLoadSink atomic.Uint32
+
+// EagerLoad asks the OS to read the mmap'd file and then touches one byte per
+// page to fault pages in now instead of during first-token inference.
+// It returns the number of bytes covered. Safe to call on non-mmap'd files.
+func (f *File) EagerLoad() (int64, error) {
+	if f == nil {
+		return 0, nil
+	}
+	// Prefetch mutates advisor bookkeeping; serialize concurrent eager loads.
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.closed {
+		return 0, fmt.Errorf("safetensors: file closed")
+	}
+	if len(f.mmapData) == 0 {
+		return 0, nil
+	}
+	if f.Advisor != nil {
+		if err := f.Advisor.Prefetch(0, int64(len(f.mmapData))); err != nil {
+			return 0, fmt.Errorf("safetensors: eager-load prefetch: %w", err)
+		}
+	}
+	pageSize := syscall.Getpagesize()
+	if pageSize <= 0 {
+		pageSize = 4096
+	}
+	var sink byte
+	for off := 0; off < len(f.mmapData); off += pageSize {
+		sink ^= f.mmapData[off]
+	}
+	// Touch the final byte so short/non-page-aligned files are fully covered.
+	sink ^= f.mmapData[len(f.mmapData)-1]
+	eagerLoadSink.Add(uint32(sink))
+	runtime.KeepAlive(f.mmapData)
+	return int64(len(f.mmapData)), nil
+}
+
+// Close waits for copying getters/prefetch before releasing the mapping.
+// Borrowed raw views must already have been released by their caller.
+func (f *File) Close() error {
+	if f == nil {
+		return nil
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.closed {
+		return nil
+	}
+	var closeErr error
+	if f.Advisor != nil {
+		f.Advisor.Detach()
+	}
+	if f.mmapData != nil {
+		if err := syscall.Munmap(f.mmapData); err != nil {
+			return err
+		}
+		f.mmapData = nil
+	}
+	f.data = nil
+	f.Advisor = nil
+	f.closed = true
+	if f.mmapFd != nil {
+		closeErr = f.mmapFd.Close()
+		f.mmapFd = nil
+	}
+	return closeErr
+}
+
+// Open loads a safetensors file using mmap for zero-copy access.
+func Open(path string) (*File, error) {
+	fd, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("safetensors: open %s: %w", path, err)
+	}
+
+	fi, err := fd.Stat()
+	if err != nil {
+		fd.Close()
+		return nil, fmt.Errorf("safetensors: stat %s: %w", path, err)
+	}
+	size := int(fi.Size())
+	if size < 8 {
+		fd.Close()
+		return nil, fmt.Errorf("safetensors: file too short")
+	}
+
+	mapped, err := syscall.Mmap(int(fd.Fd()), 0, size, syscall.PROT_READ, syscall.MAP_SHARED)
+	if err != nil {
+		fd.Close()
+		return nil, fmt.Errorf("safetensors: mmap %s: %w", path, err)
+	}
+
+	headerLen64 := binary.LittleEndian.Uint64(mapped[:8])
+	if headerLen64 > uint64(size-8) {
+		syscall.Munmap(mapped)
+		fd.Close()
+		return nil, fmt.Errorf("safetensors: header length %d exceeds file size", headerLen64)
+	}
+	headerLen := int(headerLen64)
+
+	var header map[string]json.RawMessage
+	if err := json.Unmarshal(mapped[8:8+headerLen], &header); err != nil {
+		syscall.Munmap(mapped)
+		fd.Close()
+		return nil, fmt.Errorf("safetensors: parse header: %w", err)
+	}
+
+	tensors := make(map[string]TensorInfo)
+	for key, val := range header {
+		if key == "__metadata__" {
+			continue
+		}
+		var info TensorInfo
+		if err := json.Unmarshal(val, &info); err != nil {
+			syscall.Munmap(mapped)
+			fd.Close()
+			return nil, fmt.Errorf("safetensors: parse tensor %q: %w", key, err)
+		}
+		if err := validateTensorInfo(key, info, size-8-headerLen); err != nil {
+			syscall.Munmap(mapped)
+			fd.Close()
+			return nil, err
+		}
+		tensors[key] = info
+	}
+
+	return &File{
+		Tensors:    tensors,
+		data:       mapped[8+headerLen:],
+		headerSize: headerLen,
+		mmapData:   mapped,
+		mmapFd:     fd,
+		Advisor:    memory.NewMmapAdvisor(mapped),
+	}, nil
+}
+
+func checkedAddInt64(a, b int64) (int64, bool) {
+	if a < 0 || b < 0 {
+		return 0, false
+	}
+	if a > math.MaxInt64-b {
+		return 0, false
+	}
+	return a + b, true
+}
+
+func shapeNumel(shape []int) (int, bool) {
+	n := 1
+	maxInt := int(^uint(0) >> 1)
+	for _, d := range shape {
+		if d < 0 || (d != 0 && n > maxInt/d) {
+			return 0, false
+		}
+		n *= d
+	}
+	return n, true
+}
+
+func dtypeByteSize(dtype string) int {
+	switch dtype {
+	case "F32", "I32", "U32":
+		return 4
+	case "F16", "BF16", "I16", "U16":
+		return 2
+	case "I64", "U64":
+		return 8
+	case "I8", "U8", "BOOL", "F8_E4M3", "F8_E4M3FN", "F8_E5M2":
+		return 1
+	default:
+		return 0
+	}
+}
+
+func validateTensorInfo(name string, info TensorInfo, dataLen int) error {
+	start, end := info.DataOffsets[0], info.DataOffsets[1]
+	if start < 0 || end < start || end > dataLen {
+		return fmt.Errorf("safetensors: tensor %q invalid data offsets [%d,%d] for data length %d", name, start, end, dataLen)
+	}
+	numel, ok := shapeNumel(info.Shape)
+	if !ok {
+		return fmt.Errorf("safetensors: tensor %q invalid shape %v", name, info.Shape)
+	}
+	if elemSize := dtypeByteSize(info.DType); elemSize > 0 {
+		byteLen := end - start
+		maxInt := int(^uint(0) >> 1)
+		if numel > maxInt/elemSize || numel*elemSize != byteLen {
+			return fmt.Errorf("safetensors: tensor %q shape %v dtype %s expects %d bytes, got %d", name, info.Shape, info.DType, numel*elemSize, byteLen)
+		}
+	}
+	return nil
+}
+
+// rawTensor requires a read/write lock for non-nil f.
+func (f *File) rawTensor(name string) (TensorInfo, []byte, error) {
+	if f == nil {
+		return TensorInfo{}, nil, fmt.Errorf("safetensors: nil file")
+	}
+	if f.closed {
+		return TensorInfo{}, nil, fmt.Errorf("safetensors: file closed")
+	}
+	info, ok := f.Tensors[name]
+	if !ok {
+		return TensorInfo{}, nil, fmt.Errorf("safetensors: tensor %q not found", name)
+	}
+	if err := validateTensorInfo(name, info, len(f.data)); err != nil {
+		return TensorInfo{}, nil, err
+	}
+	return info, f.data[info.DataOffsets[0]:info.DataOffsets[1]], nil
+}
+
+// Names returns all tensor names in sorted order.
+func (f *File) Names() []string {
+	if f == nil {
+		return nil
+	}
+	names := make([]string, 0, len(f.Tensors))
+	for k := range f.Tensors {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func (f *File) TensorInfos() map[string]TensorInfo {
+	if f == nil {
+		return nil
+	}
+	out := make(map[string]TensorInfo, len(f.Tensors))
+	for name, info := range f.Tensors {
+		shape := append([]int(nil), info.Shape...)
+		out[name] = TensorInfo{DType: info.DType, Shape: shape, DataOffsets: info.DataOffsets}
+	}
+	return out
+}
+
+// GetFloat32 returns a tensor's data as float32, converting from the stored dtype.
+func (f *File) GetFloat32(name string) ([]float32, []int, error) {
+	if f != nil {
+		f.mu.RLock()
+		defer f.mu.RUnlock()
+	}
+	info, raw, err := f.rawTensor(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	info.Shape = append([]int(nil), info.Shape...)
+
+	switch info.DType {
+	case "F32":
+		if len(raw)%4 != 0 {
+			return nil, nil, fmt.Errorf("safetensors: tensor %q F32 byte length %d is not divisible by 4", name, len(raw))
+		}
+		n := len(raw) / 4
+		out := make([]float32, n)
+		for i := 0; i < n; i++ {
+			out[i] = math.Float32frombits(binary.LittleEndian.Uint32(raw[i*4:]))
+		}
+		return out, info.Shape, nil
+
+	case "F16":
+		if len(raw)%2 != 0 {
+			return nil, nil, fmt.Errorf("safetensors: tensor %q F16 byte length %d is not divisible by 2", name, len(raw))
+		}
+		n := len(raw) / 2
+		out := make([]float32, n)
+		for i := 0; i < n; i++ {
+			out[i] = float16ToFloat32(binary.LittleEndian.Uint16(raw[i*2:]))
+		}
+		return out, info.Shape, nil
+
+	case "BF16":
+		if len(raw)%2 != 0 {
+			return nil, nil, fmt.Errorf("safetensors: tensor %q BF16 byte length %d is not divisible by 2", name, len(raw))
+		}
+		n := len(raw) / 2
+		out := make([]float32, n)
+		for i := 0; i < n; i++ {
+			bits := uint32(binary.LittleEndian.Uint16(raw[i*2:])) << 16
+			out[i] = math.Float32frombits(bits)
+		}
+		return out, info.Shape, nil
+
+	case "I64":
+		if len(raw)%8 != 0 {
+			return nil, nil, fmt.Errorf("safetensors: tensor %q I64 byte length %d is not divisible by 8", name, len(raw))
+		}
+		n := len(raw) / 8
+		out := make([]float32, n)
+		for i := 0; i < n; i++ {
+			out[i] = float32(int64(binary.LittleEndian.Uint64(raw[i*8:])))
+		}
+		return out, info.Shape, nil
+
+	case "I32":
+		if len(raw)%4 != 0 {
+			return nil, nil, fmt.Errorf("safetensors: tensor %q I32 byte length %d is not divisible by 4", name, len(raw))
+		}
+		n := len(raw) / 4
+		out := make([]float32, n)
+		for i := 0; i < n; i++ {
+			out[i] = float32(int32(binary.LittleEndian.Uint32(raw[i*4:])))
+		}
+		return out, info.Shape, nil
+
+	default:
+		return nil, nil, fmt.Errorf("safetensors: unsupported dtype %q for tensor %q", info.DType, name)
+	}
+}
+
+// float16ToFloat32 converts an IEEE 754 half-precision float to float32.
+func float16ToFloat32(h uint16) float32 {
+	return half.F16ToF32(h)
+}
+
+// ShardedFile represents a sharded safetensors model (multiple files).
+type ShardedFile struct {
+	shards  map[string]*File  // filename → loaded shard
+	mapping map[string]string // tensor name → filename
+}
+
+// EagerLoad pre-faults all mapped shards and returns total bytes covered.
+func (sf *ShardedFile) EagerLoad() (int64, error) {
+	if sf == nil {
+		return 0, nil
+	}
+	var total int64
+	for name, f := range sf.shards {
+		n, err := f.EagerLoad()
+		if err != nil {
+			return total, fmt.Errorf("eager load shard %s: %w", name, err)
+		}
+		var ok bool
+		total, ok = checkedAddInt64(total, n)
+		if !ok {
+			return total, fmt.Errorf("eager load shard %s: byte count overflows", name)
+		}
+	}
+	return total, nil
+}
+
+// Close releases all shard resources.
+func (sf *ShardedFile) Close() error {
+	if sf == nil {
+		return nil
+	}
+	var firstErr error
+	for _, f := range sf.shards {
+		if f == nil {
+			continue
+		}
+		if err := f.Close(); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+	return firstErr
+}
+
+// OpenSharded loads a sharded safetensors model from an index file.
+func OpenSharded(indexPath string) (*ShardedFile, error) {
+	data, err := os.ReadFile(indexPath)
+	if err != nil {
+		return nil, fmt.Errorf("read index: %w", err)
+	}
+	var index struct {
+		WeightMap map[string]string `json:"weight_map"`
+	}
+	if err := json.Unmarshal(data, &index); err != nil {
+		return nil, fmt.Errorf("parse index: %w", err)
+	}
+
+	if len(index.WeightMap) == 0 {
+		return nil, fmt.Errorf("empty safetensors weight map")
+	}
+	// Shards must stay inside the model directory; callers keep files immutable.
+	dir, err := filepath.Abs(filepath.Dir(indexPath))
+	if err != nil {
+		return nil, err
+	}
+	dir, err = filepath.EvalSymlinks(dir)
+	if err != nil {
+		return nil, err
+	}
+	for _, filename := range index.WeightMap {
+		if filename == "" || filename == "." || filename == ".." || filepath.Base(filename) != filename || strings.ContainsAny(filename, "/\\") {
+			return nil, fmt.Errorf("unsafe shard filename %q", filename)
+		}
+	}
+
+	sf := &ShardedFile{
+		shards:  map[string]*File{},
+		mapping: index.WeightMap,
+	}
+
+	// Load each unique shard file
+	shardFiles := map[string]bool{}
+	for _, filename := range index.WeightMap {
+		shardFiles[filename] = true
+	}
+	for filename := range shardFiles {
+		path, err := filepath.EvalSymlinks(filepath.Join(dir, filename))
+		if err != nil {
+			_ = sf.Close()
+			return nil, fmt.Errorf("resolve shard %s: %w", filename, err)
+		}
+		if filepath.Dir(path) != dir {
+			_ = sf.Close()
+			return nil, fmt.Errorf("shard %s escapes model directory", filename)
+		}
+		f, err := Open(path)
+		if err != nil {
+			_ = sf.Close()
+			return nil, fmt.Errorf("open shard %s: %w", filename, err)
+		}
+		sf.shards[filename] = f
+	}
+
+	return sf, nil
+}
+
+// GetFloat32 returns a tensor's data, looking up the correct shard.
+func (sf *ShardedFile) GetFloat32(name string) ([]float32, []int, error) {
+	if sf == nil {
+		return nil, nil, fmt.Errorf("safetensors: nil sharded file")
+	}
+	filename, ok := sf.mapping[name]
+	if !ok {
+		return nil, nil, fmt.Errorf("tensor %q not in weight map", name)
+	}
+	shard, ok := sf.shards[filename]
+	if !ok {
+		return nil, nil, fmt.Errorf("shard %q not loaded", filename)
+	}
+	return shard.GetFloat32(name)
+}
+
+// Tensors returns all tensor names.
+func (sf *ShardedFile) Names() []string {
+	if sf == nil {
+		return nil
+	}
+	names := make([]string, 0, len(sf.mapping))
+	for k := range sf.mapping {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func (sf *ShardedFile) TensorInfos() map[string]TensorInfo {
+	if sf == nil {
+		return nil
+	}
+	out := make(map[string]TensorInfo, len(sf.mapping))
+	for name, filename := range sf.mapping {
+		shard := sf.shards[filename]
+		if shard == nil {
+			continue
+		}
+		if info, ok := shard.Tensors[name]; ok {
+			shape := append([]int(nil), info.Shape...)
+			out[name] = TensorInfo{DType: info.DType, Shape: shape, DataOffsets: info.DataOffsets}
+		}
+	}
+	return out
+}
+
+// GetRaw returns read-only borrowed bytes and shape without allocating.
+// Neither may be mutated; bytes are valid only until Close. Retained raw weights
+// require File ownership until all inference is joined. Copying getters instead
+// return owned data/shapes. Metadata-only callers can use TensorInfos for copies.
+func (f *File) GetRaw(name string) ([]byte, string, []int, error) {
+	if f != nil {
+		f.mu.RLock()
+		defer f.mu.RUnlock()
+	}
+	return f.getRawLocked(name)
+}
+func (f *File) getRawLocked(name string) ([]byte, string, []int, error) {
+	t, data, err := f.rawTensor(name)
+	if err != nil {
+		return nil, "", nil, err
+	}
+	return data, t.DType, t.Shape, nil
+}
+
+// GetInt32 returns a tensor's data as []int32.
+func (f *File) GetInt32(name string) ([]int32, []int, error) {
+	if f != nil {
+		f.mu.RLock()
+		defer f.mu.RUnlock()
+	}
+	raw, dtype, shape, err := f.getRawLocked(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	shape = append([]int(nil), shape...)
+	if dtype != "I32" {
+		return nil, nil, fmt.Errorf("tensor %q is %s, not I32", name, dtype)
+	}
+	if len(raw)%4 != 0 {
+		return nil, nil, fmt.Errorf("tensor %q I32 byte length %d is not divisible by 4", name, len(raw))
+	}
+	n := len(raw) / 4
+	out := make([]int32, n)
+	for i := 0; i < n; i++ {
+		out[i] = int32(binary.LittleEndian.Uint32(raw[i*4:]))
+	}
+	return out, shape, nil
+}
+
+// ShardedFile GetRaw/GetInt32
+func (sf *ShardedFile) GetRaw(name string) ([]byte, string, []int, error) {
+	if sf == nil {
+		return nil, "", nil, fmt.Errorf("safetensors: nil sharded file")
+	}
+	filename, ok := sf.mapping[name]
+	if !ok {
+		return nil, "", nil, fmt.Errorf("tensor %q not in weight map", name)
+	}
+	shard, ok := sf.shards[filename]
+	if !ok || shard == nil {
+		return nil, "", nil, fmt.Errorf("shard %q not loaded", filename)
+	}
+	return shard.GetRaw(name)
+}
+
+func (sf *ShardedFile) GetInt32(name string) ([]int32, []int, error) {
+	if sf == nil {
+		return nil, nil, fmt.Errorf("safetensors: nil sharded file")
+	}
+	filename, ok := sf.mapping[name]
+	if !ok {
+		return nil, nil, fmt.Errorf("tensor %q not in weight map", name)
+	}
+	shard, ok := sf.shards[filename]
+	if !ok || shard == nil {
+		return nil, nil, fmt.Errorf("shard %q not loaded", filename)
+	}
+	return shard.GetInt32(name)
+}
+
+// GetBF16 returns BF16 tensor data as []uint16 without F32 conversion.
+// For BF16 dtype, returns raw uint16 values.
+// For F32 dtype, converts F32→BF16 (truncation).
+// For F16 dtype, converts F16→BF16 via F32 intermediate.
+func (f *File) GetBF16(name string) ([]uint16, []int, error) {
+	if f != nil {
+		f.mu.RLock()
+		defer f.mu.RUnlock()
+	}
+	raw, dtype, shape, err := f.getRawLocked(name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	shape = append([]int(nil), shape...)
+	switch dtype {
+	case "BF16":
+		if len(raw)%2 != 0 {
+			return nil, nil, fmt.Errorf("tensor %q BF16 byte length %d is not divisible by 2", name, len(raw))
+		}
+		n := len(raw) / 2
+		out := make([]uint16, n)
+		for i := 0; i < n; i++ {
+			out[i] = binary.LittleEndian.Uint16(raw[i*2:])
+		}
+		return out, shape, nil
+
+	case "F32":
+		if len(raw)%4 != 0 {
+			return nil, nil, fmt.Errorf("tensor %q F32 byte length %d is not divisible by 4", name, len(raw))
+		}
+		n := len(raw) / 4
+		out := make([]uint16, n)
+		for i := 0; i < n; i++ {
+			bits := binary.LittleEndian.Uint32(raw[i*4:])
+			out[i] = uint16(bits >> 16) // truncate to BF16
+		}
+		return out, shape, nil
+
+	case "F16":
+		if len(raw)%2 != 0 {
+			return nil, nil, fmt.Errorf("tensor %q F16 byte length %d is not divisible by 2", name, len(raw))
+		}
+		n := len(raw) / 2
+		out := make([]uint16, n)
+		for i := 0; i < n; i++ {
+			f32 := float16ToFloat32(binary.LittleEndian.Uint16(raw[i*2:]))
+			out[i] = uint16(math.Float32bits(f32) >> 16)
+		}
+		return out, shape, nil
+
+	default:
+		return nil, nil, fmt.Errorf("tensor %q is %s, not BF16/F32/F16", name, dtype)
+	}
+}
+
+// GetBF16 for sharded files
+func (sf *ShardedFile) GetBF16(name string) ([]uint16, []int, error) {
+	if sf == nil {
+		return nil, nil, fmt.Errorf("safetensors: nil sharded file")
+	}
+	filename, ok := sf.mapping[name]
+	if !ok {
+		return nil, nil, fmt.Errorf("tensor %q not in weight map", name)
+	}
+	shard, ok := sf.shards[filename]
+	if !ok || shard == nil {
+		return nil, nil, fmt.Errorf("shard %q not loaded", filename)
+	}
+	return shard.GetBF16(name)
+}
