@@ -56,9 +56,9 @@ while IFS=$'\t' read -r upstream_import local_import mode; do
   fi
 done < "$root/scripts/local-packages.tsv"
 
-# Use standalone artifact environment names in imported Go tests.
-mapfile -d '' artifact_files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' \
-  'GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B' "$root" || true)
+# Use standalone artifact environment names in imported Go tests and docs.
+mapfile -d '' artifact_files < <(grep -rlZ --include='*.go' --include='*.md' \
+  'GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B' "$root/model" "$root/loader" "$root/docs" "$root/cmd" || true)
 if ((${#artifact_files[@]})); then
   sed -i \
     -e 's/GO_PHERENCE_GO_SYSTEM_ONE_GEMMA4_12B_TOKENIZER/GO_SYSTEM_ONE_TOKENIZER_DIR/g' \
@@ -74,8 +74,12 @@ sed -i \
   -e 's#\[CPU SIMD gap note\](../../docs/performance/gemma4-cpu-simd-gap.md)#[upstream CPU SIMD gap note](https://github.com/rcarmo/go-pherence/blob/'"$revision"'/docs/performance/gemma4-cpu-simd-gap.md)#' \
   "$root/loader/gguf/README.md"
 sed -i \
-  -e 's#\[asset migration notes\](../docs/guides/model-assets.md)#[external artifact contract](../docs/artifacts.md)#' \
+  -e 's#See the \[asset migration notes\](../docs/guides/model-assets.md) for older checkouts\.#See the [external artifact contract](../docs/artifacts.md) for pinned model and tokenizer requirements.#' \
   "$root/model/README.md"
+sed -Ei \
+  -e 's#go-pherence@[0-9a-f]{40}#go-pherence@'"$revision"'#' \
+  -e 's#go-pherence/commit/[0-9a-f]{40}#go-pherence/commit/'"$revision"'#' \
+  "$root/README.md"
 if [[ -f "$root/cmd/go-system-one/README.md" ]]; then
   perl -0pi -e 's#```sh\ngo run \./cmd/llm/go-system-one \\\n  -model .*?\n```#```sh\nmake run BACKEND=nvidia LISTEN=127.0.0.1:8080\n```#s' "$root/cmd/go-system-one/README.md"
   sed -i \

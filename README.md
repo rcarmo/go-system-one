@@ -8,7 +8,7 @@ The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver A
 
 [`go-pherence`](https://github.com/rcarmo/go-pherence) is the canonical reference for Go System One implementation lineage, shared-kernel evolution and relevant future changes. This repository is the independently buildable and releasable projection of that work: it owns the decision contract, HTTP service, playground, model orchestration, loaders, tensor/runtime packages, portable SIMD, NVIDIA Driver API runtime, embedded PTX and platform adapters.
 
-The standalone build has no compile-time dependency on `go-pherence`; `vendor/` contains third-party modules and their licences only. [`go-pherence@8629232b14440f4a9aa06cfb6d6003c1302c8cb9`](https://github.com/rcarmo/go-pherence/commit/8629232b14440f4a9aa06cfb6d6003c1302c8cb9) is the current immutable source provenance. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies manifest-listed files from a reviewed upstream commit in one direction and never writes to that repository.
+The standalone build has no compile-time dependency on `go-pherence`; `vendor/` contains third-party modules and their licences only. [`go-pherence@788f22402d928004a597b1446568f0e0595dfb1c`](https://github.com/rcarmo/go-pherence/commit/788f22402d928004a597b1446568f0e0595dfb1c) is the current immutable source provenance. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies manifest-listed files from a reviewed upstream commit in one direction and never writes to that repository.
 
 ## Setup and build
 

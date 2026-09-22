@@ -12,4 +12,4 @@ GGUF model-file loader: parsing, tensor dequantization, and tensor inspection.
 | `tokenizer.go` | GGUF-embedded tokenizer/vocab |
 | `inspect.go`, `reap_inspect.go` | Tensor inventory / REAP inspection helpers |
 
-General quantisation codecs live in `backends/simd/quant`; this package handles the GGUF file format and owns format-specific GGUF projection kernels where preserving ggml-compatible block layout and arithmetic order is part of the contract. The retained Gemma4 Q4_0 prefill path is documented in the [upstream CPU SIMD gap note](https://github.com/rcarmo/go-pherence/blob/8629232b14440f4a9aa06cfb6d6003c1302c8cb9/docs/performance/gemma4-cpu-simd-gap.md).
+General quantisation codecs live in `backends/simd/quant`; this package handles the GGUF file format and owns format-specific GGUF projection kernels where preserving ggml-compatible block layout and arithmetic order is part of the contract. The retained Gemma4 Q4_0 prefill path is documented in the [upstream CPU SIMD gap note](https://github.com/rcarmo/go-pherence/blob/788f22402d928004a597b1446568f0e0595dfb1c/docs/performance/gemma4-cpu-simd-gap.md).
