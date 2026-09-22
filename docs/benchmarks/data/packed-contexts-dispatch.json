@@ -1,0 +1,3446 @@
+{
+  "base_commit": "e01f24bd8d8f9a059a30706729e6960c98c2e775",
+  "method": "same cooled 3-sample protocol and requests as segmented run; Q5/Q6 dispatch and bounded scratch reuse",
+  "cases": [
+    {
+      "rows": 512,
+      "size": 10,
+      "median_ms": 794.027794,
+      "min_ms": 793.235817,
+      "max_ms": 795.778044,
+      "maxTemp": 62,
+      "peakMiB": 9488,
+      "samples": [
+        {
+          "handler_ms": 793.235817,
+          "wall_ms": 836.8821379999999,
+          "before": {
+            "temp": 57,
+            "mem": 9488,
+            "sm": 1845
+          },
+          "after": {
+            "temp": 61,
+            "mem": 9488,
+            "sm": 1845
+          }
+        },
+        {
+          "handler_ms": 794.027794,
+          "wall_ms": 831.101416,
+          "before": {
+            "temp": 59,
+            "mem": 9488,
+            "sm": 1845
+          },
+          "after": {
+            "temp": 62,
+            "mem": 9488,
+            "sm": 1845
+          }
+        },
+        {
+          "handler_ms": 795.778044,
+          "wall_ms": 853.9693229999993,
+          "before": {
+            "temp": 55,
+            "mem": 9488,
+            "sm": 1845
+          },
+          "after": {
+            "temp": 62,
+            "mem": 9488,
+            "sm": 1845
+          }
+        }
+      ],
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "urgent": {
+            "type": "boolean",
+            "description": "Does this need urgent handling?"
+          }
+        },
+        "contexts": [
+          "The production service is down for every customer. Ticket 1.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 2.",
+          "There is an active fire in the server room. Ticket 3.",
+          "Please update the documentation next month. Ticket 4.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 5.",
+          "The routine nightly backup finished without errors. Ticket 6.",
+          "Every production database replica is offline and customer requests are failing. Ticket 7.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 8.",
+          "The production service is down for every customer. Ticket 9.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 10."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "results": [
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999364293,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999364293,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 6.357069739339867e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999993817432,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.182567456281085e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999993817432,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999727747,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999727747,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.7225239765164146e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999770335516,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.2966448326917173e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999770335516,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 22,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999603391,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999603391,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.966083691129851e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995596371,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.4036288769972106e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995596371,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999779867,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999779867,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.2013340848023692e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999961707111,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.829288783605482e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999961707111,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999538007,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999538007,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.619916167597399e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999988183248,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.181675101237722e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999988183248,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        }
+      ]
+    },
+    {
+      "rows": 512,
+      "size": 100,
+      "median_ms": 8054.339293,
+      "min_ms": 8042.855469,
+      "max_ms": 8056.500612,
+      "maxTemp": 73,
+      "peakMiB": 9562,
+      "samples": [
+        {
+          "handler_ms": 8042.855469,
+          "wall_ms": 8061.689615000001,
+          "before": {
+            "temp": 60,
+            "mem": 9562,
+            "sm": 1830
+          },
+          "after": {
+            "temp": 72,
+            "mem": 9562,
+            "sm": 1822
+          }
+        },
+        {
+          "handler_ms": 8054.339293,
+          "wall_ms": 8098.884092000004,
+          "before": {
+            "temp": 60,
+            "mem": 9562,
+            "sm": 1777
+          },
+          "after": {
+            "temp": 73,
+            "mem": 9562,
+            "sm": 1822
+          }
+        },
+        {
+          "handler_ms": 8056.500612,
+          "wall_ms": 8109.646949999995,
+          "before": {
+            "temp": 60,
+            "mem": 9562,
+            "sm": 1777
+          },
+          "after": {
+            "temp": 73,
+            "mem": 9562,
+            "sm": 1815
+          }
+        }
+      ],
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "urgent": {
+            "type": "boolean",
+            "description": "Does this need urgent handling?"
+          }
+        },
+        "contexts": [
+          "The production service is down for every customer. Ticket 1.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 2.",
+          "There is an active fire in the server room. Ticket 3.",
+          "Please update the documentation next month. Ticket 4.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 5.",
+          "The routine nightly backup finished without errors. Ticket 6.",
+          "Every production database replica is offline and customer requests are failing. Ticket 7.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 8.",
+          "The production service is down for every customer. Ticket 9.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 10.",
+          "There is an active fire in the server room. Ticket 11.",
+          "Please update the documentation next month. Ticket 12.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 13.",
+          "The routine nightly backup finished without errors. Ticket 14.",
+          "Every production database replica is offline and customer requests are failing. Ticket 15.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 16.",
+          "The production service is down for every customer. Ticket 17.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 18.",
+          "There is an active fire in the server room. Ticket 19.",
+          "Please update the documentation next month. Ticket 20.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 21.",
+          "The routine nightly backup finished without errors. Ticket 22.",
+          "Every production database replica is offline and customer requests are failing. Ticket 23.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 24.",
+          "The production service is down for every customer. Ticket 25.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 26.",
+          "There is an active fire in the server room. Ticket 27.",
+          "Please update the documentation next month. Ticket 28.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 29.",
+          "The routine nightly backup finished without errors. Ticket 30.",
+          "Every production database replica is offline and customer requests are failing. Ticket 31.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 32.",
+          "The production service is down for every customer. Ticket 33.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 34.",
+          "There is an active fire in the server room. Ticket 35.",
+          "Please update the documentation next month. Ticket 36.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 37.",
+          "The routine nightly backup finished without errors. Ticket 38.",
+          "Every production database replica is offline and customer requests are failing. Ticket 39.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 40.",
+          "The production service is down for every customer. Ticket 41.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 42.",
+          "There is an active fire in the server room. Ticket 43.",
+          "Please update the documentation next month. Ticket 44.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 45.",
+          "The routine nightly backup finished without errors. Ticket 46.",
+          "Every production database replica is offline and customer requests are failing. Ticket 47.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 48.",
+          "The production service is down for every customer. Ticket 49.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 50.",
+          "There is an active fire in the server room. Ticket 51.",
+          "Please update the documentation next month. Ticket 52.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 53.",
+          "The routine nightly backup finished without errors. Ticket 54.",
+          "Every production database replica is offline and customer requests are failing. Ticket 55.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 56.",
+          "The production service is down for every customer. Ticket 57.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 58.",
+          "There is an active fire in the server room. Ticket 59.",
+          "Please update the documentation next month. Ticket 60.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 61.",
+          "The routine nightly backup finished without errors. Ticket 62.",
+          "Every production database replica is offline and customer requests are failing. Ticket 63.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 64.",
+          "The production service is down for every customer. Ticket 65.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 66.",
+          "There is an active fire in the server room. Ticket 67.",
+          "Please update the documentation next month. Ticket 68.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 69.",
+          "The routine nightly backup finished without errors. Ticket 70.",
+          "Every production database replica is offline and customer requests are failing. Ticket 71.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 72.",
+          "The production service is down for every customer. Ticket 73.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 74.",
+          "There is an active fire in the server room. Ticket 75.",
+          "Please update the documentation next month. Ticket 76.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 77.",
+          "The routine nightly backup finished without errors. Ticket 78.",
+          "Every production database replica is offline and customer requests are failing. Ticket 79.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 80.",
+          "The production service is down for every customer. Ticket 81.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 82.",
+          "There is an active fire in the server room. Ticket 83.",
+          "Please update the documentation next month. Ticket 84.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 85.",
+          "The routine nightly backup finished without errors. Ticket 86.",
+          "Every production database replica is offline and customer requests are failing. Ticket 87.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 88.",
+          "The production service is down for every customer. Ticket 89.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 90.",
+          "There is an active fire in the server room. Ticket 91.",
+          "Please update the documentation next month. Ticket 92.",
+          "An expired certificate has blocked all payments since this morning. Customers cannot check out. Ticket 93.",
+          "The routine nightly backup finished without errors. Ticket 94.",
+          "Every production database replica is offline and customer requests are failing. Ticket 95.",
+          "A weekly progress report is due on Friday. No systems are affected. Ticket 96.",
+          "The production service is down for every customer. Ticket 97.",
+          "The planned maintenance completed successfully. All services are healthy. Ticket 98.",
+          "There is an active fire in the server room. Ticket 99.",
+          "Please update the documentation next month. Ticket 100."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "results": [
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999364293,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999364293,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 6.357069739339867e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999993817432,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.182567456281085e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999993817432,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999727747,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999727747,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.7225239765164146e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999770335516,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.2966448326917173e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999770335516,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 22,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999603391,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999603391,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.966083691129851e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995596371,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.4036288769972106e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995596371,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999779867,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999779867,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.2013340848023692e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999961707111,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.829288783605482e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999961707111,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999538007,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999538007,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.619916167597399e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999988183248,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.181675101237722e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999988183248,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999848386,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999848386,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.516143963331821e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999910217278,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 8.978272313613082e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999910217278,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999561806,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999561806,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.3819314455739425e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999996403175,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.596824554826699e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999996403175,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999586708,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999586708,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.1329214848362924e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999944519709,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 5.548029099714874e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999944519709,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999730258,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999730258,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.6974241459546988e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999994203144,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 5.796856525020681e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999994203144,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999706823,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999706823,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.9317731917695495e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999933188517,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.681148338836942e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999933188517,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999078635,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999078635,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 9.21365882146196e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995894213,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.105787407988083e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995894213,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999591256,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999591256,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.0874408089193246e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999954438796,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.5561203057921534e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999954438796,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999652329,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999652329,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.4767159407073326e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999997638036,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.3619638491265376e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999997638036,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.999999999959905,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999999959905,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.0095103997718455e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999863412148,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.3658785203179822e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999863412148,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999771143,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999771143,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.28857124987079e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995921494,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.078505582787498e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995921494,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999767386,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999767386,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.3261367456839312e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999862414288,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.3758571165084174e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999862414288,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999494371,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999494371,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.0562815571086866e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999993700652,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.299348099563367e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999993700652,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999549303,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999549303,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.5069648401180215e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999882203651,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.177963496874973e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999882203651,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999527178,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999527178,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.728211584974605e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995121314,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.87868627979172e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995121314,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999766254,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999766254,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.3374668799436528e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999874001718,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.2599828193821613e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999874001718,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999608302,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999608302,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.916981314964674e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999997636426,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.3635738404613444e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999997636426,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999852045,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999852045,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.4795585778307135e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999725119234,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.7488076695633294e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999725119234,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999542537,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999542537,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.574635443391592e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999996105173,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.8948272946079306e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999996105173,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999619806,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999619806,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.8019467569074015e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999874793509,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.252064895238351e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999874793509,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999492186,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999492186,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.078148462641018e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995311784,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.688216383775254e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995311784,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999597884,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999597884,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.021155353231217e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999893323194,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.0667680515091782e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999893323194,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999675331,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999675331,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.246700119378451e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995995201,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.004798592440641e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995995201,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999740183,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999740183,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.5981726220543074e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999911017204,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 8.898279584920025e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999911017204,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999611755,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999611755,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.882450080544438e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999998039881,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.960118212874112e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999998039881,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999446412,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999446412,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.535884661889612e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999867741787,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.3225821321420685e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999867741787,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.999999999958274,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999999958274,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.172588306104973e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999997562123,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.4378774012913427e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999997562123,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999513962,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999513962,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 4.860371590988471e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.999999991260521,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 8.739479073323267e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.999999991260521,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.999999999949907,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999999949907,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.009293421191056e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999997451754,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.5482451208409296e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999997451754,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999853062,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999853062,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.4693808041183265e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999916883172,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 8.311682904243633e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999916883172,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999648039,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999648039,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.5196010191861825e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999993081097,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.918902694367983e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999993081097,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999372506,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999372506,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 6.274929699711418e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999823543558,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.764564417677119e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999823543558,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999181781,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999181781,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 8.182193815124548e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999996928601,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.071399779077518e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999996928601,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999810218,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999810218,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.8978242430247364e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999875359328,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.246406725918251e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999875359328,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999326437,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999326437,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 6.735632382171056e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999996480098,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.5199023941546085e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999996480098,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999609661,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999609661,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.903385243843004e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999813079218,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.8692078091435358e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999813079218,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999759743,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999759743,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.402563985540803e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999996067763,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.932237068531724e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999996067763,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.999999999982566,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999999982566,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.7434059062013535e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999871166844,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.2883315668519764e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999871166844,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999726696,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999726696,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.733031064015848e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999995612951,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.387048541722765e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999995612951,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999776537,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999776537,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.2346399849814537e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.999999993441288,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.558711925189804e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.999999993441288,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999493792,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999493792,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.062076152006693e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999997995321,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 2.004677830058418e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999997995321,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999637941,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999637941,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.620588123186096e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999827407754,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.725922464884356e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999827407754,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 23,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999465565,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999465565,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.344349426508389e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999998245332,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 1.7546683384881182e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999998245332,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999652653,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999652653,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.473474742170049e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 28,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999921694541,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 7.830545825245623e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999921694541,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999492521,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999492521,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.074783762496351e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 25,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999994235342,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 5.764658166512701e-10,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999994235342,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 27,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.999999999944645,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999999944645,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 5.5355045559062e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 26,
+            "scored_rows": 4
+          }
+        },
+        {
+          "decision": {
+            "urgent": false
+          },
+          "fields": {
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999938323743,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.167625682850734e-9,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999938323743,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 24,
+            "scored_rows": 4
+          }
+        }
+      ]
+    }
+  ]
+}

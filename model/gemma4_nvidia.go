@@ -14,14 +14,15 @@ import (
 // serialized because the scratch/KV arena is reused; model weights remain
 // resident across calls. It never substitutes CPU transformer execution.
 type Gemma4NVIDIA struct {
-	model    *LlamaModel
-	mu       sync.Mutex
-	layers   []gemma4NVIDIALayer
-	norm     *nvidia.Buffer
-	lmHead   *nvidia.GPUGGUFMatrix
-	ropeSWA  *nvidia.Buffer
-	ropeFull *nvidia.Buffer
-	closed   bool
+	model       *LlamaModel
+	mu          sync.Mutex
+	layers      []gemma4NVIDIALayer
+	norm        *nvidia.Buffer
+	lmHead      *nvidia.GPUGGUFMatrix
+	ropeSWA     *nvidia.Buffer
+	ropeFull    *nvidia.Buffer
+	closed      bool
+	prefillWork gemma4DeviceWork
 }
 
 type gemma4NVIDIALayer struct {
@@ -176,6 +177,8 @@ func (g *Gemma4NVIDIA) Close() {
 		return
 	}
 	g.closed = true
+	nvidia.SyncAll()
+	g.prefillWork.free()
 	for i := range g.layers {
 		g.layers[i].free()
 	}
@@ -267,6 +270,9 @@ func (g *Gemma4NVIDIA) runPrefillBatchOutput(ctx context.Context, tokens []int, 
 func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 int, arena *gemma4NVIDIAKVArena, final []float32, finalDevice *nvidia.Buffer, segments []gemma4PrefillSegment) error {
 	m := g.model
 	B, h := len(tokens), m.Config.HiddenSize
+	if B < 1 || B > Gemma4PackedRows {
+		return fmt.Errorf("prefill rows must be 1..%d", Gemma4PackedRows)
+	}
 	host := make([]float32, B*h)
 	for i, tok := range tokens {
 		if tok < 0 || tok >= m.Config.VocabSize {
@@ -289,8 +295,8 @@ func (g *Gemma4NVIDIA) runPrefillRows(ctx context.Context, tokens []int, pos0 in
 		}
 		defer packed.Close()
 	}
-	var work gemma4DeviceWork
-	defer work.free()
+	work := &g.prefillWork
+	work.begin()
 	defer nvidia.SyncAll()
 	hidden := work.alloc(B * h)
 	if work.err != nil {

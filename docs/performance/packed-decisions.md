@@ -23,7 +23,9 @@ The first executor shared projections but launched attention separately per cont
 
 Using the same requests and cooling protocol, three warm samples gave 809.33 ms for 10 entries and 8,340.94 ms for 100 entries. This is about 2% below the first packed executor and 1.39–1.40× faster than serial. Sampled memory use peaked at 9,562 MiB; temperature reached 74°C. [Segmented executor samples](../benchmarks/data/packed-contexts-segmented.json) contain identical complete HTTP results to the serial comparison.
 
-Development source for the segmented attention, rotary-position and batched Q5 selected-head kernels is in `scripts/kernels/packed_decision.cu`; `scripts/generate-packed-ptx.sh` embeds CUDA 12.8 PTX. The runtime still requires only the NVIDIA driver. Next steps are persistent bounded scratch, larger-batch projection tuning and multi-field packing. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
+Development source for the segmented attention, rotary-position and batched Q5 selected-head kernels is in `scripts/kernels/packed_decision.cu`; `scripts/generate-packed-ptx.sh` embeds CUDA 12.8 PTX. The runtime still requires only the NVIDIA driver. The next dispatch/scratch revision selects existing Q5/Q6 tiles for packed workloads and retains at most one 512-row prefill workspace under the model mutex. Using the same cooled protocol, medians were 794.03 ms for 10 entries and 8,054.34 ms for 100. Complete HTTP results remained identical; sampled device use peaked at 9,562 MiB and temperature at 73°C. [Dispatch/scratch samples](../benchmarks/data/packed-contexts-dispatch.json) retain the measurements. Scratch reuse, growth and freeing have explicit tests.
+
+Two INT8 tensor-core prototypes were rejected: they were slower than the existing dp4a kernels, and Q5 accumulation also differed slightly. No prototype kernel enters production. Next steps are multi-field packing and further projection/layout work. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
 ## Current cost
 

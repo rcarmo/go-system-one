@@ -23,6 +23,7 @@ func TestQ5PackedMMQ64TilesMatchBatch4(t *testing.T) {
 		{name: "j8_batch_tail", outDim: 1024, batch: 7},
 		{name: "j16_batch_tail", outDim: 2304, batch: 15},
 		{name: "j24_batch_tail", outDim: 2304, batch: 23},
+		{name: "packed_j16_tail", outDim: 2304, batch: 129},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			testQ5PackedMMQ64Case(t, tc.outDim, tc.batch)

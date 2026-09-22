@@ -23,6 +23,8 @@ func TestQ6PackedMMQTilesMatchMMQ8(t *testing.T) {
 		{name: "narrow_j8", inDim: 256, outDim: 256, batch: 24},
 		{name: "wide_j12_tail", inDim: 8192, outDim: 64, batch: 23},
 		{name: "wide_j16_tail", inDim: 8192, outDim: 64, batch: 15},
+		{name: "packed_narrow_j12_tail", inDim: 256, outDim: 128, batch: 127},
+		{name: "packed_wide_j16_tail", inDim: 8192, outDim: 64, batch: 257},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			testQ6PackedMMQCase(t, tc.inDim, tc.outDim, tc.batch)

@@ -14,27 +14,48 @@ const Gemma4PackedRows = 512
 
 type gemma4PrefillSegment struct{ offset, length int }
 
+// Reused only while the owning Gemma4NVIDIA mutex is held. Each slot grows to
+// at most the 512-row workspace; Close releases every retained allocation.
 type gemma4DeviceWork struct {
 	buffers []*nvidia.Buffer
+	next    int
 	err     error
 }
+
+func (w *gemma4DeviceWork) begin() { w.next, w.err = 0, nil }
 
 func (w *gemma4DeviceWork) alloc(elements int) *nvidia.Buffer {
 	if w.err != nil {
 		return nil
 	}
-	var b *nvidia.Buffer
+	index := w.next
+	w.next++
+	if index == len(w.buffers) {
+		w.buffers = append(w.buffers, nil)
+	}
+	b := w.buffers[index]
+	if b != nil && elements <= b.Size/4 {
+		return b
+	}
+	if b != nil {
+		b.Free()
+		w.buffers[index] = nil
+	}
 	b, w.err = nvidia.Malloc(elements)
 	if w.err == nil {
-		w.buffers = append(w.buffers, b)
+		w.buffers[index] = b
 	}
 	return b
 }
 
 func (w *gemma4DeviceWork) free() {
 	for _, b := range w.buffers {
-		b.Free()
+		if b != nil {
+			b.Free()
+		}
 	}
+	w.buffers = nil
+	w.begin()
 }
 
 // deviceView borrows storage; the returned view must never be freed.

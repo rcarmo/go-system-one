@@ -102,3 +102,32 @@ func TestGemma4SelectedLogitTransforms(t *testing.T) {
 		t.Fatalf("transforms: %v", got)
 	}
 }
+
+func TestGemma4DeviceWorkReusesAndFrees(t *testing.T) {
+	if !nvidia.SgemmReady() {
+		t.Skip("CUDA unavailable")
+	}
+	var w gemma4DeviceWork
+	w.begin()
+	a, b := w.alloc(16), w.alloc(32)
+	if w.err != nil {
+		t.Fatal(w.err)
+	}
+	w.begin()
+	if w.alloc(8) != a || w.alloc(32) != b {
+		t.Fatal("scratch not reused")
+	}
+	w.begin()
+	c := w.alloc(64)
+	if w.err != nil {
+		t.Fatal(w.err)
+	}
+	if c.Size < 64*4 || a.Ptr != 0 {
+		t.Fatal("growth did not replace old buffer")
+	}
+	w.free()
+	if c.Ptr != 0 || b.Ptr != 0 || len(w.buffers) != 0 {
+		t.Fatal("scratch leak")
+	}
+	w.free()
+}
