@@ -5,7 +5,7 @@ github.com/ebitengine/purego/internal/cgo
 github.com/ebitengine/purego/internal/fakecgo
 github.com/ebitengine/purego/internal/strings
 github.com/ebitengine/purego/internal/xreflect
-# github.com/rcarmo/go-pherence v0.0.0-20260922131709-f65652f6d9d8
+# github.com/rcarmo/go-pherence v0.0.0-20260922134306-9ada94d175cb
 ## explicit; go 1.26.2
 github.com/rcarmo/go-pherence/backends/ggmlgraph
 github.com/rcarmo/go-pherence/backends/ggmlquant

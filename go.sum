@@ -1,7 +1,7 @@
 github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/ISU=
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
-github.com/rcarmo/go-pherence v0.0.0-20260922131709-f65652f6d9d8 h1:jpQ1ombQB3cF+hIp0uGODi3doa+SdEdwbioUZZL+zF8=
-github.com/rcarmo/go-pherence v0.0.0-20260922131709-f65652f6d9d8/go.mod h1:Dz+OME/52rUY5cKJ24NuyNN094CmrWjPqEnvHJ5o3po=
+github.com/rcarmo/go-pherence v0.0.0-20260922134306-9ada94d175cb h1:O9C402RnRksXOrSjn0LGQ4maHHqpnm+vHcSsbtDpV7s=
+github.com/rcarmo/go-pherence v0.0.0-20260922134306-9ada94d175cb/go.mod h1:Dz+OME/52rUY5cKJ24NuyNN094CmrWjPqEnvHJ5o3po=
 golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
 golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 golang.org/x/text v0.28.0 h1:rhazDwis8INMIwQ4tpjLDzUhx6RlXqZNPEM0huQojng=
