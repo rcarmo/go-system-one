@@ -18,30 +18,16 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Verify formatting
-        run: make fmt-check
-      - name: Test vendored source offline
+      - name: Repository checks
         env:
           GOPROXY: "off"
           GOSUMDB: "off"
-        run: go test -mod=vendor ./...
+        run: make check
       - name: Race test product packages
         env:
           GOPROXY: "off"
           GOSUMDB: "off"
         run: go test -mod=vendor -race ./model/gosystemone ./internal/httpinput ./webui
-      - name: Vet
-        env:
-          GOPROXY: "off"
-          GOSUMDB: "off"
-        run: go vet -mod=vendor ./...
-      - name: Build
-        env:
-          GOPROXY: "off"
-          GOSUMDB: "off"
-        run: go build -mod=vendor ./...
-      - name: Check first-party patch whitespace
-        run: git diff --check -- . ':(exclude)vendor/**'
 
   cross-build:
     runs-on: ubuntu-latest
