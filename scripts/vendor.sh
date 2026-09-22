@@ -17,8 +17,9 @@ install -D -m 0644 \
 # Shared kernels move into this module incrementally. Rewrite the retained
 # upstream closure to use the local implementation, then remove the duplicate
 # vendored package and its package line from modules.txt.
-while IFS=$'\t' read -r upstream_import local_import; do
+while IFS=$'\t' read -r upstream_import local_import mode; do
   [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
+  [[ ${mode:-vendor} != "local-only" ]] || continue
   mapfile -d '' files < <(grep -rlZ --include='*.go' "\"$upstream_import\"" "$root/vendor/github.com/rcarmo/go-pherence" || true)
   if ((${#files[@]})); then
     sed -i "s#\"$upstream_import\"#\"$local_import\"#g" "${files[@]}"

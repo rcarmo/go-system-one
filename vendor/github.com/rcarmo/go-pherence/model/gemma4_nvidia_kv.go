@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 )
 
 // gemma4NVIDIAKVArena stores one immutable trunk and only branch-local suffix

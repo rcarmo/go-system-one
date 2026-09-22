@@ -5,7 +5,7 @@ import (
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-pherence/backends/simd/runtime"
 )
 

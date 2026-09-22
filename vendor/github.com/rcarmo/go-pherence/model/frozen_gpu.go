@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-pherence/internal/checked"
 	loaderconfig "github.com/rcarmo/go-pherence/loader/config"
 	"github.com/rcarmo/go-pherence/loader/weights"

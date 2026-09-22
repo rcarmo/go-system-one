@@ -48,7 +48,7 @@ find "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinp
   -e 's#github.com/rcarmo/go-pherence/webui#github.com/rcarmo/go-system-one/webui#g'
 
 # Preserve every package boundary already internalised by this repository.
-while IFS=$'\t' read -r upstream_import local_import; do
+while IFS=$'\t' read -r upstream_import local_import mode; do
   [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
   mapfile -d '' files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' "\"$upstream_import\"" "$root" || true)
   if ((${#files[@]})); then

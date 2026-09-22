@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 )
 
 // FrozenPrefix is immutable per-layer, post-RoPE K/V for an exact token prefix.

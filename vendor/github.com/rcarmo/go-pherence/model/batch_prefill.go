@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 )
 
 // prefillGPU processes all prompt tokens through the model in one batched pass.

@@ -16,7 +16,7 @@ import (
 	"github.com/rcarmo/go-pherence/backends/mlx"
 	simdq4 "github.com/rcarmo/go-pherence/backends/simd/quant/q4"
 
-	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
+	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-pherence/backends/simd/runtime"
 	"github.com/rcarmo/go-pherence/tensor"
 )

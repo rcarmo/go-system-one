@@ -11,8 +11,6 @@ github.com/rcarmo/go-pherence/backends/ggmlgraph
 github.com/rcarmo/go-pherence/backends/ggmlquant
 github.com/rcarmo/go-pherence/backends/internal/ggmlutil
 github.com/rcarmo/go-pherence/backends/mlx
-github.com/rcarmo/go-pherence/backends/nvidia/internal/debuglog
-github.com/rcarmo/go-pherence/backends/nvidia/runtime
 github.com/rcarmo/go-pherence/backends/placement
 github.com/rcarmo/go-pherence/backends/simd/kernels
 github.com/rcarmo/go-pherence/backends/simd/quant/bf16
