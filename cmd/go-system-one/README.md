@@ -12,6 +12,12 @@ Open `http://127.0.0.1:8080/go-system-one` for the standalone playground. The AP
 
 The command verifies the frozen model, tokenizer, tokenizer configuration and chat-template SHA-256 values before loading them. Use `-verify-artifacts=false` only for development fixtures. `-backend simd` selects the correctness-oracle implementation; the 12B SIMD path is too slow for interactive use.
 
+## Packed execution
+
+NVIDIA tree scoring packs contexts and field branches by default, up to 512 real token rows per group. Use `-packed-token-rows=0` for the serial reference or a positive value up to 512 to bound groups more tightly. Automatic mode (`-1`) selects 512 on NVIDIA and 0 on SIMD. Oversized entries fall back individually; greedy/mixed-mode requests keep the serial scorer.
+
+Packing uses Q8 activations where tiny serial branch batches use F32. The [precision report](../../docs/performance/multifield-precision.md) records winner agreement, losing-rank shifts and probability movement. Returned confidence can change even when the selected answer does not.
+
 ## Deployment limits
 
 The server has no authentication or TLS. Its default loopback binding is the supported direct-use configuration. For remote access, put an authenticated TLS reverse proxy in front of every route, restrict the upstream to loopback or a private socket, and apply request-rate and body-size limits at the proxy. Do not expose the command directly to an untrusted network.

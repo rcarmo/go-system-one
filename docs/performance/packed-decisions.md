@@ -2,7 +2,7 @@
 
 Process several independent contexts in the same transformer matrix operations, then extract only the required candidate logits. Keep the pinned Gemma weights, prompt, token paths and probability calculation unchanged.
 
-Packed execution is opt-in with `-packed-token-rows=512`. It supports multi-field tree decisions and multi-token enums, sharing each context among its independent branches. Greedy/mixed-mode requests and groups exceeding the token or branch budget retain the serial path. Default behaviour is unchanged. The source review used `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
+The NVIDIA service uses packed execution by default with a 512-token-row budget. It supports multi-field tree decisions and multi-token enums, sharing each context among its independent branches. Greedy/mixed-mode requests and groups exceeding the branch budget retain the serial path. Oversized contexts fall back individually without disabling packing for their peers. Use `-packed-token-rows=0` for the serial diagnostic reference; `-1` selects the automatic backend default. CPU/SIMD behaviour is unchanged. The source review used `go-system-one@63e49ff0a49de4eca17e5e88aea9154d8be41754` and `go-pherence@32bfb937ca1c8608c66411c63f9b1eb39d152cb3`.
 
 ## First measurements
 
@@ -42,7 +42,7 @@ One warm-up preceded three measured requests per case. Each request started at n
 
 All 22 compared field decisions agreed. Maximum candidate-probability movement was **0.0000251846**, or **0.00252 percentage points**. This exceeds the `1e-6` probability tolerance used by the pinned multi-field fixture, although that fixture itself passes unchanged at all tested budgets. This broader comparison is experimental evidence, not a new accuracy or numerical acceptance claim.
 
-The old scorer uses F32 activation kernels for fewer than four active branch rows. Packed execution uses Q8 activations. Thus the speed comparison includes both parallel execution and a precision change. Diagnostic independent causal-prefill scoring agreed exactly with packed logits on the sampled inputs. Broader ambiguous-input, near-tie, threshold and raw/centred-logit evaluation is still needed before default promotion. Do not reject this path on raw-logit inequality alone, or accept it solely because these decisions agreed.
+The old scorer uses F32 activation kernels for fewer than four active branch rows. Packed execution uses Q8 activations. Thus the speed comparison includes both parallel execution and a precision change. Diagnostic independent causal-prefill scoring agreed exactly with packed logits on the sampled inputs. The [broader precision evaluation](multifield-precision.md) completed 80 fields: no winner changes, four losing-rank shifts and one diagnostic 95% crossing at each tested packed budget. Maximum probability movement was 16.54 percentage points. The throughput gain and winner agreement support promoting this execution path, with the serial override retained. This does not establish calibrated confidence, labelled accuracy or near-tie invariance; consumers using confidence thresholds must account for the documented precision change.
 
 ## Serial-path cost
 
