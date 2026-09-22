@@ -69,6 +69,13 @@ func completedBatches(s batchSweep) ([]batchCell, error) {
 	return out, nil
 }
 
+func shortRevision(revision string) string {
+	if len(revision) >= 7 {
+		return revision[:7]
+	}
+	return "unrecorded"
+}
+
 func renderAutomaticBatches(s batchSweep) (string, error) {
 	cells, err := completedBatches(s)
 	if err != nil {
@@ -76,7 +83,7 @@ func renderAutomaticBatches(s batchSweep) (string, error) {
 	}
 	const width = 1040
 	height := 165 + 70*len(cells)
-	b := chartStart("Automatic multi-field batching", "RTX 3060 · one boolean + three-choice enum · three warm samples per size", width, height)
+	b := chartStart("Current automatic multi-field batching", "RTX 3060 · boolean + three-choice enum · three warm samples · source "+shortRevision(s.Revision), width, height)
 	left, plotW := 180., 710.
 	maxMS := cells[0].Max
 	for _, c := range cells {
@@ -99,7 +106,7 @@ func renderAutomaticBatches(s batchSweep) (string, error) {
 	return b.String(), nil
 }
 
-func renderMultiFieldComparison(cells []batchCell) (string, error) {
+func renderMultiFieldComparison(cells []batchCell, revision string) (string, error) {
 	grouped := map[int]map[int]batchCell{}
 	for _, c := range cells {
 		if err := validateBatchCell(c); err != nil {
@@ -133,7 +140,7 @@ func renderMultiFieldComparison(cells []batchCell) (string, error) {
 	sort.Ints(sizes)
 	maxMS = math.Ceil(maxMS/1000) * 1000
 	height := 170 + 110*len(sizes)
-	b := chartStart("Multi-field: serial versus packed", "Earlier paired run · identical requests/binary · three warm samples · RTX 3060", 1040, height)
+	b := chartStart("Multi-field: serial versus packed", "Identical requests and binary · three warm samples · RTX 3060 · source "+shortRevision(revision), 1040, height)
 	left, plotW := 200., 690.
 	bottom := 100. + 110.*float64(len(sizes))
 	for tick := 0.; tick <= maxMS; tick += maxMS / 4 {

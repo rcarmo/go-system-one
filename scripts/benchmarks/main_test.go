@@ -51,7 +51,7 @@ func TestSampleStatistics(t *testing.T) {
 func TestRenderIsDeterministic(t *testing.T) {
 	data := benchmarkData{
 		Schema:     "go-system-one-benchmarks-v1",
-		Comparison: []comparison{{Label: "Hand-tuned Go/PTX", RepresentativeMS: 81, MinMS: 80, MaxMS: 82, Basis: "median"}},
+		Comparison: []comparison{{Label: "Current Q6-staged Go/PTX", RepresentativeMS: 81, MinMS: 80, MaxMS: 82, Basis: "median"}},
 		Workloads:  []workload{{Label: "Baseline", MedianMS: 81, MinMS: 80, MaxMS: 82}},
 	}
 	samples := sampleData{N: 4, Min: 80, Median: 81.5, P95: 83, P99: 83, Max: 83, Samples: []float64{80, 81, 82, 83}}
@@ -68,7 +68,7 @@ func TestRenderIsDeterministic(t *testing.T) {
 		t.Fatal("distribution render changed across calls")
 	}
 	comparison := renderComparison(data)
-	if !strings.Contains(comparison, "From prototype to hand-tuned Go") || !strings.Contains(comparison, "Gemma 4 12B") || !strings.Contains(comparison, `class="good"`) {
+	if !strings.Contains(comparison, "From prototype to hand-tuned Go") || !strings.Contains(comparison, "Single-boolean fixture") || !strings.Contains(comparison, `class="good"`) {
 		t.Fatal("comparison chart does not describe the implementation sequence")
 	}
 }

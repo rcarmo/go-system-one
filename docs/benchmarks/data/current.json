@@ -1,0 +1,115 @@
+{
+  "schema": "go-system-one-benchmarks-v1",
+  "fixture": {
+    "description": "One 77-token prepared prompt, 20-token context, one boolean tree node and a four-token suffix",
+    "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+    "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+    "device": "NVIDIA GeForce RTX 3060 12 GB",
+    "driver": "580.173.02",
+    "resident_projection_bytes": 9173277696,
+    "standalone_commit": "aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d",
+    "revision": "aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d",
+    "binary_sha256": "364cc7f2924f0bb53e91ef2840765eb6fc07ebc84e11ffebc4d753775942c31a",
+    "sample_source": "data/q6-staged-warm.json",
+    "workload_source": "data/q6-staged-workloads.json"
+  },
+  "comparison": [
+    {
+      "label": "llama.cpp prototype",
+      "representative_ms": 96,
+      "min_ms": 96,
+      "max_ms": 96,
+      "basis": "reported total"
+    },
+    {
+      "label": "Early native Go",
+      "representative_ms": 521.35,
+      "min_ms": 520.8,
+      "max_ms": 521.9,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Native Go after initial tuning",
+      "representative_ms": 136,
+      "min_ms": 135.3,
+      "max_ms": 136.7,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Earlier Go/PTX (0dd65d4)",
+      "representative_ms": 81.1343165,
+      "min_ms": 80.310148,
+      "max_ms": 82.391372,
+      "basis": "100-request median with stable decision check"
+    },
+    {
+      "label": "Current Q6-staged Go/PTX",
+      "representative_ms": 77.907029,
+      "min_ms": 77.545055,
+      "max_ms": 78.798741,
+      "basis": "100 warm handler samples at aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d"
+    }
+  ],
+  "workloads": [
+    {
+      "label": "Boolean cache hit",
+      "median_ms": 79.064989,
+      "min_ms": 79.00345,
+      "max_ms": 88.560628
+    },
+    {
+      "label": "Cache disabled",
+      "median_ms": 234.82381,
+      "min_ms": 232.650275,
+      "max_ms": 236.586631
+    },
+    {
+      "label": "Cache miss",
+      "median_ms": 231.087555,
+      "min_ms": 230.76392,
+      "max_ms": 231.244783
+    },
+    {
+      "label": "Short context",
+      "median_ms": 75.520293,
+      "min_ms": 75.443121,
+      "max_ms": 75.855473
+    },
+    {
+      "label": "Long context",
+      "median_ms": 1047.537956,
+      "min_ms": 1043.837672,
+      "max_ms": 1057.733273
+    },
+    {
+      "label": "Multi-token enum tree",
+      "median_ms": 137.923552,
+      "min_ms": 137.263933,
+      "max_ms": 139.18946
+    },
+    {
+      "label": "Multi-token enum greedy",
+      "median_ms": 203.486851,
+      "min_ms": 202.628365,
+      "max_ms": 203.639989
+    },
+    {
+      "label": "Four distinct contexts",
+      "median_ms": 307.0888,
+      "min_ms": 306.105206,
+      "max_ms": 308.210584
+    },
+    {
+      "label": "Four boolean fields",
+      "median_ms": 144.090981,
+      "min_ms": 143.546061,
+      "max_ms": 144.41129
+    },
+    {
+      "label": "Boolean + enum",
+      "median_ms": 111.069795,
+      "min_ms": 110.934864,
+      "max_ms": 111.36821
+    }
+  ]
+}

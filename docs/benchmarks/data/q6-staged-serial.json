@@ -1,0 +1,845 @@
+{
+  "schema": "go-system-one-batch-sweep-v1",
+  "revision": "aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d",
+  "mode": "serial",
+  "started_utc": "2026-09-22T21:18:21.618Z",
+  "binary_sha256": "364cc7f2924f0bb53e91ef2840765eb6fc07ebc84e11ffebc4d753775942c31a",
+  "cohort_sha256": "021d1419c38bec3070818c350c0e5bb734afd93fcbd0a885c798e59881842b3e",
+  "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+  "method": "One same-size warmup; three measured warm handler samples; idle GPU; cool to <=55C before each; abort at >=83C; 500ms temperature/memory samples; schema: boolean plus 3-way multi-token enum. Contexts cycle the frozen cohort with unique ticket suffixes. No labelled accuracy evaluation.",
+  "device": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "driver": "580.173.02",
+    "temperature": 57,
+    "memory_mib": 36,
+    "sm_mhz": 210
+  },
+  "cases": [
+    {
+      "size": 1,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "complete",
+      "samples": [
+        {
+          "handler_ms": 1039.084527,
+          "wall_ms": 1039.5611849999987,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9472,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9472,
+            "sm_mhz": 1837
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9472
+        },
+        {
+          "handler_ms": 1038.24965,
+          "wall_ms": 1038.7346039999975,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9472,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9472,
+            "sm_mhz": 1822
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9472
+        },
+        {
+          "handler_ms": 1053.235635,
+          "wall_ms": 1053.699762999997,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9472,
+            "sm_mhz": 352
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9472,
+            "sm_mhz": 1837
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9472
+        }
+      ],
+      "warmup": {
+        "handler_ms": 1264.682698,
+        "wall_ms": 1265.329339,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 55,
+          "memory_mib": 9306,
+          "sm_mhz": 1777
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 65,
+          "memory_mib": 9472,
+          "sm_mhz": 1837
+        },
+        "max_temperature_c": 65,
+        "sampled_peak_memory_mib": 9472
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999959476049,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999959476049,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 2.797643752441988e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.2547514171898246e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999966583197,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999966583197,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.3416803345640993e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "min_ms": 1038.24965,
+      "median_ms": 1039.084527,
+      "max_ms": 1053.235635,
+      "entries_per_second": 0.9623856135045691
+    },
+    {
+      "size": 10,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 2.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 3.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 4.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 5.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 6.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 7.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 8.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 9.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 10."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "complete",
+      "samples": [
+        {
+          "handler_ms": 10533.815681,
+          "wall_ms": 10534.317147000009,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9510,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 75,
+            "memory_mib": 9510,
+            "sm_mhz": 1785
+          },
+          "max_temperature_c": 75,
+          "sampled_peak_memory_mib": 9512
+        },
+        {
+          "handler_ms": 10638.511483,
+          "wall_ms": 10639.344872000016,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9510,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 75,
+            "memory_mib": 9587,
+            "sm_mhz": 1815
+          },
+          "max_temperature_c": 75,
+          "sampled_peak_memory_mib": 9587
+        },
+        {
+          "handler_ms": 10667.530761,
+          "wall_ms": 10667.982499000005,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9579,
+            "sm_mhz": 240
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 75,
+            "memory_mib": 9569,
+            "sm_mhz": 1807
+          },
+          "max_temperature_c": 75,
+          "sampled_peak_memory_mib": 9581
+        }
+      ],
+      "warmup": {
+        "handler_ms": 11202.616426,
+        "wall_ms": 11203.161185999998,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 54,
+          "memory_mib": 9472,
+          "sm_mhz": 292
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 74,
+          "memory_mib": 9510,
+          "sm_mhz": 1762
+        },
+        "max_temperature_c": 74,
+        "sampled_peak_memory_mib": 9510
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999959476049,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999959476049,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 2.797643752441988e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.2547514171898246e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999966583197,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999966583197,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.3416803345640993e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999433945229623,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.7912076638343544e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999433945229623,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00005657756496105848,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999463386453,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 5.366135478849913e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999463386453,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.999936392313121,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.1798047698867794e-9,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00006360650707420709,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.999936392313121,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9979805979002982,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.002019402099701828,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9979805979002982,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999946351508,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999946351508,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.860822671228808e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 5.040266572536962e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999978573033,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999978573033,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.142696581684514e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999911064560394,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.425700644547811e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999911064560394,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000008550973896174292,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999989903769669,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000010096230329902566,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999989903769669,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9253338540744286,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.3735224037654432e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.07466613219034741,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9253338540744286,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999988995061285,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000011004938714728866,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999988995061285,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.8669762880330901,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.8669762880330901,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.13148186012051863,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0015418518463913018,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9967291619083997,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9967291619083997,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.0032708380916003873,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999072918738998,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.000002224880486303751,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999072918738998,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00009048324561400186,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999933009681311,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000066990318687924685,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999933009681311,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 46,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9787819925093892,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9787819925093892,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.02118080035555103,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00003720713505964924,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999997342163129,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999997342163129,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.657836870181795e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 38,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9923442405054248,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.0075931486593808425,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9923442405054248,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00006261083519440616,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9822619976983639,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9822619976983639,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.01773800230163605,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "min_ms": 10533.815681,
+      "median_ms": 10638.511483,
+      "max_ms": 10667.530761,
+      "entries_per_second": 0.9399811257411038
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Go System One uses Gemma 4 12B to choose between a fixed set of boolean or enum values. We started with a fixed Gemma baseline, built a llama.cpp prototype to define the expected results and speed, then replaced it with a native Go runtime.
 
-The current NVIDIA path loads hand-tuned PTX kernels directly from Go through the NVIDIA Driver API. It needs no CGo, llama.cpp or CUDA toolkit at run time, and reduced the pinned RTX 3060 request from about 521 ms in the first native version to an 81.13 ms median.
+The current NVIDIA path loads hand-tuned PTX kernels directly from Go through the NVIDIA Driver API. It needs no CGo, llama.cpp or CUDA toolkit at run time, and reduced the pinned RTX 3060 request from about 521 ms in the first native version to a 77.91 ms median.
 
 [![Go System One playground showing outcome probabilities](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
 

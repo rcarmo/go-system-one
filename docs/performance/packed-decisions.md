@@ -25,7 +25,9 @@ Using the same requests and cooling protocol, three warm samples gave 809.33 ms 
 
 Development source for the segmented attention, rotary-position and batched Q5 selected-head kernels is in `scripts/kernels/packed_decision.cu`; `scripts/generate-packed-ptx.sh` embeds CUDA 12.8 PTX. The runtime still requires only the NVIDIA driver. The next dispatch/scratch revision selects existing Q5/Q6 tiles for packed workloads and retains at most one 512-row prefill workspace under the model mutex. Using the same cooled protocol, medians were 794.03 ms for 10 entries and 8,054.34 ms for 100. Complete HTTP results remained identical; sampled device use peaked at 9,562 MiB and temperature at 73°C. [Dispatch/scratch samples](../benchmarks/data/packed-contexts-dispatch.json) retain the measurements. Scratch reuse, growth and freeing have explicit tests.
 
-Two INT8 tensor-core prototypes were rejected: they were slower than the existing dp4a kernels, and Q5 accumulation also differed slightly. No prototype kernel enters production. Next steps are multi-field packing and further projection/layout work. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
+Two INT8 tensor-core prototypes were rejected: they were slower than the existing dp4a kernels, and Q5 accumulation also differed slightly. No prototype kernel enters production. Later Q6 PTX work stages quantised activations and scales in shared memory across a 24-row, 64-output tile. It uses 69 registers, 7,680 bytes of shared memory and no spills. Shape-tail differentials, original pinned parity and the stricter batch-logit comparison passed. Q5 staged tiles were held back because their larger released-model logit movement needs separate analysis.
+
+The [current benchmark tables and all five charts](../benchmarks/README.md) use fresh `aca5e4c` measurements, including the full batch sweep and paired comparison. Earlier numbers in this note are development history. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
 ## Multi-field experiment
 

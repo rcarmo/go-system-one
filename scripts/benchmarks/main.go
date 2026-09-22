@@ -26,6 +26,7 @@ type benchmarkData struct {
 }
 
 type fixture struct {
+	Revision                string `json:"revision"`
 	Description             string `json:"description"`
 	Model                   string `json:"model"`
 	ModelSHA256             string `json:"model_sha256"`
@@ -50,6 +51,7 @@ type workload struct {
 }
 
 type sampleData struct {
+	Revision  string           `json:"revision,omitempty"`
 	N         int              `json:"n"`
 	Min       float64          `json:"min"`
 	Median    float64          `json:"median"`
@@ -94,11 +96,11 @@ func fatalf(format string, args ...any) {
 
 func render(args []string) error {
 	fs := flag.NewFlagSet("render", flag.ContinueOnError)
-	dataPath := fs.String("data", "docs/benchmarks/data/go-system-one-v1.json", "comparison/workload JSON")
-	samplesPath := fs.String("samples", "docs/benchmarks/data/nvidia-http-100-0dd65d4-20260922.json", "warm sample JSON")
+	dataPath := fs.String("data", "docs/benchmarks/data/current.json", "comparison/workload JSON")
+	samplesPath := fs.String("samples", "docs/benchmarks/data/q6-staged-warm.json", "warm sample JSON")
 	outDir := fs.String("out", "docs/benchmarks", "SVG output directory")
-	batchPath := fs.String("batch-data", "docs/benchmarks/data/automatic-batch-sweep.json", "automatic multi-field batch sweep")
-	pairedPath := fs.String("paired-data", "docs/benchmarks/data/packed-multifield.json", "paired multi-field comparison")
+	batchPath := fs.String("batch-data", "docs/benchmarks/data/q6-staged-batches.json", "automatic multi-field batch sweep")
+	pairedPath := fs.String("paired-data", "docs/benchmarks/data/q6-staged-paired.json", "paired multi-field comparison")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -128,12 +130,13 @@ func render(args []string) error {
 		return err
 	}
 	var paired struct {
-		Cases []batchCell `json:"cases"`
+		Revision string      `json:"revision"`
+		Cases    []batchCell `json:"cases"`
 	}
 	if err := readJSON(*pairedPath, &paired); err != nil {
 		return err
 	}
-	pairedChart, err := renderMultiFieldComparison(paired.Cases)
+	pairedChart, err := renderMultiFieldComparison(paired.Cases, paired.Revision)
 	if err != nil {
 		return err
 	}
@@ -339,10 +342,13 @@ text{fill:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Se
 
 func renderDistribution(data sampleData) string {
 	const width, height = 960, 480
-	b := chartStart("Warm HTTP latency distribution", "100 sequential requests after one warm-up; handler total_ms; RTX 3060", width, height)
+	b := chartStart("Single-boolean warm latency", fmt.Sprintf("%d sequential requests after one warm-up · RTX 3060 · source %s", data.N, shortRevision(data.Revision)), width, height)
 	left, top, plotW, plotH := 72.0, 105.0, 840.0, 285.0
 	minV := math.Floor(data.Min)
 	maxV := math.Ceil(data.Max)
+	if maxV == minV {
+		maxV++
+	}
 	for tick := minV; tick <= maxV; tick++ {
 		y := top + plotH - (tick-minV)/(maxV-minV)*plotH
 		fmt.Fprintf(b, `<line class="grid" x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/><text class="muted" x="62" y="%.1f" text-anchor="end" font-size="11">%.0f</text>`, left, y, left+plotW, y, y+4, tick)
@@ -350,7 +356,7 @@ func renderDistribution(data sampleData) string {
 	fmt.Fprintf(b, `<line class="axis" x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/><line class="axis" x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/>`, left, top, left, top+plotH, left, top+plotH, left+plotW, top+plotH)
 	points := make([]string, len(data.Samples))
 	for i, value := range data.Samples {
-		x := left + float64(i)/float64(len(data.Samples)-1)*plotW
+		x := left + float64(i)/float64(max(1, len(data.Samples)-1))*plotW
 		y := top + plotH - (value-minV)/(maxV-minV)*plotH
 		points[i] = fmt.Sprintf("%.2f,%.2f", x, y)
 	}
@@ -371,8 +377,10 @@ func renderDistribution(data sampleData) string {
 }
 
 func renderComparison(data benchmarkData) string {
-	const width, height = 1040, 470
-	b := chartStart("From prototype to hand-tuned Go", "Gemma 4 12B on the same RTX 3060 fixture; chronological stages; lower is better", width, height)
+	const width = 1080
+	height := 180 + len(data.Comparison)*70
+	b := chartStart("From prototype to hand-tuned Go", "Single-boolean fixture · historical stages plus current source "+shortRevision(data.Fixture.Revision), width, height)
+	bottom := 105.0 + float64(len(data.Comparison))*70
 	left, top, plotW := 280.0, 105.0, 650.0
 	maxV := 0.0
 	for _, item := range data.Comparison {
@@ -381,13 +389,13 @@ func renderComparison(data benchmarkData) string {
 	maxV = math.Ceil(maxV/100) * 100
 	for tick := 0.0; tick <= maxV; tick += 100 {
 		x := left + tick/maxV*plotW
-		fmt.Fprintf(b, `<line class="grid" x1="%.1f" y1="90" x2="%.1f" y2="390"/><text class="muted" x="%.1f" y="414" text-anchor="middle" font-size="11">%.0f</text>`, x, x, x, tick)
+		fmt.Fprintf(b, `<line class="grid" x1="%.1f" y1="90" x2="%.1f" y2="%.1f"/><text class="muted" x="%.1f" y="%.1f" text-anchor="middle" font-size="11">%.0f</text>`, x, x, bottom, x, bottom+24, tick)
 	}
 	for i, item := range data.Comparison {
 		y := top + float64(i)*70
 		barW := item.RepresentativeMS / maxV * plotW
 		class := "primary"
-		if strings.Contains(item.Label, "Hand-tuned") {
+		if strings.HasPrefix(item.Label, "Current") {
 			class = "good"
 		} else if strings.Contains(item.Label, "llama") {
 			class = "amber"
@@ -400,14 +408,14 @@ func renderComparison(data benchmarkData) string {
 			fmt.Fprintf(b, `<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="var(--text)" stroke-width="2"/><line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="var(--text)"/><line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="var(--text)"/>`, x1, y+38, x2, y+38, x1, y+34, x1, y+42, x2, y+34, x2, y+42)
 		}
 	}
-	fmt.Fprintf(b, `<text class="muted" x="%.1f" y="440" text-anchor="middle" font-size="12">milliseconds</text>`, left+plotW/2)
+	fmt.Fprintf(b, `<text class="muted" x="%.1f" y="%.1f" text-anchor="middle" font-size="12">milliseconds · llama.cpp: worker time; Go: handler time</text>`, left+plotW/2, bottom+50)
 	b.WriteString(`</svg>`)
 	return b.String()
 }
 
 func renderWorkloads(data benchmarkData) string {
 	const width, height = 1060, 600
-	b := chartStart("Warm workload matrix", "Five warm HTTP samples per case; logarithmic x-axis; lower is better", width, height)
+	b := chartStart("Current warm workloads", "Five warm samples per case · log scale · exact requests recorded · source "+shortRevision(data.Fixture.Revision), width, height)
 	left, top, plotW := 255.0, 105.0, 720.0
 	minV, maxV := 64.0, 2048.0
 	logMin, logSpan := math.Log2(minV), math.Log2(maxV)-math.Log2(minV)

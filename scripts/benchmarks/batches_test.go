@@ -42,10 +42,10 @@ func TestBatchComparisonRequiresPairs(t *testing.T) {
 	packed := batchExample()
 	serial := batchExample()
 	serial.Rows = 0
-	if _, err := renderMultiFieldComparison([]batchCell{packed}); err == nil {
+	if _, err := renderMultiFieldComparison([]batchCell{packed}, strings.Repeat("a", 40)); err == nil {
 		t.Fatal("unpaired comparison")
 	}
-	got, err := renderMultiFieldComparison([]batchCell{packed, serial})
+	got, err := renderMultiFieldComparison([]batchCell{packed, serial}, strings.Repeat("a", 40))
 	if err != nil {
 		t.Fatal(err)
 	}
