@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 
 // GGUFTurboQuantPlan describes the native compressed-KV cache policy for a

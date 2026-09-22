@@ -1,6 +1,6 @@
 package model
 
-import gograph "github.com/rcarmo/go-pherence/runtime/graph"
+import gograph "github.com/rcarmo/go-system-one/runtime/graph"
 
 // BuildDecodeGraph builds the default planned graph for one Tiny/LLaMA decode step.
 //

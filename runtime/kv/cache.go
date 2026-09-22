@@ -1,6 +1,6 @@
 package kv
 
-import "github.com/rcarmo/go-pherence/internal/checked"
+import "github.com/rcarmo/go-system-one/internal/checked"
 
 // CompressedKVCache wraps a per-layer KV cache with TurboQuant compression.
 // Recent tokens (within the residual window) stay at full precision.

@@ -3,7 +3,7 @@ package kv
 import (
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 )
 
 // LayerF32KVConfig describes one per-layer float32 K/V cache shape.

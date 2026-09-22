@@ -5,7 +5,7 @@ import (
 	"os"
 
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 
 // cpuTokenState owns the request-local output, KV and scratch buffers used by

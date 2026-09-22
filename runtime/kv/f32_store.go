@@ -3,7 +3,7 @@ package kv
 import (
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 )
 
 // F32KVView exposes a logical oldest-to-newest K/V window without forcing a

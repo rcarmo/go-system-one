@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 
 // MTPVerifierTokens returns the token sequence the main verifier must process:

@@ -15,8 +15,8 @@ import (
 	"github.com/rcarmo/go-system-one/backends/ggmlquant"
 	"github.com/rcarmo/go-pherence/backends/spacemit/board"
 	"github.com/rcarmo/go-system-one/loader/gguf"
-	gograph "github.com/rcarmo/go-pherence/runtime/graph"
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	gograph "github.com/rcarmo/go-system-one/runtime/graph"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 
 // GGUFLlamaConfig holds the hyper-parameters extracted from GGUF metadata.

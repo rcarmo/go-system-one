@@ -1,6 +1,6 @@
 package model
 
-import "github.com/rcarmo/go-pherence/runtime/kv"
+import "github.com/rcarmo/go-system-one/runtime/kv"
 
 // GGUFUsesCompressedKVLayer reports whether a layer uses autoregressive K/V
 // attention cache in the native GGUF runtime. Plain LLaMA-family models use KV

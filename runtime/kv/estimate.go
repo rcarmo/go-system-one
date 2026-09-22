@@ -1,6 +1,6 @@
 package kv
 
-import "github.com/rcarmo/go-pherence/internal/checked"
+import "github.com/rcarmo/go-system-one/internal/checked"
 
 // TurboQuantKVEstimate is a compact byte/readiness estimate for native
 // TurboQuant cache storage.

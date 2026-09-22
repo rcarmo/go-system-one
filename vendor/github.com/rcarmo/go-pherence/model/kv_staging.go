@@ -4,7 +4,7 @@ import (
 	"fmt"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 
 // LayerHeadDim returns the effective per-head width for a layer. Gemma4 full

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/rcarmo/go-pherence/runtime/kv"
+	"github.com/rcarmo/go-system-one/runtime/kv"
 	"github.com/rcarmo/go-system-one/runtime/promptcache"
 )
 

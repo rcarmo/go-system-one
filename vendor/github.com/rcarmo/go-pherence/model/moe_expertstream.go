@@ -6,7 +6,7 @@ import (
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
-	"github.com/rcarmo/go-pherence/runtime/expertstream"
+	"github.com/rcarmo/go-system-one/runtime/expertstream"
 )
 
 // expertStreamSource is the experimental out-of-core boundary. Production
