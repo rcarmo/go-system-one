@@ -94,3 +94,10 @@ backends/nvidia/ptx/sgemm_compensated.go	backends/nvidia/ptx/sgemm_compensated.g
 backends/nvidia/ptx/split.go	backends/nvidia/ptx/split.go
 backends/nvidia/ptx/vector.go	backends/nvidia/ptx/vector.go
 backends/nvidia/ptx/weights.go	backends/nvidia/ptx/weights.go
+loader/tokenizer/gemma4_parity_test.go	loader/tokenizer/gemma4_parity_test.go
+loader/tokenizer/omnivoice_test.go	loader/tokenizer/omnivoice_test.go
+loader/tokenizer/sidecar.go	loader/tokenizer/sidecar.go
+loader/tokenizer/sidecar_test.go	loader/tokenizer/sidecar_test.go
+loader/tokenizer/tokenizer.go	loader/tokenizer/tokenizer.go
+loader/tokenizer/tokenizer_test.go	loader/tokenizer/tokenizer_test.go
+testdata/omnivoice/tokenizer.json	testdata/omnivoice/tokenizer.json

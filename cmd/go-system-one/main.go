@@ -14,8 +14,8 @@ import (
 	"time"
 
 	nvidia "github.com/rcarmo/go-pherence/backends/nvidia/runtime"
-	"github.com/rcarmo/go-pherence/loader/tokenizer"
 	"github.com/rcarmo/go-pherence/model"
+	"github.com/rcarmo/go-system-one/loader/tokenizer"
 	gosystemone "github.com/rcarmo/go-system-one/model/gosystemone"
 	"github.com/rcarmo/go-system-one/webui"
 )

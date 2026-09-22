@@ -47,7 +47,16 @@ find "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinp
   -e 's#github.com/rcarmo/go-pherence/internal/httpinput#github.com/rcarmo/go-system-one/internal/httpinput#g' \
   -e 's#github.com/rcarmo/go-pherence/webui#github.com/rcarmo/go-system-one/webui#g'
 
-gofmt -w "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinput"
+# Preserve every package boundary already internalised by this repository.
+while IFS=$'\t' read -r upstream_import local_import; do
+  [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
+  mapfile -d '' files < <(grep -rlZ --exclude-dir=.git --exclude-dir=vendor --include='*.go' "\"$upstream_import\"" "$root" || true)
+  if ((${#files[@]})); then
+    sed -i "s#\"$upstream_import\"#\"$local_import\"#g" "${files[@]}"
+  fi
+done < "$root/scripts/local-packages.tsv"
+
+gofmt -w "$root/cmd" "$root/model/gosystemone" "$root/webui" "$root/internal/httpinput" "$root/half" "$root/backends"
 
 printf 'synced declared paths from go-pherence %s\n' "$(git -C "$source_repo" rev-parse "$revision^{commit}")"
 printf 'review the diff, update scripts/upstream.env and go.mod deliberately, then run make check\n'

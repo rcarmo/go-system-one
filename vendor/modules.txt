@@ -39,7 +39,6 @@ github.com/rcarmo/go-pherence/loader/gguf/internal/q4layout
 github.com/rcarmo/go-pherence/loader/gguf/llamaq4
 github.com/rcarmo/go-pherence/loader/gguf/llamaq4plan9
 github.com/rcarmo/go-pherence/loader/safetensors
-github.com/rcarmo/go-pherence/loader/tokenizer
 github.com/rcarmo/go-pherence/loader/weights
 github.com/rcarmo/go-pherence/model
 github.com/rcarmo/go-pherence/model/common
