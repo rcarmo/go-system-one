@@ -57,6 +57,9 @@ type fieldComparison struct {
 	SerialWinner           json.RawMessage `json:"serial_winner"`
 	PackedWinner           json.RawMessage `json:"packed_winner"`
 	Changed                bool            `json:"changed"`
+	SerialRank             []int           `json:"serial_candidate_rank"`
+	PackedRank             []int           `json:"packed_candidate_rank"`
+	RankChanged            bool            `json:"rank_changed"`
 	SerialMargin           float64         `json:"serial_probability_margin"`
 	PackedMargin           float64         `json:"packed_probability_margin"`
 	Probability            errorStats      `json:"probability_error"`
@@ -71,9 +74,11 @@ type comparison struct {
 	ChangedFields int               `json:"changed_fields"`
 }
 type caseReport struct {
-	Request     gso.Request  `json:"request"`
-	Trials      []trial      `json:"trials"`
-	Comparisons []comparison `json:"comparisons"`
+	RequestIndex int          `json:"cohort_request_index"`
+	ContextStart int          `json:"cohort_context_start"`
+	Request      gso.Request  `json:"request"`
+	Trials       []trial      `json:"trials"`
+	Comparisons  []comparison `json:"comparisons"`
 }
 type report struct {
 	Description string       `json:"description"`
@@ -108,6 +113,16 @@ func margin(c []gso.CandidateResult) float64 {
 		}
 	}
 	return a - b
+}
+
+// Ranks are candidate indices, keeping equal probabilities in input order.
+func rank(c []gso.CandidateResult) []int {
+	out := make([]int, len(c))
+	for i := range out {
+		out[i] = i
+	}
+	sort.SliceStable(out, func(i, j int) bool { return c[out[i]].Probability > c[out[j]].Probability })
+	return out
 }
 func compare(a, b trial, thresholds []float64) (comparison, error) {
 	out := comparison{Rows: b.Rows}
@@ -156,6 +171,12 @@ func compare(a, b trial, thresholds []float64) (comparison, error) {
 				return out, fmt.Errorf("field candidates differ")
 			}
 			f := fieldComparison{Context: i, Field: name, SerialWinner: af.Value, PackedWinner: bf.Value, Changed: string(af.Value) != string(bf.Value), SerialMargin: margin(af.Candidates), PackedMargin: margin(bf.Candidates)}
+			f.SerialRank, f.PackedRank = rank(af.Candidates), rank(bf.Candidates)
+			for j, v := range f.SerialRank {
+				if v != f.PackedRank[j] {
+					f.RankChanged = true
+				}
+			}
 			if f.Changed {
 				out.ChangedFields++
 			}
@@ -204,7 +225,7 @@ func cool(ctx context.Context) error {
 		if e != nil {
 			return e
 		}
-		if temp <= 60 {
+		if temp <= 55 {
 			return nil
 		}
 		select {
@@ -213,7 +234,7 @@ func cool(ctx context.Context) error {
 		case <-time.After(time.Second):
 		}
 	}
-	return fmt.Errorf("GPU did not cool to 60C")
+	return fmt.Errorf("GPU did not cool to 55C")
 }
 func decide(ctx context.Context, e *gso.Engine, request gso.Request) (gso.Response, error) {
 	run, cancel := context.WithCancel(ctx)
@@ -279,7 +300,41 @@ func run() error {
 	input := flag.String("cohort", "docs/benchmarks/multifield-cohort.json", "frozen requests")
 	output := flag.String("out", "dist/benchmarks/multifield-precision.json", "report path")
 	source := flag.String("source-revision", "", "source SHA (include dirty qualifier when applicable)")
+	chunk := flag.Int("contexts-per-call", 4, "split frozen requests into cooled calls; does not change context text or order")
+	resume := flag.Bool("resume", false, "resume complete chunks from the report after verifying source, cohort and request identities")
+	analyse := flag.String("analyse", "", "recompute comparisons from a saved report without model execution")
 	flag.Parse()
+	if *chunk < 1 || *chunk > gso.MaxContexts {
+		return fmt.Errorf("contexts-per-call must be 1..%d", gso.MaxContexts)
+	}
+	if *analyse != "" {
+		b, err := os.ReadFile(*analyse)
+		if err != nil {
+			return err
+		}
+		var r report
+		if err = json.Unmarshal(b, &r); err != nil {
+			return err
+		}
+		if len(r.Cases) == 0 {
+			return fmt.Errorf("report has no cases")
+		}
+		for i := range r.Cases {
+			c := &r.Cases[i]
+			if len(c.Trials) < 2 || c.Trials[0].Rows != 0 {
+				return fmt.Errorf("case %d has no serial reference", i)
+			}
+			c.Comparisons = nil
+			for _, tr := range c.Trials[1:] {
+				cmp, err := compare(c.Trials[0], tr, r.Thresholds)
+				if err != nil {
+					return err
+				}
+				c.Comparisons = append(c.Comparisons, cmp)
+			}
+		}
+		return save(*output, r)
+	}
 	if *modelPath == "" || *tokPath == "" || *source == "" {
 		return fmt.Errorf("-model, -tokenizer-dir and -source-revision required")
 	}
@@ -332,6 +387,13 @@ func run() error {
 		return err
 	}
 	r := report{Description: c.Description + " Timings include instrumentation and are descriptive, not a latency distribution. Serial depth batches may use F32 activations; packed projection rows use Q8. Thresholds are diagnostic, not deployment policy.", Started: time.Now().UTC().Format(time.RFC3339), Source: *source, CohortSHA: hex.EncodeToString(hash[:]), ModelSHA: gso.V1Provenance.ModelSHA256, Device: dev, Thresholds: c.Thresholds}
+	if *resume {
+		if err := resumeReport(*output, &r, c, *chunk); err != nil {
+			return err
+		}
+	}
+	completed := len(r.Cases)
+	ordinal := 0
 	for i, request := range c.Requests {
 		if err = request.NormalizeAndValidate(); err != nil {
 			return err
@@ -339,50 +401,104 @@ func run() error {
 		if request.Mode != gso.ModeTree {
 			return fmt.Errorf("comparison requires tree mode")
 		}
-		cr := caseReport{Request: request}
-		for _, rows := range []int{0, 128, 256, 512} {
-			s.PackedTokenRows = rows
-			if err = cool(ctx); err != nil {
-				return err
+		for start := 0; start < len(request.Contexts); start += *chunk {
+			ordinal++
+			if ordinal <= completed {
+				continue
 			}
-			if _, err = decide(ctx, e, request); err != nil {
-				return err
-			}
-			if err = cool(ctx); err != nil {
-				return err
-			}
-			before, _, err := device(ctx)
-			if err != nil {
-				return err
-			}
-			s.logits = nil
-			response, err := decide(ctx, e, request)
-			if err != nil {
-				return err
-			}
-			after, _, err := device(ctx)
-			if err != nil {
-				return err
-			}
-			if len(s.logits) != len(request.Contexts) {
-				return fmt.Errorf("scorer did not return raw scores")
-			}
-			tr := trial{Rows: rows, Response: response, Logits: s.logits, DeviceBefore: before, DeviceAfter: after}
-			cr.Trials = append(cr.Trials, tr)
-			if rows > 0 {
-				cmp, err := compare(cr.Trials[0], tr, c.Thresholds)
+			part := request
+			part.Contexts = request.Contexts[start:min(start+*chunk, len(request.Contexts))]
+			cr := caseReport{RequestIndex: i, ContextStart: start, Request: part}
+			for _, rows := range []int{0, 128, 256, 512} {
+				s.PackedTokenRows = rows
+				if err = cool(ctx); err != nil {
+					return err
+				}
+				warmup := part
+				warmup.Contexts = part.Contexts[:1]
+				if _, err = decide(ctx, e, warmup); err != nil {
+					return err
+				}
+				if err = cool(ctx); err != nil {
+					return err
+				}
+				before, _, err := device(ctx)
 				if err != nil {
 					return err
 				}
-				cr.Comparisons = append(cr.Comparisons, cmp)
-				fmt.Printf("case=%d rows=%d fields=%d changed=%d raw_max=%g centred_max=%g\n", i, rows, len(cmp.Fields), cmp.ChangedFields, cmp.Raw.Max, cmp.Centred.Max)
+				s.logits = nil
+				response, err := decide(ctx, e, part)
+				if err != nil {
+					return err
+				}
+				after, _, err := device(ctx)
+				if err != nil {
+					return err
+				}
+				if len(s.logits) != len(part.Contexts) {
+					return fmt.Errorf("scorer did not return raw scores")
+				}
+				tr := trial{Rows: rows, Response: response, Logits: s.logits, DeviceBefore: before, DeviceAfter: after}
+				cr.Trials = append(cr.Trials, tr)
+				if rows > 0 {
+					cmp, err := compare(cr.Trials[0], tr, c.Thresholds)
+					if err != nil {
+						return err
+					}
+					cr.Comparisons = append(cr.Comparisons, cmp)
+					fmt.Printf("case=%d start=%d rows=%d fields=%d changed=%d raw_max=%g centred_max=%g\n", i, start, rows, len(cmp.Fields), cmp.ChangedFields, cmp.Raw.Max, cmp.Centred.Max)
+				}
 			}
-		}
-		r.Cases = append(r.Cases, cr)
-		if err = save(*output, r); err != nil {
-			return err
+			r.Cases = append(r.Cases, cr)
+			if err = save(*output, r); err != nil {
+				return err
+			}
 		}
 	}
 	fmt.Println("report:", *output)
+	return nil
+}
+
+func resumeReport(path string, target *report, c cohort, chunk int) error {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var old report
+	if err = json.Unmarshal(b, &old); err != nil {
+		return err
+	}
+	if old.CohortSHA != target.CohortSHA || old.ModelSHA != target.ModelSHA || old.Source != target.Source {
+		return fmt.Errorf("resume provenance mismatch")
+	}
+	index := 0
+	for i, request := range c.Requests {
+		if err = request.NormalizeAndValidate(); err != nil {
+			return err
+		}
+		for start := 0; start < len(request.Contexts); start += chunk {
+			if index >= len(old.Cases) {
+				break
+			}
+			part := request
+			part.Contexts = request.Contexts[start:min(start+chunk, len(request.Contexts))]
+			got := old.Cases[index]
+			wantBytes, _ := json.Marshal(part)
+			gotBytes, _ := json.Marshal(got.Request)
+			if got.RequestIndex != i || got.ContextStart != start || string(wantBytes) != string(gotBytes) || len(got.Trials) != 4 || len(got.Comparisons) != 3 {
+				return fmt.Errorf("resume chunk %d mismatch or incomplete", index)
+			}
+			for j, rows := range []int{0, 128, 256, 512} {
+				if got.Trials[j].Rows != rows {
+					return fmt.Errorf("resume row budget mismatch")
+				}
+			}
+			index++
+		}
+	}
+	if index != len(old.Cases) {
+		return fmt.Errorf("resume has extra cases")
+	}
+	*target = old
 	return nil
 }

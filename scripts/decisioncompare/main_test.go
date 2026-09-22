@@ -42,3 +42,57 @@ func TestCompareMalformed(t *testing.T) {
 		}
 	}
 }
+
+func TestCompareLowerRanksChangeWithoutWinner(t *testing.T) {
+	a, b := example([]float32{3, 2, 1}, .8), example([]float32{3, 1, 2}, .8)
+	af := a.Response.Results[0].Fields["urgent"]
+	bf := b.Response.Results[0].Fields["urgent"]
+	af.Candidates = []gso.CandidateResult{{Value: json.RawMessage(`"a"`), Probability: .8}, {Value: json.RawMessage(`"b"`), Probability: .15}, {Value: json.RawMessage(`"c"`), Probability: .05}}
+	bf.Candidates = []gso.CandidateResult{{Value: json.RawMessage(`"a"`), Probability: .8}, {Value: json.RawMessage(`"b"`), Probability: .05}, {Value: json.RawMessage(`"c"`), Probability: .15}}
+	af.Value = json.RawMessage(`"a"`)
+	bf.Value = af.Value
+	a.Response.Results[0].Fields["urgent"] = af
+	b.Response.Results[0].Fields["urgent"] = bf
+	c, err := compare(a, b, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.ChangedFields != 0 || !c.Fields[0].RankChanged || c.Fields[0].PackedRank[1] != 2 {
+		t.Fatalf("%+v", c)
+	}
+}
+
+func TestResumeChecksRequestsAndProvenance(t *testing.T) {
+	r := gso.Request{Schema: json.RawMessage(`{"x":{"type":"boolean","description":"x"}}`), Contexts: []string{"a", "b"}, Mode: gso.ModeTree}
+	if err := r.NormalizeAndValidate(); err != nil {
+		t.Fatal(err)
+	}
+	tr := example([]float32{1, 2}, .25)
+	cr := caseReport{Request: r, Trials: []trial{tr, tr, tr, tr}, Comparisons: make([]comparison, 3)}
+	for i, n := range []int{0, 128, 256, 512} {
+		cr.Trials[i].Rows = n
+	}
+	old := report{Source: "sha", CohortSHA: "cohort", ModelSHA: "model", Cases: []caseReport{cr}}
+	path := t.TempDir() + "/report.json"
+	if err := save(path, old); err != nil {
+		t.Fatal(err)
+	}
+	c := cohort{Requests: []gso.Request{r}}
+	target := old
+	target.Cases = nil
+	if err := resumeReport(path, &target, c, 2); err != nil {
+		t.Fatal(err)
+	}
+	target.Source = "different"
+	if err := resumeReport(path, &target, c, 2); err == nil {
+		t.Fatal("changed source admitted")
+	}
+	target = old
+	if err := resumeReport(path, &target, c, 1); err == nil {
+		t.Fatal("changed chunk admitted")
+	}
+	c.Requests[0].Contexts = []string{"different", "b"}
+	if err := resumeReport(path, &target, c, 2); err == nil {
+		t.Fatal("changed request admitted")
+	}
+}

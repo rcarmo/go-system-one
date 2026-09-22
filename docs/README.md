@@ -19,6 +19,7 @@ These documents define the standalone service, its external artifacts, browser p
 
 ## Validation evidence
 
+- [Multi-field precision comparison](performance/multifield-precision.md) — winner agreement, lower-rank shifts and probability movement for serial and packed execution.
 - [Go System One v1](validation/go-system-one-v1-20260921.md) — model/oracle pins, numerical gates, workload matrix and NVIDIA performance.
 - [Standalone repository extraction](validation/standalone-repository-20260922.md) — source/dependency boundaries, offline builds and CI.
 - [Standalone accelerated NVIDIA run](validation/standalone-nvidia-f65652f6-20260922.md) — complete 100-request sample.
