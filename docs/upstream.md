@@ -46,11 +46,12 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 
 ## Automation contract
 
-[`.github/workflows/upstream-update.yml`](../.github/workflows/upstream-update.yml) checks the upstream `main` head weekly and can also run manually for an explicit full commit. It opens or updates `automation/go-pherence-update`; it never commits directly to `main`.
+[`.github/workflows/upstream-update.yml`](../.github/workflows/upstream-update.yml) checks the upstream `main` head weekly and can also run manually for an explicit full commit. Before importing, `scripts/upstream-relevant.sh` compares Git blob IDs only for paths in `scripts/upstream-files.tsv`. If none changed, the workflow leaves the accepted pin unchanged and creates no pull request. Relevant changes open or update `automation/go-pherence-update`; the workflow never commits directly to `main`.
 
 An automated update job must:
 
 - use an explicit full upstream commit;
+- skip commits that do not change a manifest-listed source path;
 - refuse dirty source and destination checkouts;
 - include the generated source diff and pin change;
 - keep the standalone module free of `go-pherence` package dependencies;

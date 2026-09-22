@@ -19,7 +19,7 @@ make prerequisites
 make setup
 ```
 
-The model and tokenizer remain external. Their exact repositories, revisions, filenames, byte count and SHA-256 pins are listed in [`docs/artifacts.md`](docs/artifacts.md).
+The model and tokenizer remain external. Their exact repositories, revisions, filenames, byte count and SHA-256 pins are listed in [`docs/artifacts.md`](docs/artifacts.md). The [documentation index](docs/README.md) links operational, update, release and validation records.
 
 ```sh
 make artifacts-info
@@ -59,13 +59,13 @@ The default suite is offline and uses synthetic or frozen repository fixtures. R
 ./scripts/update-upstream.sh <full-go-pherence-commit>
 ```
 
-This command copies the manifest-listed source files, records the immutable source commit, regenerates third-party `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. A weekly GitHub workflow runs the full updater and opens a review pull request when the source pin changes. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
+This command copies manifest-listed source files, records the immutable source commit, regenerates third-party `vendor/` and runs the offline checks. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) is the lower-level copy-only command and accepts `GO_PHERENCE_SOURCE=/path/to/go-pherence` for a clean local checkout. The weekly workflow compares only manifest-listed upstream blobs, so unrelated canonical work does not advance the pin or open a pull request. See [`docs/upstream.md`](docs/upstream.md) for the acceptance procedure.
 
 ## Project lifecycle
 
 Run `make help` for the complete target list. The Makefile covers prerequisites, setup, vendoring, build, install/uninstall, serving, tests, race and coverage runs, policy checks, cross-builds, artifact management, hardware parity, upstream source updates, release packaging and cleanup.
 
-`make package` writes code-only Linux archives under `dist/`. It never includes model or tokenizer artifacts.
+`make package` writes code-only Linux archives under `dist/`. It never includes model or tokenizer artifacts. Tag-driven publication and build-only dry runs are documented in [`docs/releases.md`](docs/releases.md).
 
 ## Licence
 
