@@ -29,3 +29,11 @@ half/fp16_even_test.go	half/fp16_even_test.go
 half/fp16_nonfinite_test.go	half/fp16_nonfinite_test.go
 half/half.go	half/half.go
 half/half_test.go	half/half_test.go
+backends/nvidia/ptx/q5/gemm_q5k_warp.go	backends/nvidia/ptx/q5/gemm_q5k_warp.go
+backends/nvidia/ptx/q5/gemv_q5k_batch.go	backends/nvidia/ptx/q5/gemv_q5k_batch.go
+backends/nvidia/ptx/q5/q5.go	backends/nvidia/ptx/q5/q5.go
+backends/nvidia/ptx/q5/q5_scatter_work.go	backends/nvidia/ptx/q5/q5_scatter_work.go
+backends/nvidia/ptx/q5/q5_scatter_work_ptrs.go	backends/nvidia/ptx/q5/q5_scatter_work_ptrs.go
+backends/nvidia/ptx/q5/q5mmq64_tiles_generated.go	backends/nvidia/ptx/q5/q5mmq64_tiles_generated.go
+backends/nvidia/ptx/q5/q5packed_generated.go	backends/nvidia/ptx/q5/q5packed_generated.go
+backends/nvidia/ptx/q5/q5selected_generated.go	backends/nvidia/ptx/q5/q5selected_generated.go

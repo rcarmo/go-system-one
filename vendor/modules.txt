@@ -20,7 +20,6 @@ github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/mlx
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/nvfp4
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q4
-github.com/rcarmo/go-pherence/backends/nvidia/ptx/q5
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q6
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q8
 github.com/rcarmo/go-pherence/backends/nvidia/runtime
