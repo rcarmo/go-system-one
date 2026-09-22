@@ -3,7 +3,7 @@ package gguf
 import (
 	"encoding/binary"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 func dotQ6KQ8KGemvFast(raw []byte, y []q8KBlock, blocks int) float32 {

@@ -14,4 +14,18 @@ install -D -m 0644 \
   "$module_dir/backends/spacemit/ime2/ime2_isa.h" \
   "$root/vendor/github.com/rcarmo/go-pherence/backends/spacemit/ime2/ime2_isa.h"
 
-printf 'vendored dependencies from go.mod\n'
+# Shared kernels move into this module incrementally. Rewrite the retained
+# upstream closure to use the local implementation, then remove the duplicate
+# vendored package and its package line from modules.txt.
+while IFS=$'\t' read -r upstream_import local_import; do
+  [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
+  mapfile -d '' files < <(grep -rlZ --include='*.go' "$upstream_import" "$root/vendor/github.com/rcarmo/go-pherence" || true)
+  if ((${#files[@]})); then
+    sed -i "s#$upstream_import#$local_import#g" "${files[@]}"
+  fi
+  relative=${upstream_import#github.com/rcarmo/go-pherence/}
+  rm -rf "$root/vendor/github.com/rcarmo/go-pherence/$relative"
+  sed -i "\\#^$upstream_import\$#d" "$root/vendor/modules.txt"
+done < "$root/scripts/local-packages.tsv"
+
+printf 'vendored dependencies from go.mod with local package overrides\n'

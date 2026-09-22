@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 const qkK = 256

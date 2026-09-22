@@ -1,6 +1,6 @@
 package rvv
 
-import "github.com/rcarmo/go-pherence/half"
+import "github.com/rcarmo/go-system-one/half"
 
 const outerCacheBlockTiles = 2
 

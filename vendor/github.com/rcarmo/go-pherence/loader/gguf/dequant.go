@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 // dequantToF32 dequantizes raw GGUF tensor bytes to a []float32 of length n.

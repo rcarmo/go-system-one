@@ -3,7 +3,7 @@ package simd
 import (
 	"encoding/binary"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 // F16LittleEndianToF32 decodes little-endian IEEE-754 half-precision bytes into

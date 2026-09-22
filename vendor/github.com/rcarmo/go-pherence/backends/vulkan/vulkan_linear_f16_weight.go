@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 // VkLinearF16WeightF32 owns one immutable row-major IEEE-F16 weight matrix and

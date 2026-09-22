@@ -8,7 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 	"github.com/rcarmo/go-pherence/loader/gguf/llamaq4"
 	"github.com/rcarmo/go-pherence/loader/gguf/llamaq4plan9"
 )

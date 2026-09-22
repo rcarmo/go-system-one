@@ -1,0 +1,2 @@
+# Upstream package import	Local package import
+github.com/rcarmo/go-pherence/half	github.com/rcarmo/go-system-one/half

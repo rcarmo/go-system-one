@@ -5,7 +5,7 @@ package bf16
 // This halves memory bandwidth vs the F32 emulation path.
 
 import (
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 	"github.com/rcarmo/go-pherence/internal/checked"
 	"math"
 	"unsafe"

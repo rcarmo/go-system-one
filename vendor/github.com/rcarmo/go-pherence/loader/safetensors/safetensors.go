@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 	"github.com/rcarmo/go-pherence/runtime/memory"
 )
 

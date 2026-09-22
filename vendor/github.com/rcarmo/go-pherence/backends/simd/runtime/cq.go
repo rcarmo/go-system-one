@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 	"github.com/rcarmo/go-pherence/internal/checked"
 )
 

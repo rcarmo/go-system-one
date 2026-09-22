@@ -3,7 +3,7 @@
 package gguf
 
 import (
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 	"golang.org/x/sys/cpu"
 )
 

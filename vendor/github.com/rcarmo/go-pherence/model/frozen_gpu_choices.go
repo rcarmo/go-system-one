@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 )
 
 // FrozenGPUDecisionStats uses synchronised wall-clock phase timings, not CUDA

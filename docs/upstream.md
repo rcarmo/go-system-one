@@ -4,7 +4,7 @@
 
 ## Pinned inputs
 
-[`scripts/upstream.env`](../scripts/upstream.env) records the accepted source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps product-owned upstream paths to their local destinations. `go.mod` separately pins the shared runtime module to an immutable pseudo-version. `vendor/` contains the complete package closure used by offline builds.
+[`scripts/upstream.env`](../scripts/upstream.env) records the accepted source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps first-party upstream paths to their local destinations. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps internalised package imports; vendoring rewrites the retained upstream closure to those local packages and removes each duplicate vendor directory. `go.mod` separately pins the remaining shared runtime module to an immutable pseudo-version. `vendor/` contains the resulting package closure used by offline builds.
 
 These pins may advance together when an upstream change touches both product and runtime code. A documentation-only product update need not change the module dependency.
 
@@ -36,7 +36,7 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 ## Review and accept
 
 1. Read the complete diff. Resolve repository-specific imports without changing the public API.
-2. Add new product-owned files to `scripts/upstream-files.tsv`. Remove mappings only when this repository deliberately replaces or deletes the corresponding feature.
+2. Add new first-party files to `scripts/upstream-files.tsv`. Add an import mapping to `scripts/local-packages.tsv` only after the complete package and its tests move here. Remove mappings only when this repository deliberately replaces or deletes the corresponding feature.
 3. Update `scripts/upstream.env` with the accepted full commit and its UTC commit time.
 4. If shared model, loader, SIMD or NVIDIA code changed, update the `go-pherence` pseudo-version in `go.mod` to the same accepted commit.
 5. Run `go mod tidy` and `./scripts/vendor.sh`. Commit the resulting `vendor/` changes, including dependency licences.

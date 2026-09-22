@@ -16,6 +16,7 @@ This repository owns the Go System One decision service, its public contract, pl
 ```text
 cmd/go-system-one/       HTTP service entry point
 model/gosystemone/       decision contract, validation, scorer adapters and tests
+half/                    FP16/BF16 conversion kernel and exhaustive tests
 internal/httpinput/      bounded JSON request decoding
 webui/                   embedded standalone playground and status endpoint
 docs/validation/         model pins, oracle results and benchmark evidence
@@ -34,8 +35,9 @@ vendor/                  pinned offline build closure and dependency licences
 1. Read the relevant files and tests.
 2. Search all callers before changing a public function, schema field or route.
 3. Treat `POST /v1/decision`, `/go-system-one`, artifact hashes, candidate order and validation limits as public contracts.
-4. Check `scripts/upstream-files.tsv` when adding, moving or removing a product-owned file that still originates in `go-pherence`.
-5. Keep ordinary tests offline and deterministic. Released-model and hardware tests must remain opt-in.
+4. Check `scripts/upstream-files.tsv` when adding, moving or removing a first-party file that still originates in `go-pherence`.
+5. Add internalised package import mappings to `scripts/local-packages.tsv`; `scripts/vendor.sh` rewrites the retained upstream closure and removes duplicate vendored packages.
+6. Keep ordinary tests offline and deterministic. Released-model and hardware tests must remain opt-in.
 
 ## Correctness rules
 

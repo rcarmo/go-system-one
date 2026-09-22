@@ -24,3 +24,8 @@ webui/go_system_one_test.go	webui/go_system_one_test.go
 webui/go-system-one/index.html	webui/go-system-one/index.html
 docs/validation/go-system-one-v1-20260921.md	docs/validation/go-system-one-v1-20260921.md
 docs/validation/go-system-one-kev-20260922.md	docs/validation/go-system-one-kev-20260922.md
+half/README.md	half/README.md
+half/fp16_even_test.go	half/fp16_even_test.go
+half/fp16_nonfinite_test.go	half/fp16_nonfinite_test.go
+half/half.go	half/half.go
+half/half_test.go	half/half_test.go

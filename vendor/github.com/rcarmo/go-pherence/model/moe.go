@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
-	"github.com/rcarmo/go-pherence/half"
+	"github.com/rcarmo/go-system-one/half"
 
 	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
 )

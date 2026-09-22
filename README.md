@@ -6,9 +6,9 @@ The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver A
 
 ## Current source boundary
 
-This repository owns the decision contract, request validation, scorer adapters, HTTP service, web interface, frozen oracle fixtures and evaluation records. The first standalone revision pins the shared model, tokenizer, SIMD and NVIDIA runtime to [`go-pherence@559d10b4eb558da20552edf442dbd46ccbee78c1`](https://github.com/rcarmo/go-pherence/commit/559d10b4eb558da20552edf442dbd46ccbee78c1).
+This repository owns the decision contract, request validation, scorer adapters, HTTP service, web interface, frozen oracle fixtures and evaluation records. Shared kernels move here package by package with their tests; `half` is the first internalised kernel. The remaining model, tokenizer, SIMD and NVIDIA runtime currently pin [`go-pherence@f65652f6d9d8aa45c2f5eae68603e995f27b5b75`](https://github.com/rcarmo/go-pherence/commit/f65652f6d9d8aa45c2f5eae68603e995f27b5b75).
 
-The shared runtime is an ordinary immutable Go module dependency. Its complete build closure is checked into `vendor/`, including licences, so a clone can build offline without a sibling checkout. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies the declared product-owned files from a reviewed `go-pherence` commit without writing to that repository.
+The remaining shared runtime is an ordinary immutable Go module dependency. Its complete build closure is checked into `vendor/`, including licences, so a clone can build offline without a sibling checkout. Vendoring rewrites retained upstream packages to use internalised local kernels and removes duplicate package copies. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies declared first-party files from a reviewed `go-pherence` commit without writing to that repository.
 
 ## Build
 
