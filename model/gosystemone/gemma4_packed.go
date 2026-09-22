@@ -18,7 +18,6 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContexts(ctx context.Context, shared []in
 		return nil, fmt.Errorf("packed token rows must be 0..%d", model.Gemma4PackedRows)
 	}
 	paths := make([][]int, len(contexts))
-	fallback := budget == 0
 	for i, tokens := range contexts {
 		if len(tokens) == 0 {
 			return nil, fmt.Errorf("empty context %d", i)
@@ -28,19 +27,25 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContexts(ctx context.Context, shared []in
 			return nil, err
 		}
 		paths[i] = append(append([]int(nil), tokens...), branch.Tokens...)
-		fallback = fallback || len(paths[i]) > budget
 	}
 	out := make([][]float32, len(contexts))
-	if fallback {
-		for i, tokens := range contexts {
-			scores, err := s.ScoreSplitContext(ctx, shared, tokens, []Branch{branch}, allowCache)
-			if err != nil {
-				return nil, err
-			}
-			out[i] = scores[0]
+	packedIndices, serialIndices := partitionContexts(contexts, len(branch.Tokens), budget, 1)
+	for _, i := range serialIndices {
+		tokens := contexts[i]
+		scores, err := s.ScoreSplitContext(ctx, shared, tokens, []Branch{branch}, allowCache)
+		if err != nil {
+			return nil, err
 		}
+		out[i] = scores[0]
+	}
+	if len(packedIndices) == 0 {
 		return out, nil
 	}
+	packedPaths := make([][]int, len(packedIndices))
+	for j, i := range packedIndices {
+		packedPaths[j] = paths[i]
+	}
+	paths = packedPaths
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	prefix := s.cached
@@ -76,7 +81,9 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContexts(ctx context.Context, shared []in
 		if err != nil {
 			return nil, fmt.Errorf("packed contexts [%d,%d): %w", start, end, err)
 		}
-		copy(out[start:end], scores)
+		for j, score := range scores {
+			out[packedIndices[start+j]] = score
+		}
 		start = end
 	}
 	return out, nil
@@ -110,7 +117,6 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContextTrees(ctx context.Context, shared 
 		paths[j] = b.Tokens
 		selected[j] = b.CandidateTokens
 	}
-	fallback := budget == 0 || len(branches) > 256
 	for _, c := range contexts {
 		prompt := append(append([]int(nil), shared...), c...)
 		if len(c) == 0 {
@@ -119,19 +125,25 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContextTrees(ctx context.Context, shared 
 		if _, err := validateGemma4ScoringInput(ctx, s.Model, prompt, branches, nil); err != nil {
 			return nil, err
 		}
-		fallback = fallback || len(c)+cost > budget
 	}
 	out := make([][][]float32, len(contexts))
-	if fallback {
-		for i, c := range contexts {
-			v, err := s.ScoreSplitContext(ctx, shared, c, branches, allowCache)
-			if err != nil {
-				return nil, err
-			}
-			out[i] = v
+	packedIndices, serialIndices := partitionContexts(contexts, cost, budget, len(branches))
+	for _, i := range serialIndices {
+		c := contexts[i]
+		v, err := s.ScoreSplitContext(ctx, shared, c, branches, allowCache)
+		if err != nil {
+			return nil, err
 		}
+		out[i] = v
+	}
+	if len(packedIndices) == 0 {
 		return out, nil
 	}
+	packedContexts := make([][]int, len(packedIndices))
+	for j, i := range packedIndices {
+		packedContexts[j] = contexts[i]
+	}
+	contexts = packedContexts
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	prefix := s.cached
@@ -163,8 +175,23 @@ func (s *Gemma4NVIDIAScorer) ScoreSplitContextTrees(ctx context.Context, shared 
 		if err != nil {
 			return nil, err
 		}
-		copy(out[start:end], scores)
+		for j, score := range scores {
+			out[packedIndices[start+j]] = score
+		}
 		start = end
 	}
 	return out, nil
+}
+
+// partitionContexts preserves order within each execution class and returns
+// original indices for output placement. A long entry cannot disable its peers.
+func partitionContexts(contexts [][]int, branchRows, budget, branches int) (packed, serial []int) {
+	for i, c := range contexts {
+		if budget <= 0 || branches < 1 || branches > 256 || branchRows > budget || len(c) > budget-branchRows {
+			serial = append(serial, i)
+		} else {
+			packed = append(packed, i)
+		}
+	}
+	return packed, serial
 }

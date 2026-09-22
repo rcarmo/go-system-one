@@ -232,3 +232,80 @@ func TestEngineBatchTreeMatchesScalar(t *testing.T) {
 		}
 	}
 }
+
+func TestPartitionContextsPreservesEligibleWork(t *testing.T) {
+	contexts := [][]int{make([]int, 20), make([]int, 510), make([]int, 200), make([]int, 503), make([]int, 1)}
+	packed, serial := partitionContexts(contexts, 10, 512, 2)
+	if !reflect.DeepEqual(packed, []int{0, 2, 4}) || !reflect.DeepEqual(serial, []int{1, 3}) {
+		t.Fatalf("packed=%v serial=%v", packed, serial)
+	}
+	for _, tc := range []struct{ cost, budget, branches int }{{10, 0, 2}, {513, 512, 2}, {10, 512, 257}} {
+		packed, serial = partitionContexts(contexts, tc.cost, tc.budget, tc.branches)
+		if len(packed) != 0 || len(serial) != len(contexts) {
+			t.Fatalf("invalid plan %+v: %v/%v", tc, packed, serial)
+		}
+	}
+	packed, serial = partitionContexts([][]int{make([]int, 502), make([]int, 503)}, 10, 512, 1)
+	if !reflect.DeepEqual(packed, []int{0}) || !reflect.DeepEqual(serial, []int{1}) {
+		t.Fatal("token boundary mismatch")
+	}
+}
+
+func TestGoSystemOneMixedLengthReleasedModel(t *testing.T) {
+	path, dir := os.Getenv("GO_SYSTEM_ONE_MODEL"), os.Getenv("GO_SYSTEM_ONE_TOKENIZER_DIR")
+	if path == "" || dir == "" {
+		t.Skip("set GO_SYSTEM_ONE_MODEL and GO_SYSTEM_ONE_TOKENIZER_DIR")
+	}
+	tok, err := tokenizer.LoadWithConfig(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, err := model.LoadGemma4GGUFAsLlama(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.Tok = tok
+	gpu, err := model.NewGemma4NVIDIA(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer gpu.Close()
+	scorer := &Gemma4NVIDIAScorer{Model: m, GPU: gpu, PackedTokenRows: 512}
+	defer scorer.Close()
+	f := loadLlamaCppGoSystemOneFixture(t)
+	suffix := f.Tokens.TruePath[:len(f.Tokens.TruePath)-2]
+	ids := []int{f.Tokens.TruePath[len(f.Tokens.TruePath)-2], f.Tokens.FalsePath[len(f.Tokens.FalsePath)-2]}
+	long := make([]int, 0, 600)
+	for len(long) < 540 {
+		long = append(long, f.Tokens.Context...)
+	}
+	contexts := [][]int{f.Tokens.Context, long, append(append([]int{}, f.Tokens.Context...), f.Tokens.Context...)}
+	for _, branches := range [][]Branch{{{Tokens: suffix, CandidateTokens: ids}}, {{Tokens: suffix, CandidateTokens: ids}, {Tokens: append(append([]int{}, suffix...), ids[0]), CandidateTokens: ids}}} {
+		got, err := scorer.ScoreSplitContextTrees(context.Background(), f.Tokens.Shared, contexts, branches, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, c := range contexts {
+			want, err := scorer.ScoreSplitContextTrees(context.Background(), f.Tokens.Shared, [][]int{c}, branches, true)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for j, row := range got[i] {
+				for k, v := range row {
+					expected := want[0][j][k]
+					if math.Abs(float64(v-expected)) > math.Max(.01, .005*math.Abs(float64(expected))) {
+						t.Fatalf("mixed [%d][%d][%d] got=%g want=%g", i, j, k, v, expected)
+					}
+				}
+			}
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		if result, err := scorer.ScoreSplitContextTrees(ctx, f.Tokens.Shared, contexts, branches, true); err == nil || result != nil {
+			t.Fatal("cancelled mixed scoring accepted")
+		}
+		if _, err := scorer.ScoreSplitContextTrees(context.Background(), f.Tokens.Shared, contexts, branches, false); err != nil {
+			t.Fatalf("uncached recovery: %v", err)
+		}
+	}
+}
