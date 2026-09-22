@@ -41,7 +41,7 @@ make check
 go test -race ./model/gosystemone ./internal/httpinput ./webui
 ```
 
-The default suite is offline and uses synthetic or frozen repository fixtures. Released-model NVIDIA parity is opt-in because it requires the pinned checkpoint, tokenizer and suitable hardware. See the [v1 model validation](docs/validation/go-system-one-v1-20260921.md) for artifact pins, llama.cpp oracle data and latency samples, and the [standalone repository validation](docs/validation/standalone-repository-20260922.md) for extraction, offline-build and CI evidence.
+The default suite is offline and uses synthetic or frozen repository fixtures. Released-model NVIDIA parity is opt-in because it requires the pinned checkpoint, tokenizer and suitable hardware. See the [v1 model validation](docs/validation/go-system-one-v1-20260921.md) for artifact pins and oracle data, the [standalone repository validation](docs/validation/standalone-repository-20260922.md) for extraction and CI evidence, and the [accelerated standalone NVIDIA run](docs/validation/standalone-nvidia-f65652f6-20260922.md) for the complete 100-request sample.
 
 ## Update from go-pherence
 
