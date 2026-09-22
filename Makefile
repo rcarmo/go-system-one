@@ -20,7 +20,7 @@ BENCHMARK_WARMUP ?= 1
 BENCHMARK_LISTEN ?= 127.0.0.1:18081
 BENCHMARK_OUT ?= $(DIST_DIR)/benchmarks/nvidia-http.json
 
-.PHONY: help prerequisites setup vendor build install uninstall run test race coverage vet fmt-check scripts-check \
+.PHONY: help prerequisites setup vendor build install uninstall run test race coverage vet fmt-check scripts-check browser-test \
 	benchmark benchmark-charts benchmark-check vendor-check check cross-build artifacts-info artifacts-download artifacts-verify \
 	artifacts-clean hardware-check package update clean distclean
 
@@ -37,6 +37,7 @@ help:
 	  '  make test               Run the offline test suite' \
 	  '  make coverage           Write coverage.out and print package coverage' \
 	  '  make race               Run race tests across first-party packages' \
+	  '  make browser-test       Run model-free Chromium playground tests' \
 	  '  make check              Run formatting, policy, test, vet and build gates' \
 	  '  make cross-build        Compile Linux ARM64 and RISC-V binaries' \
 	  '  make hardware-check     Run both pinned released-model NVIDIA gates' \
@@ -96,6 +97,10 @@ vet:
 fmt-check:
 	@test -z "$$(gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'))" || \
 		{ echo 'gofmt required for:'; gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'); exit 1; }
+
+browser-test:
+	cd browser && bun install --frozen-lockfile
+	cd browser && bun x playwright test --config playwright.config.ts
 
 benchmark:
 	MODEL="$(MODEL)" TOKENIZER_DIR="$(TOKENIZER_DIR)" BACKEND="$(BACKEND)" \

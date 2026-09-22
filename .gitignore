@@ -1,5 +1,9 @@
 /bin/
 /dist/
+/browser/node_modules/
+/browser/test-results/
+/browser/playwright-report/
+/.cache/ms-playwright/
 *.gguf
 *.GGUF
 *.gguf.*

@@ -29,6 +29,34 @@ jobs:
           GOSUMDB: "off"
         run: go test -mod=vendor -race ./model/gosystemone ./internal/httpinput ./webui
 
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.1
+      - name: Cache Chromium
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-1.56.1
+      - name: Install browser test dependencies
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+        run: |
+          cd browser
+          bun install --frozen-lockfile
+          bun x playwright install chromium
+      - name: Test embedded playground
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+        run: make browser-test
+
   cross-build:
     runs-on: ubuntu-24.04
     strategy:

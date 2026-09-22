@@ -28,6 +28,16 @@ Appearance follows the operating-system `prefers-color-scheme` setting. The page
 - content width: 370 px, without horizontal overflow
 - SHA-256: `6aeb50d478ad3b683adf0bd044e177364c7f68ab054ccb47044b1b1413735317`
 
+## Standalone browser checks
+
+The repository has a model-free Playwright project under `browser/`. Its loopback-only Go fixture serves the real embedded page and synthetic decision responses; no checkpoint is loaded.
+
+```sh
+PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/ms-playwright make browser-test
+```
+
+The tests submit two contexts, check rendered decisions and selected probabilities, exercise light and dark OS preferences, reject mobile horizontal overflow, and verify status/method boundaries. CI runs the same Chromium suite. Candidate-by-candidate probability assertions will accompany the API/UI update that exposes complete distributions.
+
 ## Capture provenance
 
 The page source was imported from [`go-pherence@8629232b14440f4a9aa06cfb6d6003c1302c8cb9`](https://github.com/rcarmo/go-pherence/commit/8629232b14440f4a9aa06cfb6d6003c1302c8cb9). Screenshots used the loopback-only synthetic browser fixture. No model or user data was loaded.
@@ -42,4 +52,4 @@ go vet ./webui
 git diff --check
 ```
 
-The upstream browser suite passed all three scenarios. The standalone repository preserves the embedded page and its Go route/header tests; the Svelte/Playwright harness remains in the source repository.
+The upstream browser suite passed all three scenarios used for the original hand-off. The standalone Playwright harness covers this page independently without carrying the Svelte/chat frontend.
