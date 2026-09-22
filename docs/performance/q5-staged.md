@@ -1,6 +1,8 @@
 # Q5 shared-memory staging
 
-The Q5 projection kernel now stages activation scales and sums alongside quantised activation bytes. Two tiles handle 24 or 32 input rows and 64 output rows per block. This reuses metadata across outputs and reduces repeated global loads. Production still loads embedded PTX without a CUDA toolkit.
+This first Q5 staging revision stores activation scales and sums alongside quantised activation bytes. A [subsequent 512-column chunk revision](q5-chunk512.md) reduces barriers and adds a measured 2.6% batch latency improvement.
+
+The Q5 projection kernel stages activation scales and sums alongside quantised activation bytes. Two tiles handle 24 or 32 input rows and 64 output rows per block. This reuses metadata across outputs and reduces repeated global loads. Production still loads embedded PTX without a CUDA toolkit.
 
 ## Measured service effect
 

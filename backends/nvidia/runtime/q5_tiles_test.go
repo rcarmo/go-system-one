@@ -35,9 +35,24 @@ func TestQ5PackedMMQ64TilesMatchBatch4(t *testing.T) {
 
 func testQ5PackedMMQ64Case(t *testing.T, outDim, batch int) {
 	t.Helper()
-	const inDim = 256
-	raw := make([]byte, outDim*176)
-	for r := 0; r < outDim; r++ {
+	testQ5PackedWidth(t, 256, outDim, batch)
+}
+
+func TestQ5StagedChunkTails(t *testing.T) {
+	if !SgemmReady() {
+		t.Skip("CUDA unavailable")
+	}
+	for _, inDim := range []int{512, 768, 3840} {
+		for _, batch := range []int{25, 131} {
+			t.Run(fmt.Sprintf("k%d_b%d", inDim, batch), func(t *testing.T) { testQ5PackedWidth(t, inDim, 2305, batch) })
+		}
+	}
+}
+
+func testQ5PackedWidth(t *testing.T, inDim, outDim, batch int) {
+	t.Helper()
+	raw := make([]byte, outDim*(inDim/256)*176)
+	for r := 0; r < len(raw)/176; r++ {
 		block := raw[r*176 : (r+1)*176]
 		binary.LittleEndian.PutUint16(block[0:2], half.F32ToF16(.02))
 		binary.LittleEndian.PutUint16(block[2:4], half.F32ToF16(.003))
