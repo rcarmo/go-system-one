@@ -19,12 +19,16 @@ install -D -m 0644 \
 # vendored package and its package line from modules.txt.
 while IFS=$'\t' read -r upstream_import local_import; do
   [[ -n "$upstream_import" && ${upstream_import:0:1} != "#" ]] || continue
-  mapfile -d '' files < <(grep -rlZ --include='*.go' "$upstream_import" "$root/vendor/github.com/rcarmo/go-pherence" || true)
+  mapfile -d '' files < <(grep -rlZ --include='*.go' "\"$upstream_import\"" "$root/vendor/github.com/rcarmo/go-pherence" || true)
   if ((${#files[@]})); then
-    sed -i "s#$upstream_import#$local_import#g" "${files[@]}"
+    sed -i "s#\"$upstream_import\"#\"$local_import\"#g" "${files[@]}"
   fi
   relative=${upstream_import#github.com/rcarmo/go-pherence/}
-  rm -rf "$root/vendor/github.com/rcarmo/go-pherence/$relative"
+  package_dir="$root/vendor/github.com/rcarmo/go-pherence/$relative"
+  if [[ -d "$package_dir" ]]; then
+    find "$package_dir" -maxdepth 1 -type f -delete
+    rmdir "$package_dir" 2>/dev/null || true
+  fi
   sed -i "\\#^$upstream_import\$#d" "$root/vendor/modules.txt"
 done < "$root/scripts/local-packages.tsv"
 

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/rcarmo/go-pherence/backends/nvidia/ptx"
+	"github.com/rcarmo/go-system-one/backends/nvidia/ptx"
 	"github.com/rcarmo/go-pherence/internal/checked"
 )
 

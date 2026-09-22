@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	ptxwhisper "github.com/rcarmo/go-pherence/backends/cuda/ptx"
-	"github.com/rcarmo/go-pherence/backends/nvidia/ptx"
+	"github.com/rcarmo/go-system-one/backends/nvidia/ptx"
 	ptxbf16 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/bf16"
 	ptxfp8 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/fp8"
 	ptxideogram "github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram"

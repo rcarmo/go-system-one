@@ -13,7 +13,6 @@ github.com/rcarmo/go-pherence/backends/ggmlquant
 github.com/rcarmo/go-pherence/backends/internal/ggmlutil
 github.com/rcarmo/go-pherence/backends/mlx
 github.com/rcarmo/go-pherence/backends/nvidia/internal/debuglog
-github.com/rcarmo/go-pherence/backends/nvidia/ptx
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/bf16
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/fp8
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram
