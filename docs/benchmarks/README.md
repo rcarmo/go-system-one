@@ -11,12 +11,12 @@ Measured at [`321e6ce`](https://github.com/rcarmo/go-system-one/commit/321e6ce9d
 | 1 | 162.04 ms | 157.97–162.10 ms | 6.17 |
 | 10 | 1,149.19 ms | 1,149.05–1,155.27 ms | 8.70 |
 | 25 | 2,941.18 ms | 2,938.23–2,943.15 ms | 8.50 |
-| 50 | Incomplete: two measured samples before collector timeout | — | — |
-| 100 | Not yet measured in this sweep | — | — |
+| 50 | 5,835.61 ms | 5,832.17–5,874.26 ms | 8.57 |
+| 100 | 11,662.08 ms | 11,655.03–11,666.75 ms | 8.57 |
 
 ![Automatic multi-field batch latency](automatic-batches.svg)
 
-Each completed row has one same-size warm-up and three measured requests, cooled to at most 55°C before each request. Contexts cycle the [frozen cohort](multifield-cohort.json) with unique ticket numbers. The [raw sweep](data/automatic-batch-sweep.json) includes request bodies, results, device readings, binary/model hashes and the incomplete 50-entry observations. The 600-second tool timeout interrupted collection; unfinished cells are excluded from the chart. These three-sample rows do not establish tail latency.
+Each completed row has one same-size warm-up and three measured requests, cooled to at most 55°C before each request. Contexts cycle the [frozen cohort](multifield-cohort.json) with unique ticket numbers. The [raw sweep](data/automatic-batch-sweep.json) includes request bodies, results, device readings and binary/model hashes. A second collection session completed sizes 50 and 100 with the same binary and protocol after the first session timed out; the interrupted observations are retained separately and excluded from the chart. The larger completed cases reached at most 73°C and sampled 9,613 MiB of device memory. These three-sample rows do not establish tail latency.
 
 ## Paired serial versus packed comparison
 
@@ -106,7 +106,7 @@ bun scripts/batch-benchmark.ts \
   --out dist/benchmarks/automatic-batch-sweep.json
 ```
 
-Use `--mode serial` for an explicit serial comparison, and `--sizes 50,100` to collect the missing sizes separately. The collector rejects a busy GPU, verifies artifacts through the server, cools before requests, and aborts at 83°C. It saves each observation; only complete three-sample cells produce medians. Long sweeps need a command timeout that accommodates cooling.
+Use `--mode serial` for an explicit serial comparison, and `--sizes 50,100` to collect larger sizes separately. The collector rejects a busy GPU, verifies artifacts through the server, cools before requests, and aborts at 83°C. It saves each observation; only complete three-sample cells produce medians. Long sweeps need a command timeout that accommodates cooling.
 
 For the single-boolean fixture:
 
