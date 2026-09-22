@@ -1,6 +1,6 @@
 # Jev-like decision model
 
-Go System One applies a Jev-like finite-choice interface to a pinned Gemma 4 12B instruction backbone. Callers provide context, guidance and typed boolean or enum fields; the scorer follows bounded candidate-token paths and returns one selected value plus a constrained model probability for each field.
+Go System One applies a Jev-like finite-choice interface to a pinned Gemma 4 12B instruction backbone. Callers provide context, guidance and allowed outcomes. The scorer follows bounded candidate-token paths and returns constrained distributions, selected choices, expected scores or yes/no probabilities.
 
 Gemma supplies the pretrained language representation and broad world knowledge used to interpret the context and options. Go System One supplies the request schema, prompt contract, candidate trie, prefix reuse, independent suffix scoring, validation and HTTP surface.
 
@@ -8,7 +8,7 @@ The Jev-like description is architectural and behavioural. This repository does 
 
 ## Decision contract
 
-The v1 API supports:
+`POST /v1/decision` supports:
 
 - boolean fields;
 - unordered string-enum fields;
@@ -18,8 +18,10 @@ The v1 API supports:
 
 The model scores only paths admitted by the compiled schema. It does not generate arbitrary prose through `/v1/decision`.
 
+`POST /v1/systemone` accepts TypeSafe's core `state`/`questions` types: `noul`, `choice` and ordered `score`. [The adapter contract](systemone-api.md) defines structured criteria, fractional scores, confidence formulas and compatibility limits. Both routes share the scorer and admission gate.
+
 ## Limits
 
-The returned probabilities are constrained model probabilities over the admitted candidates. They are not calibrated estimates of real-world correctness. Ordered scores, permutation analysis and labelled calibration need separate contracts and evaluation cohorts.
+The returned probabilities are constrained model probabilities over the admitted candidates. They are not calibrated estimates of real-world correctness. TypeSafe confidence parity is unverified; permutation analysis and labelled calibration need separate evaluation cohorts.
 
 The [Kev comparison](validation/go-system-one-kev-20260922.md) records related decision-model techniques and why Kev's learned pointer head is a separate checkpoint contract. The [v1 validation report](validation/go-system-one-v1-20260921.md) records the actual Gemma model, tokenizer, numerical and performance pins.

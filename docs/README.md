@@ -5,6 +5,7 @@ These documents define the standalone service, its external artifacts, browser p
 ## Operate the service
 
 - [Jev-like decision model](jev-like.md) — finite-choice behaviour, Gemma world knowledge and compatibility limits.
+- [TypeSafe question types](systemone-api.md) — `noul`, `choice` and `score` through `/v1/systemone`.
 - [External model artifacts](artifacts.md) — exact model/tokenizer pins, download, verification and cleanup.
 - [Decision playground](playground.md) — routes, theme contract, desktop/mobile captures and browser-test provenance.
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.

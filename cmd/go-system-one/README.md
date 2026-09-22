@@ -1,12 +1,14 @@
 # go-system-one
 
-`go-system-one` serves finite boolean and enum decisions from the Go System One v1 Gemma 4 12B checkpoint.
+`go-system-one` serves finite-choice decisions, ordered scores and yes/no probabilities from the Go System One v1 Gemma 4 12B checkpoint.
 
 ```sh
 make run BACKEND=nvidia LISTEN=127.0.0.1:8080
 ```
 
 Open `http://127.0.0.1:8080/go-system-one` for the standalone playground. The API endpoint is `POST /v1/decision`. Tree-mode results display every allowed outcome and its constrained model probability; the selected outcome is highlighted. These are model probabilities over the allowed candidates, not calibrated correctness estimates.
+
+`POST /v1/systemone` accepts [TypeSafe's core question types](../../docs/systemone-api.md): `noul`, `choice` and `score`. It shares the existing route's scorer and admission gate; the playground continues to use `/v1/decision`.
 
 ![Go System One decision playground](../../docs/images/go-system-one-light-desktop.png)
 
