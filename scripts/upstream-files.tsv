@@ -243,3 +243,6 @@ backends/placement/budget.go	backends/placement/budget.go
 backends/placement/budget_test.go	backends/placement/budget_test.go
 backends/placement/placement.go	backends/placement/placement.go
 backends/placement/placement_test.go	backends/placement/placement_test.go
+model/gosystemone/cache_test.go	model/gosystemone/cache_test.go
+model/gosystemone/multifield_parity_test.go	model/gosystemone/multifield_parity_test.go
+model/gosystemone/testdata/llamacpp-go-system-one-gemma4-12b-multifield.json	model/gosystemone/testdata/llamacpp-go-system-one-gemma4-12b-multifield.json
