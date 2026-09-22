@@ -14,7 +14,7 @@ import (
 	ptxq4 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q4"
 	ptxq5 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q5"
 	ptxq6 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q6"
-	ptxq8 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/q8"
+	ptxq8 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/q8"
 )
 
 type moduleEntry struct {

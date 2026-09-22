@@ -66,3 +66,8 @@ backends/nvidia/ptx/q4/q4q8_generated.go	backends/nvidia/ptx/q4/q4q8_generated.g
 backends/nvidia/ptx/q4/q4raw_f32_generated.go	backends/nvidia/ptx/q4/q4raw_f32_generated.go
 backends/nvidia/ptx/q4/q8_1_mmq_2d_generated.go	backends/nvidia/ptx/q4/q8_1_mmq_2d_generated.go
 backends/nvidia/ptx/q4/upstream_mmq_generated.go	backends/nvidia/ptx/q4/upstream_mmq_generated.go
+backends/nvidia/ptx/q8/q8.go	backends/nvidia/ptx/q8/q8.go
+backends/nvidia/ptx/q8/q8_batch.go	backends/nvidia/ptx/q8/q8_batch.go
+backends/nvidia/ptx/q8/q8_scatter.go	backends/nvidia/ptx/q8/q8_scatter.go
+backends/nvidia/ptx/q8/q8_scatter_work.go	backends/nvidia/ptx/q8/q8_scatter_work.go
+backends/nvidia/ptx/q8/q8_scatter_work_ptrs.go	backends/nvidia/ptx/q8/q8_scatter_work_ptrs.go

@@ -19,7 +19,6 @@ github.com/rcarmo/go-pherence/backends/nvidia/ptx/fp8
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/mlx
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/nvfp4
-github.com/rcarmo/go-pherence/backends/nvidia/ptx/q8
 github.com/rcarmo/go-pherence/backends/nvidia/runtime
 github.com/rcarmo/go-pherence/backends/placement
 github.com/rcarmo/go-pherence/backends/simd/kernels
