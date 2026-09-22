@@ -1,0 +1,5108 @@
+{
+  "schema": "go-system-one-batch-sweep-v1",
+  "revision": "321e6ce9d7859f30a6b31949b933ee4d1312c456",
+  "mode": "automatic",
+  "started_utc": "2026-09-22T20:11:17.737Z",
+  "binary_sha256": "9d2e76e7940472522ca8c5ac4d5b60762d3b5f2dde8b2ce5d3c82f067ebfd2f1",
+  "cohort_sha256": "021d1419c38bec3070818c350c0e5bb734afd93fcbd0a885c798e59881842b3e",
+  "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+  "method": "One same-size warmup; three measured warm handler samples; idle GPU; cool to <=55C before each; abort at >=83C; 500ms temperature/memory samples; schema: boolean plus 3-way multi-token enum. Contexts cycle the frozen cohort with unique ticket suffixes. No labelled accuracy evaluation.",
+  "device": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "driver": "580.173.02",
+    "temperature": 54,
+    "memory_mib": 85,
+    "sm_mhz": 1777
+  },
+  "cases": [
+    {
+      "size": 1,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "complete",
+      "samples": [
+        {
+          "handler_ms": 162.036015,
+          "wall_ms": 162.5434360000072,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9490,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 60,
+            "memory_mib": 9490,
+            "sm_mhz": 1777
+          },
+          "max_temperature_c": 60,
+          "sampled_peak_memory_mib": 9490
+        },
+        {
+          "handler_ms": 162.104771,
+          "wall_ms": 162.96299,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9497,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 60,
+            "memory_mib": 9497,
+            "sm_mhz": 1777
+          },
+          "max_temperature_c": 60,
+          "sampled_peak_memory_mib": 9497
+        },
+        {
+          "handler_ms": 157.966493,
+          "wall_ms": 158.45383399998536,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9404,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 60,
+            "memory_mib": 9404,
+            "sm_mhz": 1777
+          },
+          "max_temperature_c": 60,
+          "sampled_peak_memory_mib": 9404
+        }
+      ],
+      "warmup": {
+        "handler_ms": 414.643027,
+        "wall_ms": 415.3073710000026,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 55,
+          "memory_mib": 9411,
+          "sm_mhz": 210
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 62,
+          "memory_mib": 9509,
+          "sm_mhz": 1837
+        },
+        "max_temperature_c": 62,
+        "sampled_peak_memory_mib": 9509
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999939234845,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999939234845,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.394395306360663e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.682120164068902e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999970522997,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999970522997,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.947700307933443e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "min_ms": 157.966493,
+      "median_ms": 162.036015,
+      "max_ms": 162.104771,
+      "entries_per_second": 6.171467497518993
+    },
+    {
+      "size": 10,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 2.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 3.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 4.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 5.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 6.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 7.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 8.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 9.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 10."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "complete",
+      "samples": [
+        {
+          "handler_ms": 1149.049046,
+          "wall_ms": 1149.4536380000063,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9558,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9558,
+            "sm_mhz": 1837
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9558
+        },
+        {
+          "handler_ms": 1149.194071,
+          "wall_ms": 1149.7684199999785,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9558,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9558,
+            "sm_mhz": 1837
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9558
+        },
+        {
+          "handler_ms": 1155.26689,
+          "wall_ms": 1155.7323019999894,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 56,
+            "memory_mib": 9619,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 65,
+            "memory_mib": 9619,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 65,
+          "sampled_peak_memory_mib": 9619
+        }
+      ],
+      "warmup": {
+        "handler_ms": 1155.184643,
+        "wall_ms": 1155.7424780000001,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 55,
+          "memory_mib": 9404,
+          "sm_mhz": 210
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 65,
+          "memory_mib": 9558,
+          "sm_mhz": 1830
+        },
+        "max_temperature_c": 65,
+        "sampled_peak_memory_mib": 9558
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999939234845,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999939234845,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.394395306360663e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.682120164068902e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999970522997,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999970522997,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.947700307933443e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999492084939571,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.5685149748247514e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999492084939571,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00005075582089318946,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999535260303,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.647396968054152e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999535260303,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999129282972583,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.2809555138045808e-9,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00008707042178618466,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999129282972583,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.997659844158788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0023401558412120666,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.997659844158788,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999877031799,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999877031799,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 1.1630681906234974e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.661383285584655e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999982011194,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999982011194,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.7988806120655903e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999946779627631,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.461865608451724e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999946779627631,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0000049758506759910785,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999989679242436,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000010320757563327387,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999989679242436,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9428054990249067,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.427606191684753e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.057194486699031204,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9428054990249067,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999990686707071,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 9.313292929107907e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999990686707071,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.8859517551386699,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.8859517551386699,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.11251695463905124,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0015312902222789008,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9978130755489568,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9978130755489568,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.0021869244510431636,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9998957762259374,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.0000021667537551611758,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9998957762259374,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00010205702030737782,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999964487141924,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000035512858075983518,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999964487141924,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 46,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9791184709237579,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9791184709237579,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.02084368243858081,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00003784663766117849,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999997677988788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999997677988788,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.3220112119365001e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 38,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9925538019765905,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.007403002649102738,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9925538019765905,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000043195374306896556,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9765055616951802,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9765055616951802,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.023494438304819704,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "min_ms": 1149.049046,
+      "median_ms": 1149.194071,
+      "max_ms": 1155.26689,
+      "entries_per_second": 8.701750428714142
+    },
+    {
+      "size": 25,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 2.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 3.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 4.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 5.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 6.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 7.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 8.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 9.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 10.",
+          "A certificate expires in ten minutes. Automatic renewal has failed and the service has no backup. Ticket 11.",
+          "The ticket says urgent, but its description requests a cosmetic change next quarter. Ticket 12.",
+          "The ticket says routine, but reports that every database replica is offline and new data is being lost. Ticket 13.",
+          "A customer needs help. No deadline, symptoms, affected service or impact is provided. Ticket 14.",
+          "A customer requests a status update while an engineer performs planned maintenance. Service availability is normal. Ticket 15.",
+          "Maintenance was completed, but one customer still cannot sign in. It is unclear whether the maintenance caused this. Ticket 16.",
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 17.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 18.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 19.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 20.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 21.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 22.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 23.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 24.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 25."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "complete",
+      "samples": [
+        {
+          "handler_ms": 2943.150875,
+          "wall_ms": 2944.1353119999985,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9677,
+            "sm_mhz": 285
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 66,
+            "memory_mib": 9677,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 66,
+          "sampled_peak_memory_mib": 9677
+        },
+        {
+          "handler_ms": 2938.226358,
+          "wall_ms": 2938.777417000034,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9580,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 66,
+            "memory_mib": 9580,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 67,
+          "sampled_peak_memory_mib": 9580
+        },
+        {
+          "handler_ms": 2941.176244,
+          "wall_ms": 2941.9332599999616,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9580,
+            "sm_mhz": 210
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 66,
+            "memory_mib": 9580,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 67,
+          "sampled_peak_memory_mib": 9580
+        }
+      ],
+      "warmup": {
+        "handler_ms": 3010.720562,
+        "wall_ms": 3024.5568579999963,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 55,
+          "memory_mib": 9650,
+          "sm_mhz": 210
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 65,
+          "memory_mib": 9682,
+          "sm_mhz": 1830
+        },
+        "max_temperature_c": 67,
+        "sampled_peak_memory_mib": 9684
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999939234845,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999939234845,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.394395306360663e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.682120164068902e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999970522997,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999970522997,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.947700307933443e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999492084939571,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.5685149748247514e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999492084939571,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00005075582089318946,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999535260303,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.647396968054152e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999535260303,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999129282972583,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.2809555138045808e-9,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00008707042178618466,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999129282972583,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.997659844158788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0023401558412120666,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.997659844158788,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999877031799,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999877031799,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 1.1630681906234974e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.661383285584655e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999982011194,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999982011194,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.7988806120655903e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999946779627631,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.461865608451724e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999946779627631,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0000049758506759910785,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999989679242436,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000010320757563327387,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999989679242436,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9428054990249067,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.427606191684753e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.057194486699031204,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9428054990249067,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999990686707071,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 9.313292929107907e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999990686707071,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.8859517551386699,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.8859517551386699,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.11251695463905124,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0015312902222789008,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9978130755489568,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9978130755489568,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.0021869244510431636,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9998957762259374,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.0000021667537551611758,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9998957762259374,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00010205702030737782,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999964487141924,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000035512858075983518,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999964487141924,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 46,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9791184709237579,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9791184709237579,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.02084368243858081,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00003784663766117849,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999997677988788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999997677988788,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.3220112119365001e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 38,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9925538019765905,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.007403002649102738,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9925538019765905,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000043195374306896556,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9765055616951802,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9765055616951802,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.023494438304819704,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999371759103,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999371759103,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 5.618548205308253e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.6386077286551525e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999987818649,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999987818649,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.218135152713124e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999862637500515,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.506220575208515e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999862637500515,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000013711187742705874,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9507477965975403,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.04925220340245964,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9507477965975403,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999987581429947,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999987581429947,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.0000012167706823197726,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 2.5086322994243747e-8,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999996509088134,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999996509088134,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.490911867686277e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 36,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9890961986772931,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 9.159649966857595e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.010903709726207068,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9890961986772931,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999719339208387,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000028066079161284348,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999719339208387,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.7936612292351112,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.6657638231160853e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.20633875410725047,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.7936612292351112,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999753196376596,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000024680362340451193,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999753196376596,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.999974913291699,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.8171459527221148e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00002490499370576148,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.999974913291699,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9132338192269941,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9132338192269941,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.08676618077300595,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 37,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.999999994520965,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.999999994520965,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 3.710329525930476e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.7687053419544267e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999975570786,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999975570786,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.4429214132928203e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.999981690034959,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.823704161472016e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.999981690034959,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000018291727999306283,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.999999951760547,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.823945300611683e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.999999951760547,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.999955490756511,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 5.743910603589155e-10,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00004450866909777901,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.999955490756511,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9987449250488404,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0012550749511596032,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9987449250488404,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999915212768,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999915212768,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 7.791697976298846e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.870253072032917e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.999999997389579,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999997389579,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.610420883833411e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999936511363215,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.1983612582248444e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999936511363215,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0000061290275526503876,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999995703580112,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.2964198887236663e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999995703580112,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9737254583504059,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.1893581211638497e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.026274519756012762,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9737254583504059,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999995155662327,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.844337673431821e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999995155662327,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.7549178387222095,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.7549178387222095,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.2428616146242257,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.002220546653564827,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9960347252303954,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9960347252303954,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.003965274769604749,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9998657742052305,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.000002198080207033485,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9998657742052305,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00013202771456241293,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999976237907515,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000023762092484174232,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999976237907515,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 47,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9768844430562329,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9768844430562329,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.023048031000519373,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00006752594324774658,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999998645673781,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999998645673781,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.3543262179886898e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 39,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "min_ms": 2938.226358,
+      "median_ms": 2941.176244,
+      "max_ms": 2943.150875,
+      "entries_per_second": 8.50000065484005
+    },
+    {
+      "size": 50,
+      "request": {
+        "model": "gemma-4-12b-it-go-system-one",
+        "instructions": "Answer from the context.",
+        "schema": {
+          "priority": {
+            "type": "enum",
+            "description": "Priority level",
+            "choices": [
+              "critical incident",
+              "routine maintenance",
+              "customer follow-up"
+            ]
+          },
+          "urgent": {
+            "type": "boolean",
+            "description": "Needs urgent handling?"
+          }
+        },
+        "contexts": [
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 1.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 2.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 3.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 4.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 5.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 6.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 7.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 8.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 9.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 10.",
+          "A certificate expires in ten minutes. Automatic renewal has failed and the service has no backup. Ticket 11.",
+          "The ticket says urgent, but its description requests a cosmetic change next quarter. Ticket 12.",
+          "The ticket says routine, but reports that every database replica is offline and new data is being lost. Ticket 13.",
+          "A customer needs help. No deadline, symptoms, affected service or impact is provided. Ticket 14.",
+          "A customer requests a status update while an engineer performs planned maintenance. Service availability is normal. Ticket 15.",
+          "Maintenance was completed, but one customer still cannot sign in. It is unclear whether the maintenance caused this. Ticket 16.",
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 17.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 18.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 19.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 20.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 21.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 22.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 23.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 24.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 25.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 26.",
+          "A certificate expires in ten minutes. Automatic renewal has failed and the service has no backup. Ticket 27.",
+          "The ticket says urgent, but its description requests a cosmetic change next quarter. Ticket 28.",
+          "The ticket says routine, but reports that every database replica is offline and new data is being lost. Ticket 29.",
+          "A customer needs help. No deadline, symptoms, affected service or impact is provided. Ticket 30.",
+          "A customer requests a status update while an engineer performs planned maintenance. Service availability is normal. Ticket 31.",
+          "Maintenance was completed, but one customer still cannot sign in. It is unclear whether the maintenance caused this. Ticket 32.",
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 33.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 34.",
+          "A customer asks for a copy of last month's invoice by the end of next week. Ticket 35.",
+          "There is an active fire in the server room. Staff have evacuated. Ticket 36.",
+          "A nightly backup was delayed by two minutes and has now completed successfully. Ticket 37.",
+          "A customer reported an error once. We cannot reproduce it and have no impact data. Ticket 38.",
+          "One monitor reports an outage; another says all services are healthy. Neither reading has been verified. Ticket 39.",
+          "A production error rate increased from 0.1% to 0.2%. The alert threshold is 1%. No customer has reported a problem. Ticket 40.",
+          "An internal test server is down. It is not used by customers, but a release demonstration starts in ten minutes. Ticket 41.",
+          "A certificate expires tomorrow. Renewal is scheduled tonight and there is a tested backup certificate. Ticket 42.",
+          "A certificate expires in ten minutes. Automatic renewal has failed and the service has no backup. Ticket 43.",
+          "The ticket says urgent, but its description requests a cosmetic change next quarter. Ticket 44.",
+          "The ticket says routine, but reports that every database replica is offline and new data is being lost. Ticket 45.",
+          "A customer needs help. No deadline, symptoms, affected service or impact is provided. Ticket 46.",
+          "A customer requests a status update while an engineer performs planned maintenance. Service availability is normal. Ticket 47.",
+          "Maintenance was completed, but one customer still cannot sign in. It is unclear whether the maintenance caused this. Ticket 48.",
+          "All production payment requests have failed for thirty minutes. Customers cannot buy anything. Ticket 49.",
+          "The planned update finished successfully. All checks are green and no action is needed. Ticket 50."
+        ],
+        "mode": "tree",
+        "tree_max": 128,
+        "cache_prompt": true
+      },
+      "status": "interrupted",
+      "samples": [
+        {
+          "handler_ms": 6062.366676,
+          "wall_ms": 6063.847742000013,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9678,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 67,
+            "memory_mib": 9674,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 67,
+          "sampled_peak_memory_mib": 9680
+        },
+        {
+          "handler_ms": 5852.107698,
+          "wall_ms": 5853.05484700005,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9580,
+            "sm_mhz": 262
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 69,
+            "memory_mib": 9580,
+            "sm_mhz": 1830
+          },
+          "max_temperature_c": 69,
+          "sampled_peak_memory_mib": 9580
+        }
+      ],
+      "warmup": {
+        "handler_ms": 5847.735663,
+        "wall_ms": 5848.449305999966,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 55,
+          "memory_mib": 9580,
+          "sm_mhz": 285
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 68,
+          "memory_mib": 9590,
+          "sm_mhz": 1830
+        },
+        "max_temperature_c": 69,
+        "sampled_peak_memory_mib": 9590
+      },
+      "results": [
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999939234845,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999939234845,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.394395306360663e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.682120164068902e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999970522997,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999970522997,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.947700307933443e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999492084939571,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.5685149748247514e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999492084939571,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00005075582089318946,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999535260303,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.647396968054152e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999535260303,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999129282972583,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.2809555138045808e-9,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00008707042178618466,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999129282972583,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.997659844158788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0023401558412120666,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.997659844158788,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999877031799,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999877031799,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 1.1630681906234974e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.661383285584655e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999982011194,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999982011194,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.7988806120655903e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999946779627631,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 3.461865608451724e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999946779627631,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0000049758506759910785,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999989679242436,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000010320757563327387,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999989679242436,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 29,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9428054990249067,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.427606191684753e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.057194486699031204,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9428054990249067,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999990686707071,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 9.313292929107907e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999990686707071,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.8859517551386699,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.8859517551386699,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.11251695463905124,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0015312902222789008,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9978130755489568,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9978130755489568,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.0021869244510431636,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9998957762259374,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.0000021667537551611758,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9998957762259374,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00010205702030737782,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999964487141924,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000035512858075983518,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999964487141924,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 46,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9791184709237579,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9791184709237579,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.02084368243858081,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00003784663766117849,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999997677988788,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999997677988788,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.3220112119365001e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 38,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9925538019765905,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.007403002649102738,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9925538019765905,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000043195374306896556,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9765055616951802,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9765055616951802,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.023494438304819704,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999371759103,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999371759103,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 5.618548205308253e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.6386077286551525e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999987818649,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999987818649,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.218135152713124e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999862637500515,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.506220575208515e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999862637500515,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000013711187742705874,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9507477965975403,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.04925220340245964,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9507477965975403,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999987581429947,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999987581429947,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.0000012167706823197726,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 2.5086322994243747e-8,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999996509088134,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999996509088134,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.490911867686277e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 36,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9890961986772931,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 9.159649966857595e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.010903709726207068,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9890961986772931,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999719339208387,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000028066079161284348,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999719339208387,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.7936612292351112,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.6657638231160853e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.20633875410725047,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.7936612292351112,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999753196376596,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000024680362340451193,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999753196376596,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.999974913291699,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.8171459527221148e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00002490499370576148,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.999974913291699,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9132338192269941,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9132338192269941,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.08676618077300595,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 37,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.999999994520965,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.999999994520965,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 3.710329525930476e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.7687053419544267e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999975570786,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999975570786,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.4429214132928203e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.999981690034959,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.823704161472016e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.999981690034959,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000018291727999306283,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.999999951760547,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.823945300611683e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.999999951760547,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.999955490756511,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 5.743910603589155e-10,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00004450866909777901,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.999955490756511,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9987449250488404,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0012550749511596032,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9987449250488404,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999915212768,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999915212768,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 7.791697976298846e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.870253072032917e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.999999997389579,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.999999997389579,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.610420883833411e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999936511363215,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.1983612582248444e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999936511363215,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0000061290275526503876,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999995703580112,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.2964198887236663e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999995703580112,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9737254583504059,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.1893581211638497e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.026274519756012762,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9737254583504059,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999995155662327,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.844337673431821e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999995155662327,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.7549178387222095,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.7549178387222095,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.2428616146242257,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.002220546653564827,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9960347252303954,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9960347252303954,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.003965274769604749,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9998657742052305,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.000002198080207033485,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9998657742052305,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00013202771456241293,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999976237907515,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0000023762092484174232,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999976237907515,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 47,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9768844430562329,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9768844430562329,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.023048031000519373,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00006752594324774658,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999998645673781,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999998645673781,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.3543262179886898e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 39,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9883939676437661,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.011560753278866907,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9883939676437661,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000045279077367049756,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9919681382920335,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9919681382920335,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.008031861707966517,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999373275944,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999373275944,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 5.6130566605202886e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 6.541838880703821e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999984565815,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999984565815,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.5434184451216752e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999851523552465,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.7930231070727298e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999851523552465,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00001481971452250689,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9565312992175432,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.043468700782456855,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9565312992175432,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999976305772296,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999976305772296,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.0000023354384984719297,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 3.398427188353517e-8,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999996959710532,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999996959710532,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 3.0402894681079083e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 36,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9831336859894828,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 8.205328808118967e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.016866231957229135,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9831336859894828,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999698059069652,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000030194093034810808,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999698059069652,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.8113507082512762,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.8572414147435384e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.18864927317630953,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.8113507082512762,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999328829902298,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.00006711700977016872,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999328829902298,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999575006469652,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.60512779020916e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.000042338840255863464,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999575006469652,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9651563994943009,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9651563994943009,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.034843600505699124,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 37,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999932484784,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999932484784,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.958939668722752e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.792581877332061e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999984672943,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999984672943,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.5327056396636417e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999798688273265,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.8902612596204822e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999798688273265,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000020112270060846068,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999533350921,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 4.666490802949918e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999533350921,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999515288265584,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 6.124895783367447e-10,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.000048470560951999066,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999515288265584,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.998935669202737,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.0010643307972630915,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.998935669202737,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999954393162,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999954393162,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.27071278606363e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 2.899708332536919e-10,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999986879136,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999986879136,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.3120864157127849e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999876929354972,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 4.531398179543572e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999876929354972,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000011853924685027121,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.999998480078135,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000001519921865014063,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.999998480078135,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 30,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9669923224827999,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.8931097599635975e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.03300765858610254,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9669923224827999,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999993063315789,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 6.936684211945524e-7,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999993063315789,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.8750585977339131,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.8750585977339131,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.12277800522029048,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.0021633970457964314,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9961054807542565,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9961054807542565,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.003894519245743541,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 35,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999119863779434,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.0000010344089195803781,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999119863779434,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.00008697921313703403,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999943996730487,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000005600326951339872,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999943996730487,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 47,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9796336330881447,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9796336330881447,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.020336185126017963,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000030181785837309556,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999998444749076,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999998444749076,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.5552509235652617e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 39,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9287960338797149,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.07116190126630541,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9287960338797149,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000042064853979671614,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9975262616276983,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9975262616276983,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.00247373837230178,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999041802562,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999041802562,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 8.792929008586419e-8,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 7.890453853162771e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999985552528,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999985552528,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.4447472815428638e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.9999859827160722,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 2.3385246483798667e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.9999859827160722,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000013993898681252602,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9281374117586075,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.07186258824139234,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9281374117586075,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999992425585005,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999992425585005,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 7.390972860414499e-7,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.834421348295235e-8,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999990682620529,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999990682620529,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 9.317379471801825e-7,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 36,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9906093439784711,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 7.61281289349085e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00939057989339992,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9906093439784711,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999676436178729,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.00003235638212692083,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999676436178729,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 33,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.7355722652122483,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 9.775467674665036e-9,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.26442772501228395,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.7355722652122483,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999791371813747,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.000020862818625323434,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999791371813747,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 34,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "customer follow-up",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "customer follow-up",
+              "probability": 0.9999843146152603,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.204111231622739e-7,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.00001556497361660189,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.9999843146152603,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9375539327097281,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9375539327097281,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 0.06244606729027192,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 37,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "critical incident",
+            "urgent": true
+          },
+          "fields": {
+            "priority": {
+              "value": "critical incident",
+              "probability": 0.9999999942566016,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 0.9999999942566016,
+                  "selected": true
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 4.207033417390196e-9,
+                  "selected": false
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 1.5363649804736197e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999985753076,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999985753076,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 1.4246924036473734e-9,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 31,
+            "scored_rows": 9
+          }
+        },
+        {
+          "decision": {
+            "priority": "routine maintenance",
+            "urgent": false
+          },
+          "fields": {
+            "priority": {
+              "value": "routine maintenance",
+              "probability": 0.999985662765584,
+              "candidates": [
+                {
+                  "value": "critical incident",
+                  "probability": 1.5295793304048393e-8,
+                  "selected": false
+                },
+                {
+                  "value": "routine maintenance",
+                  "probability": 0.999985662765584,
+                  "selected": true
+                },
+                {
+                  "value": "customer follow-up",
+                  "probability": 0.000014321938622729834,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            },
+            "urgent": {
+              "value": false,
+              "probability": 0.9999999698429358,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 3.015706420364071e-8,
+                  "selected": false
+                },
+                {
+                  "value": false,
+                  "probability": 0.9999999698429358,
+                  "selected": true
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 32,
+            "scored_rows": 9
+          }
+        }
+      ],
+      "reason": "Collector tool timed out after 600 seconds; no complete three-sample cell."
+    }
+  ],
+  "collection_status": "partial",
+  "pending_sizes": [
+    100
+  ]
+}

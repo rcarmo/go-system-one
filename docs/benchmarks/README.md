@@ -1,8 +1,41 @@
 # Benchmarks
 
-The pinned Gemma 4 12B service completed 100 sequential warm HTTP decisions on an RTX 3060 with an 81.13 ms median, 81.59 ms p95 and 82.15 ms p99. Every measured response selected `urgent=true`. The interval is the handler's `timings.total_ms`: model loading, artifact hashing and device upload are outside it.
+NVIDIA tree scoring now packs contexts and field branches automatically. The measurements below use the pinned Gemma 4 12B model on an RTX 3060. Times are handler `timings.total_ms`, excluding model loading, artifact hashing and device upload.
 
-## Warm request distribution
+## Automatic multi-field batches
+
+Measured at [`321e6ce`](https://github.com/rcarmo/go-system-one/commit/321e6ce9d7859f30a6b31949b933ee4d1312c456), with the default 512-row budget, one boolean and a three-choice multi-token enum:
+
+| Entries | Median | Min–max | Entries/s |
+|---:|---:|---:|---:|
+| 1 | 162.04 ms | 157.97–162.10 ms | 6.17 |
+| 10 | 1,149.19 ms | 1,149.05–1,155.27 ms | 8.70 |
+| 25 | 2,941.18 ms | 2,938.23–2,943.15 ms | 8.50 |
+| 50 | Incomplete: two measured samples before collector timeout | — | — |
+| 100 | Not yet measured in this sweep | — | — |
+
+![Automatic multi-field batch latency](automatic-batches.svg)
+
+Each completed row has one same-size warm-up and three measured requests, cooled to at most 55°C before each request. Contexts cycle the [frozen cohort](multifield-cohort.json) with unique ticket numbers. The [raw sweep](data/automatic-batch-sweep.json) includes request bodies, results, device readings, binary/model hashes and the incomplete 50-entry observations. The 600-second tool timeout interrupted collection; unfinished cells are excluded from the chart. These three-sample rows do not establish tail latency.
+
+## Paired serial versus packed comparison
+
+The earlier paired run used the same binary and requests in both modes, with one boolean and a three-choice multi-token enum:
+
+| Entries | Serial median | Packed median | Speedup |
+|---:|---:|---:|---:|
+| 1 | 1,017.42 ms | 141.57 ms | 7.19× |
+| 10 | 10,427.21 ms | 967.59 ms | 10.78× |
+
+![Paired multi-field comparison](multifield-comparison.svg)
+
+[Paired requests and samples](data/packed-multifield.json) use different context text from the automatic sweep. Do not calculate a cross-table speedup. Three warm measurements followed one warm-up for each case. The packed path avoids repeated context work and full-vocabulary projection; it also uses Q8 activations where tiny serial branch batches use F32.
+
+The [broader precision comparison](../performance/multifield-precision.md) recorded no winner changes in 80 fields, four losing-rank changes and one diagnostic 95% threshold crossing. Maximum probability movement was 16.54 percentage points. These are execution-path comparisons on unlabelled synthetic inputs, not accuracy or calibration results. Use `-packed-token-rows=0` to retain serial scoring when comparing confidence-sensitive workloads.
+
+## Historical single-boolean distribution
+
+Before the batch work, 100 sequential warm requests produced an 81.13 ms median, 81.59 ms p95 and 82.15 ms p99. Every response selected `urgent=true`. This is a different workload from the multi-field batches above.
 
 ![Sorted warm HTTP latency distribution](warm-latency.svg)
 
@@ -16,17 +49,17 @@ The chart uses the complete committed [100-request sample](data/nvidia-http-100-
 | p99 | 82.15 ms |
 | Maximum | 82.39 ms |
 
-## Implementation sequence
+## Historical implementation sequence
 
 ![Latency from the llama.cpp prototype to hand-tuned Go/PTX](latency-comparison.svg)
 
-The chart follows the development order. The llama.cpp prototype established a 96.0 ms reference on the fixed Gemma 4 12B request. The first native Go/NVIDIA runtime took 520.8–521.9 ms. Initial tuning reduced it to 135.3–136.7 ms. Direct execution of hand-tuned PTX from Go now has an 81.13 ms median.
+The chart follows the development order. The llama.cpp prototype established a 96.0 ms reference on the fixed Gemma 4 12B request. The first native Go/NVIDIA runtime took 520.8–521.9 ms. Initial tuning reduced it to 135.3–136.7 ms. The recorded hand-tuned Go/PTX run had an 81.13 ms median.
 
-The current median is 15.5% lower than the llama.cpp prototype, 40.3% lower than the midpoint of the initially tuned native range, and 6.43 times faster than the midpoint of the early native range.
+That median is 15.5% lower than the llama.cpp prototype, 40.3% lower than the midpoint of the initially tuned native range, and 6.43 times faster than the midpoint of the early native range.
 
 The native entries measure complete warm HTTP requests from different executable revisions. The llama.cpp entry is its reported 53.8 ms prefill plus 42.2 ms suffix scoring. All measurements use the same frozen fixture and host. They do not measure throughput or performance on other hardware.
 
-## Workload scaling
+## Historical workload scaling
 
 ![Warm workload matrix](workload-matrix.svg)
 
@@ -60,7 +93,23 @@ make benchmark-check
 
 ## Collect a fresh run
 
-Download or point at the pinned artifacts, ensure the NVIDIA device is idle, then run:
+For the automatic multi-field sweep, use an idle GPU and the pinned artifacts:
+
+```sh
+make build
+bun scripts/batch-benchmark.ts \
+  --binary bin/go-system-one \
+  --model /path/to/gemma-4-12b-it-UD-Q4_K_XL.gguf \
+  --tokenizer-dir /path/to/tokenizer \
+  --revision "$(git rev-parse HEAD)" \
+  --mode automatic --sizes 1,10,25,50,100 \
+  --out dist/benchmarks/automatic-batch-sweep.json
+```
+
+Use `--mode serial` for an explicit serial comparison, and `--sizes 50,100` to collect the missing sizes separately. The collector rejects a busy GPU, verifies artifacts through the server, cools before requests, and aborts at 83°C. It saves each observation; only complete three-sample cells produce medians. Long sweeps need a command timeout that accommodates cooling.
+
+For the single-boolean fixture:
+
 
 ```sh
 make benchmark \

@@ -97,6 +97,8 @@ func render(args []string) error {
 	dataPath := fs.String("data", "docs/benchmarks/data/go-system-one-v1.json", "comparison/workload JSON")
 	samplesPath := fs.String("samples", "docs/benchmarks/data/nvidia-http-100-0dd65d4-20260922.json", "warm sample JSON")
 	outDir := fs.String("out", "docs/benchmarks", "SVG output directory")
+	batchPath := fs.String("batch-data", "docs/benchmarks/data/automatic-batch-sweep.json", "automatic multi-field batch sweep")
+	pairedPath := fs.String("paired-data", "docs/benchmarks/data/packed-multifield.json", "paired multi-field comparison")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -117,10 +119,30 @@ func render(args []string) error {
 	if err := os.MkdirAll(*outDir, 0o755); err != nil {
 		return err
 	}
+	var sweep batchSweep
+	if err := readJSON(*batchPath, &sweep); err != nil {
+		return err
+	}
+	batchChart, err := renderAutomaticBatches(sweep)
+	if err != nil {
+		return err
+	}
+	var paired struct {
+		Cases []batchCell `json:"cases"`
+	}
+	if err := readJSON(*pairedPath, &paired); err != nil {
+		return err
+	}
+	pairedChart, err := renderMultiFieldComparison(paired.Cases)
+	if err != nil {
+		return err
+	}
 	outputs := map[string]string{
-		"warm-latency.svg":       renderDistribution(samples),
-		"latency-comparison.svg": renderComparison(data),
-		"workload-matrix.svg":    renderWorkloads(data),
+		"automatic-batches.svg":     batchChart,
+		"multifield-comparison.svg": pairedChart,
+		"warm-latency.svg":          renderDistribution(samples),
+		"latency-comparison.svg":    renderComparison(data),
+		"workload-matrix.svg":       renderWorkloads(data),
 	}
 	for name, content := range outputs {
 		if err := writeAtomic(filepath.Join(*outDir, name), []byte(content)); err != nil {
