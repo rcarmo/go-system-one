@@ -8,7 +8,7 @@ import (
 	simdq4 "github.com/rcarmo/go-pherence/backends/simd/quant/q4"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 
-	loaderconfig "github.com/rcarmo/go-pherence/loader/config"
+	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-pherence/loader/weights"
 
 	"math"

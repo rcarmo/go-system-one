@@ -2,7 +2,7 @@ package memory
 
 import (
 	"fmt"
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 	"sort"
 	"sync"
 	"sync/atomic"

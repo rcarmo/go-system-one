@@ -7,7 +7,7 @@ import (
 
 	"github.com/rcarmo/go-pherence/backends/mlx"
 	"github.com/rcarmo/go-pherence/backends/simd/runtime"
-	loaderconfig "github.com/rcarmo/go-pherence/loader/config"
+	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-pherence/loader/weights"
 	"github.com/rcarmo/go-pherence/tensor"
 )

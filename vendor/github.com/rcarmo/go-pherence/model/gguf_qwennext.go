@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	loaderconfig "github.com/rcarmo/go-pherence/loader/config"
+	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-pherence/loader/gguf"
 )
 

@@ -5,7 +5,7 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/rcarmo/go-pherence/runtime/promptcache"
+	"github.com/rcarmo/go-system-one/runtime/promptcache"
 )
 
 var (

@@ -15,7 +15,7 @@ import (
 	"syscall"
 
 	"github.com/rcarmo/go-system-one/half"
-	"github.com/rcarmo/go-pherence/runtime/memory"
+	"github.com/rcarmo/go-system-one/runtime/memory"
 )
 
 // TensorInfo describes a tensor stored in a safetensors file.

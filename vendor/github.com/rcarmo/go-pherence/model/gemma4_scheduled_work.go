@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/runtime/inferencesched"
+	"github.com/rcarmo/go-system-one/runtime/inferencesched"
 )
 
 var _ inferencesched.Work = (*Gemma4ScheduledWork)(nil)

@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 
 	"github.com/rcarmo/go-pherence/runtime/kv"
-	"github.com/rcarmo/go-pherence/runtime/promptcache"
+	"github.com/rcarmo/go-system-one/runtime/promptcache"
 )
 
 var gemma4SessionIDs atomic.Uint64

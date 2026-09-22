@@ -10,7 +10,7 @@ import (
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-pherence/internal/checked"
-	loaderconfig "github.com/rcarmo/go-pherence/loader/config"
+	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-pherence/loader/weights"
 )
 
