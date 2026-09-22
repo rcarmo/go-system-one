@@ -4,8 +4,10 @@ These documents define the standalone service, its external artifacts, browser p
 
 ## Operate the service
 
+- [Jev-like decision model](jev-like.md) — finite-choice behaviour, Gemma world knowledge and compatibility limits.
 - [External model artifacts](artifacts.md) — exact model/tokenizer pins, download, verification and cleanup.
 - [Decision playground](playground.md) — routes, theme contract, desktop/mobile captures and browser-test provenance.
+- [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
 - [Release process](releases.md) — local packages, version tags, archive contents, checksums and publication gates.
 
 ## Maintain the source

@@ -1,10 +1,20 @@
 # Go System One
 
-Go System One is a native Go service for finite boolean and enum decisions using the pinned Gemma 4 12B instruction checkpoint. It provides `POST /v1/decision` and an embedded browser playground at `/go-system-one`.
+Go System One provides a Jev-like model for scoring finite boolean and enum choices. It uses pinned Gemma 4 12B instruction weights as its backbone, retaining Gemma's broad pretrained world knowledge while constraining each answer to typed candidate paths. The native Go service exposes `POST /v1/decision` and an embedded browser playground at `/go-system-one`.
 
 [![Go System One decision playground](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
 
-The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver API/PTX. It does not use CGo, a llama.cpp runtime wrapper or a production CUDA toolkit.
+The Jev-like label describes the decision interface and finite-choice behaviour. Go System One does not use a Jev checkpoint or pointer head. It runs through a portable CPU/SIMD correctness path or NVIDIA Driver API/PTX, without CGo, a llama.cpp runtime wrapper or a production CUDA toolkit.
+
+## Benchmarks
+
+On the pinned one-context boolean fixture, 100 sequential warm HTTP requests on an RTX 3060 produced an **81.13 ms median**, **81.59 ms p95** and **82.15 ms p99**. Every response selected `urgent=true`. The standalone median is 15.5% lower than the pinned 96.0 ms llama.cpp worker result for the same fixture.
+
+[![Go System One latency comparison](docs/benchmarks/latency-comparison.svg)](docs/benchmarks/README.md)
+
+[![Go System One warm HTTP latency distribution](docs/benchmarks/warm-latency.svg)](docs/benchmarks/README.md)
+
+The charts come from committed JSON, not hand-entered SVG geometry. [`docs/benchmarks/README.md`](docs/benchmarks/README.md) records the workload, complete 100-request distribution, scaling matrix, comparison limits and reproduction commands. These are latency measurements for one pinned model, request and host; task accuracy and probability calibration require separate labelled evaluations.
 
 ## Source boundary
 

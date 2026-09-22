@@ -15,9 +15,13 @@ ARTIFACT_DIR ?= $(or $(GO_SYSTEM_ONE_ARTIFACT_DIR),$(or $(XDG_CACHE_HOME),$(HOME
 MODEL ?= $(ARTIFACT_DIR)/model/gemma-4-12b-it-UD-Q4_K_XL.gguf
 TOKENIZER_DIR ?= $(ARTIFACT_DIR)/tokenizer
 UPSTREAM_COMMIT ?= $(shell . scripts/upstream.env && printf '%s' "$$UPSTREAM_COMMIT")
+BENCHMARK_REQUESTS ?= 100
+BENCHMARK_WARMUP ?= 1
+BENCHMARK_LISTEN ?= 127.0.0.1:18081
+BENCHMARK_OUT ?= $(DIST_DIR)/benchmarks/nvidia-http.json
 
 .PHONY: help prerequisites setup vendor build install uninstall run test race coverage vet fmt-check scripts-check \
-	vendor-check check cross-build artifacts-info artifacts-download artifacts-verify \
+	benchmark benchmark-charts benchmark-check vendor-check check cross-build artifacts-info artifacts-download artifacts-verify \
 	artifacts-clean hardware-check package update clean distclean
 
 help:
@@ -36,6 +40,9 @@ help:
 	  '  make check              Run formatting, policy, test, vet and build gates' \
 	  '  make cross-build        Compile Linux ARM64 and RISC-V binaries' \
 	  '  make hardware-check     Run both pinned released-model NVIDIA gates' \
+	  '  make benchmark          Run warm HTTP samples against the pinned local service' \
+	  '  make benchmark-charts   Regenerate committed SVGs from committed benchmark data' \
+	  '  make benchmark-check    Verify committed SVGs match their JSON inputs' \
 	  '  make package            Build code-only release archives for three targets' \
 	  '  make update             Import UPSTREAM_COMMIT through the one-way manifest' \
 	  '' \
@@ -90,6 +97,19 @@ fmt-check:
 	@test -z "$$(gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'))" || \
 		{ echo 'gofmt required for:'; gofmt -l $$(find . -type f -name '*.go' -not -path './.git/*' -not -path './vendor/*'); exit 1; }
 
+benchmark:
+	MODEL="$(MODEL)" TOKENIZER_DIR="$(TOKENIZER_DIR)" BACKEND="$(BACKEND)" \
+		BENCHMARK_LISTEN="$(BENCHMARK_LISTEN)" BENCHMARK_REQUESTS="$(BENCHMARK_REQUESTS)" \
+		BENCHMARK_WARMUP="$(BENCHMARK_WARMUP)" BENCHMARK_OUT="$(BENCHMARK_OUT)" \
+		./scripts/benchmark.sh
+
+benchmark-charts:
+	$(GO) run ./scripts/benchmarks render
+
+benchmark-check:
+	$(GO) test ./scripts/benchmarks
+	./scripts/check-benchmark-charts.sh
+
 scripts-check:
 	bash -n scripts/*.sh
 	./scripts/check-manifests.sh
@@ -104,7 +124,7 @@ vendor-check:
 	@! grep -q 'github.com/rcarmo/go-pherence' go.mod go.sum vendor/modules.txt
 	GOPROXY=off GOSUMDB=off $(GO) test -mod=vendor ./...
 
-check: fmt-check scripts-check vendor-check vet build
+check: fmt-check scripts-check benchmark-check vendor-check vet build
 	@git diff --check -- . ':(exclude)vendor/**'
 
 cross-build:

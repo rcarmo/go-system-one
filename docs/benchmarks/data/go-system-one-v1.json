@@ -1,0 +1,105 @@
+{
+  "schema": "go-system-one-benchmarks-v1",
+  "fixture": {
+    "description": "One 77-token prepared prompt, 20-token context, one boolean tree node and a four-token suffix",
+    "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+    "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+    "device": "NVIDIA GeForce RTX 3060 12 GB",
+    "driver": "580.173.02",
+    "resident_projection_bytes": 9173277696,
+    "standalone_commit": "0dd65d481f604ba3fbe8ebf82777ee91b792f8da",
+    "sample_sha256": "fb8326c2f6920c088fd31fc75bdbc37195decf267fcb8074358e75d11df502a9"
+  },
+  "comparison": [
+    {
+      "label": "Earlier native baseline",
+      "representative_ms": 521.35,
+      "min_ms": 520.8,
+      "max_ms": 521.9,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Pre-optimisation native",
+      "representative_ms": 136,
+      "min_ms": 135.3,
+      "max_ms": 136.7,
+      "basis": "midpoint of reported range"
+    },
+    {
+      "label": "Pinned llama.cpp worker",
+      "representative_ms": 96,
+      "min_ms": 96,
+      "max_ms": 96,
+      "basis": "reported total"
+    },
+    {
+      "label": "Standalone Go/PTX",
+      "representative_ms": 81.1343165,
+      "min_ms": 80.310148,
+      "max_ms": 82.391372,
+      "basis": "100-request median with stable decision check"
+    }
+  ],
+  "workloads": [
+    {
+      "label": "Baseline cache hit",
+      "median_ms": 81,
+      "min_ms": 80.44,
+      "max_ms": 81.94
+    },
+    {
+      "label": "Short context",
+      "median_ms": 81.14,
+      "min_ms": 80.9,
+      "max_ms": 81.63
+    },
+    {
+      "label": "Auto greedy",
+      "median_ms": 97.66,
+      "min_ms": 97.57,
+      "max_ms": 98.86
+    },
+    {
+      "label": "Auto tree",
+      "median_ms": 97.84,
+      "min_ms": 97.79,
+      "max_ms": 98.41
+    },
+    {
+      "label": "Deep enum",
+      "median_ms": 99.25,
+      "min_ms": 99.05,
+      "max_ms": 101.38
+    },
+    {
+      "label": "Cache disabled",
+      "median_ms": 252.06,
+      "min_ms": 251.38,
+      "max_ms": 252.7
+    },
+    {
+      "label": "Cache miss",
+      "median_ms": 255.03,
+      "min_ms": 252.7,
+      "max_ms": 257.63
+    },
+    {
+      "label": "Four contexts",
+      "median_ms": 327.51,
+      "min_ms": 326.5,
+      "max_ms": 328.28
+    },
+    {
+      "label": "Four fields",
+      "median_ms": 742.57,
+      "min_ms": 739.86,
+      "max_ms": 750
+    },
+    {
+      "label": "Long context",
+      "median_ms": 1224.59,
+      "min_ms": 1221.76,
+      "max_ms": 1231.35
+    }
+  ]
+}

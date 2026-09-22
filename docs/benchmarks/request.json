@@ -1,0 +1,16 @@
+{
+  "model": "gemma-4-12b-it-go-system-one",
+  "instructions": "Answer from the context.",
+  "schema": {
+    "urgent": {
+      "type": "boolean",
+      "description": "Does this need urgent handling?"
+    }
+  },
+  "contexts": [
+    "The production service is down for every customer."
+  ],
+  "mode": "tree",
+  "tree_max": 128,
+  "cache_prompt": true
+}
