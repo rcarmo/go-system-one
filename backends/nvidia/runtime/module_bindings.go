@@ -4,9 +4,11 @@ type moduleFunctions map[string]CUfunction
 
 func (f moduleFunctions) get(name string) CUfunction { return f[name] }
 
-var fnQ6Staged24 CUfunction
+var fnQ5Staged24, fnQ5Staged32, fnQ6Staged24 CUfunction
 
 func bindMegaModuleFunctions(f moduleFunctions) {
+	fnQ5Staged24 = f.get("q5_staged_j24_o64")
+	fnQ5Staged32 = f.get("q5_staged_j32_o64")
 	fnQ6Staged24 = f.get("q6_staged_j24_o64")
 	sgemmFn = f.get("sgemm_nn")
 	sgemmCompensatedFn = f.get("sgemm_nn_compensated")

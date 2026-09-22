@@ -30,8 +30,10 @@ __device__ __forceinline__ void staged(const signed char *x,const float *xd,cons
      int dot=0;
      #pragma unroll
      for(int v=0;v<G/4;v++)dot=__dp4a(weights[v],xr[v],dot);
-     float value=__fmul_rn(scale,float(dot));
-     if(KIND==5)value=__fsub_rn(value,__fmul_rn(minimum,float(S[j][g])));
+     // Permit the same multiply/subtract contraction as the existing MMQ
+     // kernel. Explicit intermediate rounding changes multi-layer logits.
+     float value=scale*float(dot);
+     if(KIND==5)value=value-minimum*float(S[j][g]);
      acc[j]=fmaf(D[j][g],value,acc[j]);
     }
    }
@@ -46,4 +48,5 @@ __device__ __forceinline__ void staged(const signed char *x,const float *xd,cons
 }
 #define Q5(J,O) extern "C" __global__ __launch_bounds__(O*4) void q5_staged_j##J##_o##O(const signed char*x,const float*xd,const int*xs,const signed char*w,const float*ws,const float*wm,float*y,int k,int n,int b){staged<5,J,O>(x,xd,xs,w,ws,wm,y,k,n,b);}
 #define Q6(J,O) extern "C" __global__ __launch_bounds__(O*4) void q6_staged_j##J##_o##O(const signed char*x,const float*xd,const signed char*w,const float*ws,float*y,int k,int n,int b){staged<6,J,O>(x,xd,nullptr,w,ws,nullptr,y,k,n,b);}
+Q5(24,64) Q5(32,64)
 Q6(24,64)

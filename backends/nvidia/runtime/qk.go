@@ -256,7 +256,11 @@ func gemmQ5PackedQ8ToBuffer(out, x *Buffer, batch int, m *GPUQKMatrix) error {
 	}
 	kk, nn, bb := uint32(m.InDim), uint32(m.OutDim), uint32(batch)
 	fn, tile, rows, threads := fnQ5PackedQ8, 4, 4, 128
-	if batch >= 128 && m.OutDim > 2048 && fnQ5PackedMMQ64J16 != 0 {
+	if batch >= 128 && fnQ5Staged32 != 0 {
+		fn, tile, rows, threads = fnQ5Staged32, 32, 64, 256
+	} else if batch > 16 && m.OutDim > 2048 && fnQ5Staged24 != 0 {
+		fn, tile, rows, threads = fnQ5Staged24, 24, 64, 256
+	} else if batch >= 128 && m.OutDim > 2048 && fnQ5PackedMMQ64J16 != 0 {
 		fn, tile, rows, threads = fnQ5PackedMMQ64J16, 16, 64, 256
 	} else if batch > 16 && m.OutDim <= 2048 && fnQ5PackedMMQ64J8 != 0 {
 		fn, tile, rows, threads = fnQ5PackedMMQ64J8, 8, 64, 256

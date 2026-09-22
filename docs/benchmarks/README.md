@@ -4,6 +4,8 @@ Current charts use **[`aca5e4c`](https://github.com/rcarmo/go-system-one/commit/
 
 Times are HTTP handler `timings.total_ms`, excluding artifact verification, model loading and device upload. Every current run used the same binary, SHA-256 `364cc7f2924f0bb53e91ef2840765eb6fc07ebc84e11ffebc4d753775942c31a`. The old raw measurements are retained in [History](history.md).
 
+A subsequent [Q5 staging run](../performance/q5-staged.md) measured a further 8–12% throughput gain. Its pre-commit sweep is reported separately; charts on this page retain the explicit `aca5e4c` source until the next full refresh.
+
 ## Multi-field batches
 
 One boolean plus a three-choice multi-token enum; contexts cycle the [frozen cohort](multifield-cohort.json) with unique ticket numbers. Automatic execution uses a 512-token-row budget and single-request admission.

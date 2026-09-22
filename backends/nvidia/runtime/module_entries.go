@@ -46,6 +46,8 @@ func validateModuleEntries(entries []moduleEntry) error {
 func megaModuleEntries() []moduleEntry {
 	return []moduleEntry{
 		{"q6_staged_j24_o64", ptx.QKStagedPTX},
+		{"q5_staged_j24_o64", "// included in QKStagedPTX\n"},
+		{"q5_staged_j32_o64", "// included in QKStagedPTX\n"},
 		{"sgemm_nn", ptx.SgemmPTX},
 		{"sgemm_nn_compensated", ptx.SgemmCompensatedPTX},
 		{"sgemm_nn_reg2", ptx.SgemmReg2PTX},
