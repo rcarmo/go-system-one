@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-system-one/loader/weights"

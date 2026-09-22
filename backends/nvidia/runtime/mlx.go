@@ -14,7 +14,7 @@ import (
 	"github.com/rcarmo/go-system-one/internal/checked"
 	"unsafe"
 
-	backendmlx "github.com/rcarmo/go-pherence/backends/mlx"
+	backendmlx "github.com/rcarmo/go-system-one/backends/mlx"
 )
 
 // GPUMLXWeight holds MLX quantized weight data on GPU.

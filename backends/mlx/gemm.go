@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 )
 
 const (

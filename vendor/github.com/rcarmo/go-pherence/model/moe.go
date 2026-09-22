@@ -6,7 +6,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 	"github.com/rcarmo/go-system-one/half"
 
 	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"

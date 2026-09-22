@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
 

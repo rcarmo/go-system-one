@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-system-one/loader/gguf"
 	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"

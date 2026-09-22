@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 )
 
 // MTPDrafterState carries the hidden-state-conditioned drafter inputs between

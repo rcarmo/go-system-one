@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/rcarmo/go-pherence/backends/ggmlgraph"
+	"github.com/rcarmo/go-system-one/backends/ggmlgraph"
 	"github.com/rcarmo/go-system-one/backends/ggmlquant"
 	"github.com/rcarmo/go-pherence/backends/spacemit/board"
 	"github.com/rcarmo/go-system-one/loader/gguf"

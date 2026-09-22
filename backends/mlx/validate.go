@@ -2,7 +2,7 @@ package mlx
 
 import (
 	"fmt"
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 )
 
 // ValidateQuantWeight checks an in-memory MLX quantized weight before use.

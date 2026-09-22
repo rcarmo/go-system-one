@@ -3,7 +3,7 @@ package mlx
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/rcarmo/go-pherence/internal/checked"
+	"github.com/rcarmo/go-system-one/internal/checked"
 	"math"
 )
 

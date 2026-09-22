@@ -40,3 +40,5 @@ github.com/rcarmo/go-pherence/runtime/graph	github.com/rcarmo/go-system-one/runt
 github.com/rcarmo/go-pherence/runtime/kv	github.com/rcarmo/go-system-one/runtime/kv
 github.com/rcarmo/go-pherence/runtime/expertstream	github.com/rcarmo/go-system-one/runtime/expertstream
 github.com/rcarmo/go-pherence/internal/floatcmp	github.com/rcarmo/go-system-one/internal/floatcmp
+github.com/rcarmo/go-pherence/backends/ggmlgraph	github.com/rcarmo/go-system-one/backends/ggmlgraph
+github.com/rcarmo/go-pherence/backends/mlx	github.com/rcarmo/go-system-one/backends/mlx

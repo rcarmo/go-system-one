@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"

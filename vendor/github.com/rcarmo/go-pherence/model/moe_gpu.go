@@ -3,7 +3,7 @@ package model
 import (
 	"sync"
 
-	"github.com/rcarmo/go-pherence/backends/mlx"
+	"github.com/rcarmo/go-system-one/backends/mlx"
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
