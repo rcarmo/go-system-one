@@ -4,7 +4,7 @@
 
 ## Pinned source
 
-[`scripts/upstream.env`](../scripts/upstream.env) records the accepted full source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps upstream paths to local destinations. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps upstream import paths to this module path after copying.
+[`scripts/upstream.env`](../scripts/upstream.env) records the base source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps upstream paths to local destinations. Its optional third column pins one file to another full commit. This permits a reviewed hand-off without importing unrelated files changed between the base and hand-off commits. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps upstream import paths to this module path after copying.
 
 All compiled first-party packages live in this repository. `vendor/` contains third-party modules and licences only.
 
@@ -37,7 +37,7 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 
 1. Read the complete diff. Resolve repository-specific imports without changing public contracts.
 2. Add new imported files to `scripts/upstream-files.tsv`. Add package-path mappings to `scripts/local-packages.tsv` when a new package enters this module.
-3. Update `scripts/upstream.env` with the accepted full commit and UTC commit time.
+3. Update `scripts/upstream.env` for a complete import. For a selective hand-off, add its full commit to the affected manifest rows and leave the base pin unchanged.
 4. Confirm no source imports `github.com/rcarmo/go-pherence/...` and no `go-pherence` requirement appears in `go.mod`, `go.sum` or `vendor/modules.txt`.
 5. Run `go mod tidy`, `./scripts/vendor.sh` and `make check`.
 6. Run released-model parity when model, tokenizer, scorer, PTX or dispatch behaviour changed.

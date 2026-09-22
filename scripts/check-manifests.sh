@@ -25,10 +25,10 @@ check_duplicates "$files_manifest" 2 'local destination path'
 check_duplicates "$packages_manifest" 1 'upstream package import'
 check_duplicates "$packages_manifest" 2 'local package import'
 
-while IFS=$'\t' read -r source destination extra; do
+while IFS=$'\t' read -r source destination revision extra; do
   [[ -n "$source" && ${source:0:1} != "#" ]] || continue
-  if [[ -z "$destination" || -n "${extra:-}" ]]; then
-    printf 'invalid file manifest row: %q -> %q %q\n' "$source" "$destination" "${extra:-}" >&2
+  if [[ -z "$destination" || -n "${extra:-}" || ( -n "${revision:-}" && ! "$revision" =~ ^[0-9a-f]{40}$ ) ]]; then
+    printf 'invalid file manifest row: %q -> %q revision=%q extra=%q\n' "$source" "$destination" "${revision:-}" "${extra:-}" >&2
     failed=1
     continue
   fi

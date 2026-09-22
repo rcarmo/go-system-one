@@ -15,8 +15,15 @@ test('submits bounded decisions and follows the OS colour scheme', async ({ page
 	await expect(page.locator('.decision')).toHaveCount(2);
 	await expect(page.locator('.decision').first()).toContainText('"urgent": true');
 	await expect(page.locator('.decision').nth(1)).toContainText('"urgent": false');
-	await expect(page.locator('.prob')).toHaveCount(2);
-	await expect(page.locator('.prob').first()).toHaveText('87.50%');
+	const firstContext = page.locator('.card').first();
+	await expect(firstContext.locator('.field')).toHaveCount(2);
+	await expect(firstContext.locator('.candidate')).toHaveCount(5);
+	await expect(firstContext.locator('.candidate[data-field="urgent"][data-value="true"]')).toContainText('87.50%');
+	await expect(firstContext.locator('.candidate[data-field="urgent"][data-value="false"]')).toContainText('12.50%');
+	await expect(firstContext.locator('.candidate[data-field="severity"][data-value="\\"low\\""]')).toContainText('10.00%');
+	await expect(firstContext.locator('.candidate[data-field="severity"][data-value="\\"medium\\""]')).toContainText('20.00%');
+	await expect(firstContext.locator('.candidate[data-field="severity"][data-value="\\"high\\""]')).toContainText('70.00%');
+	await expect(firstContext.locator('.candidate[data-selected="true"]')).toHaveCount(2);
 	await expect(page.locator('#timings')).toContainText('total: 3.50 ms');
 	await assertNoOverflow(page);
 
@@ -37,6 +44,13 @@ test('submits bounded decisions and follows the OS colour scheme', async ({ page
 	await page.goto('/go-system-one');
 	await page.getByRole('button', { name: 'Run decision' }).click();
 	await expect(page.locator('.decision')).toHaveCount(2);
+	await expect(page.locator('.card').first().locator('.candidate .prob')).toHaveText([
+		'10.00%',
+		'20.00%',
+		'70.00%',
+		'87.50%',
+		'12.50%'
+	]);
 	await assertNoOverflow(page);
 	expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe('dark');
 	expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe(light.background);

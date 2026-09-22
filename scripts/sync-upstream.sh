@@ -6,6 +6,7 @@ source "$root/scripts/upstream.env"
 
 upstream=${GO_PHERENCE_SOURCE:-}
 revision=${1:-$UPSTREAM_COMMIT}
+manifest=${UPSTREAM_FILES_MANIFEST:-$root/scripts/upstream-files.tsv}
 
 cleanup() {
   if [[ -n ${tmp:-} ]]; then
@@ -33,11 +34,17 @@ fi
 
 git -C "$source_repo" cat-file -e "$revision^{commit}"
 
-while IFS=$'\t' read -r source_path destination_path; do
+while IFS=$'\t' read -r source_path destination_path source_revision extra; do
   [[ -n "$source_path" && ${source_path:0:1} != "#" ]] || continue
+  if [[ -n "${extra:-}" ]]; then
+    printf 'invalid file manifest row: %q -> %q revision=%q extra=%q\n' "$source_path" "$destination_path" "${source_revision:-}" "$extra" >&2
+    exit 1
+  fi
+  effective_revision=${source_revision:-$revision}
+  git -C "$source_repo" cat-file -e "$effective_revision^{commit}"
   mkdir -p "$root/$(dirname "$destination_path")"
-  git -C "$source_repo" show "$revision:$source_path" > "$root/$destination_path"
-done < "$root/scripts/upstream-files.tsv"
+  git -C "$source_repo" show "$effective_revision:$source_path" > "$root/$destination_path"
+done < "$manifest"
 
 # These packages are owned here. Keep their imports local after copying them from
 # the monorepo; heavyweight inference packages remain on the pinned core module.

@@ -114,7 +114,7 @@ The [v1 model report](docs/validation/go-system-one-v1-20260921.md) records the 
 
 This repository contains all Go source needed to build the service. Third-party Go modules and their licences are stored under `vendor/`.
 
-Development also takes place in [`go-pherence`](https://github.com/rcarmo/go-pherence). The current imported source revision is [`788f22402d928004a597b1446568f0e0595dfb1c`](https://github.com/rcarmo/go-pherence/commit/788f22402d928004a597b1446568f0e0595dfb1c). Imports are limited to files listed in the source manifest.
+Development also takes place in [`go-pherence`](https://github.com/rcarmo/go-pherence). Most imported source is pinned to [`788f22402d928004a597b1446568f0e0595dfb1c`](https://github.com/rcarmo/go-pherence/commit/788f22402d928004a597b1446568f0e0595dfb1c). The probability API and playground files are pinned separately to [`c84a151dd8e7f952bc6b3aba35f1d309e79016f3`](https://github.com/rcarmo/go-pherence/commit/c84a151dd8e7f952bc6b3aba35f1d309e79016f3). The source manifest lists each imported path and any per-file revision.
 
 ```sh
 ./scripts/update-upstream.sh <full-go-pherence-commit>

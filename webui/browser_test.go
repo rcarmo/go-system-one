@@ -35,12 +35,29 @@ func TestBrowserServer(t *testing.T) {
 		}
 		results := make([]any, len(body.Contexts))
 		for i := range body.Contexts {
+			urgent := i == 0
+			urgentProbability := .875
+			severity := "high"
+			severityProbabilities := []float64{.10, .20, .70}
+			if !urgent {
+				urgentProbability = .80
+				severity = "low"
+				severityProbabilities = []float64{.75, .20, .05}
+			}
 			results[i] = map[string]any{
-				"decision": map[string]any{"urgent": i == 0},
+				"decision": map[string]any{"urgent": urgent, "severity": severity},
 				"fields": map[string]any{
-					"urgent": map[string]any{"value": i == 0, "probability": .875, "scored_nodes": 1, "tree": true},
+					"urgent": map[string]any{"value": urgent, "probability": urgentProbability, "candidates": []any{
+						map[string]any{"value": true, "probability": map[bool]float64{true: .875, false: .20}[urgent], "selected": urgent},
+						map[string]any{"value": false, "probability": map[bool]float64{true: .125, false: .80}[urgent], "selected": !urgent},
+					}, "scored_nodes": 1, "tree": true},
+					"severity": map[string]any{"value": severity, "probability": severityProbabilities[map[string]int{"low": 0, "medium": 1, "high": 2}[severity]], "candidates": []any{
+						map[string]any{"value": "low", "probability": severityProbabilities[0], "selected": severity == "low"},
+						map[string]any{"value": "medium", "probability": severityProbabilities[1], "selected": severity == "medium"},
+						map[string]any{"value": "high", "probability": severityProbabilities[2], "selected": severity == "high"},
+					}, "scored_nodes": 1, "tree": true},
 				},
-				"usage": map[string]int{"context_tokens": 4, "scored_rows": 2},
+				"usage": map[string]int{"context_tokens": 4 + i, "scored_rows": 5},
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")

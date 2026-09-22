@@ -34,9 +34,14 @@ git -C "$source_repo" cat-file -e "$pinned_revision^{commit}"
 git -C "$source_repo" cat-file -e "$revision^{commit}"
 
 changed=0
-while IFS=$'\t' read -r source_path destination_path; do
+while IFS=$'\t' read -r source_path destination_path source_revision extra; do
   [[ -n "$source_path" && ${source_path:0:1} != "#" ]] || continue
-  old_blob=$(git -C "$source_repo" rev-parse "$pinned_revision:$source_path" 2>/dev/null || printf missing)
+  if [[ -n "${extra:-}" ]]; then
+    printf 'invalid file manifest row: %q -> %q revision=%q extra=%q\n' "$source_path" "$destination_path" "${source_revision:-}" "$extra" >&2
+    exit 1
+  fi
+  accepted_revision=${source_revision:-$pinned_revision}
+  old_blob=$(git -C "$source_repo" rev-parse "$accepted_revision:$source_path" 2>/dev/null || printf missing)
   new_blob=$(git -C "$source_repo" rev-parse "$revision:$source_path" 2>/dev/null || printf missing)
   if [[ "$old_blob" != "$new_blob" ]]; then
     printf '%s\n' "$source_path"

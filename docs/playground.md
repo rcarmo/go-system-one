@@ -13,9 +13,10 @@ Appearance follows the operating-system `prefers-color-scheme` setting. The page
 ![Go System One playground in light mode on desktop](images/go-system-one-light-desktop.png)
 
 - OS preference: light
-- viewport and output: 1440 × 1100
+- viewport: 1280 px wide
+- full-page output: 1280 × 1190
 - device pixel ratio: 1
-- SHA-256: `20efa66f80f963fefa40175b1756dac9caa03fb6d134a0da8a3c5d1c3a736631`
+- SHA-256: `1dbe325f2b9e00dcb5a49836bf3f9cf6147eebc23c5d979e53cecd7c693070cc`
 
 ### Dark mobile
 
@@ -23,10 +24,10 @@ Appearance follows the operating-system `prefers-color-scheme` setting. The page
 
 - OS preference: dark
 - viewport: 390 × 844
-- full-page output: 390 × 1588
+- full-page output: 390 × 2138
 - device pixel ratio: 1
 - content width: 370 px, without horizontal overflow
-- SHA-256: `6aeb50d478ad3b683adf0bd044e177364c7f68ab054ccb47044b1b1413735317`
+- SHA-256: `ed5d023bde9ae9e79cbac474e59187d4b412de1d1b6bdfbf0f90411f17ddeafb`
 
 ## Standalone browser checks
 
@@ -36,11 +37,11 @@ The repository has a model-free Playwright project under `browser/`. Its loopbac
 PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/ms-playwright make browser-test
 ```
 
-The tests submit two contexts, check rendered decisions and selected probabilities, exercise light and dark OS preferences, reject mobile horizontal overflow, and verify status/method boundaries. CI runs the same Chromium suite. Candidate-by-candidate probability assertions will accompany the API/UI update that exposes complete distributions.
+The tests submit two contexts and assert every boolean and enum candidate probability, including the selected rows. They also exercise light and dark OS preferences, reject mobile horizontal overflow, and verify status and method boundaries. CI runs the same Chromium suite.
 
 ## Capture provenance
 
-The page source was imported from [`go-pherence@8629232b14440f4a9aa06cfb6d6003c1302c8cb9`](https://github.com/rcarmo/go-pherence/commit/8629232b14440f4a9aa06cfb6d6003c1302c8cb9). Screenshots used the loopback-only synthetic browser fixture. No model or user data was loaded.
+The probability renderer was imported from [`go-pherence@c84a151dd8e7f952bc6b3aba35f1d309e79016f3`](https://github.com/rcarmo/go-pherence/commit/c84a151dd8e7f952bc6b3aba35f1d309e79016f3). Screenshots used the loopback-only synthetic browser fixture. No model or user data was loaded.
 
 For each colour scheme, Playwright opened `/go-system-one`, clicked **Run decision**, waited for the first `.decision` result and captured the full page. Source validation passed:
 
