@@ -66,6 +66,17 @@ if ((${#artifact_files[@]})); then
     "${artifact_files[@]}"
 fi
 
+# Preserve standalone documentation links after importing monorepo-relative text.
+sed -i \
+  -e 's#\[Kev porting roadmap\](../models/kev-porting-roadmap.md)#[upstream Kev porting roadmap](https://github.com/rcarmo/go-pherence/blob/'"$revision"'/docs/models/kev-porting-roadmap.md)#' \
+  "$root/docs/validation/go-system-one-kev-20260922.md"
+sed -i \
+  -e 's#\[CPU SIMD gap note\](../../docs/performance/gemma4-cpu-simd-gap.md)#[upstream CPU SIMD gap note](https://github.com/rcarmo/go-pherence/blob/'"$revision"'/docs/performance/gemma4-cpu-simd-gap.md)#' \
+  "$root/loader/gguf/README.md"
+sed -i \
+  -e 's#\[asset migration notes\](../docs/guides/model-assets.md)#[external artifact contract](../docs/artifacts.md)#' \
+  "$root/model/README.md"
+
 mapfile -d '' go_files < <(find "$root" -type f -name '*.go' -not -path "$root/.git/*" -not -path "$root/vendor/*" -print0)
 if ((${#go_files[@]})); then
   gofmt -w "${go_files[@]}"
