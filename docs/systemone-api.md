@@ -57,7 +57,7 @@ TypeSafe describes confidence separately from candidate probabilities but does n
 
 Requests are limited to 32 questions, 255 candidates per question and a 1 MiB body. Prompt-token and packed-memory limits match the existing decision engine. Both HTTP routes share one admission gate and return HTTP 429 while another request owns it. Invalid JSON, duplicate request/question/choice keys, unknown properties, unsupported types and forged tokenizer control markers are rejected before scoring. Rejected requests release the gate.
 
-The playground continues to use `/v1/decision`. This adapter does not implement TypeSafe's hosted models, authentication, billing, `messages`, `options`, raw-logit diagnostics, `/permute`, `/separate` or batch extensions. A request has one `state`; use `/v1/decision` for its existing independent-context batch interface. Matching these request/answer types does not reproduce Jev's weights, training or calibration.
+The [playground](playground.md) supports both routes: TypeSafe questions is the default view, with Batch decisions available through the API selector. This adapter does not implement TypeSafe's hosted models, authentication, billing, `messages`, `options`, raw-logit diagnostics, `/permute`, `/separate` or batch extensions. A request has one `state`; use `/v1/decision` for its existing independent-context batch interface. Matching these request/answer types does not reproduce Jev's weights, training or calibration.
 
 ## Measured request costs
 

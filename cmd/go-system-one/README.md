@@ -6,9 +6,9 @@
 make run BACKEND=nvidia LISTEN=127.0.0.1:8080
 ```
 
-Open `http://127.0.0.1:8080/go-system-one` for the standalone playground. The API endpoint is `POST /v1/decision`. Tree-mode results display every allowed outcome and its constrained model probability; the selected outcome is highlighted. These are model probabilities over the allowed candidates, not calibrated correctness estimates.
+Open `http://127.0.0.1:8080/go-system-one` for the [standalone playground](../../docs/playground.md). Its default TypeSafe view submits `noul`, `choice` and `score` questions to `POST /v1/systemone`, showing yes-probabilities, selected choices, fractional expected scores and token usage. The [API contract](../../docs/systemone-api.md) defines the local confidence approximations.
 
-`POST /v1/systemone` accepts [TypeSafe's core question types](../../docs/systemone-api.md): `noul`, `choice` and `score`. It shares the existing route's scorer and admission gate; the playground continues to use `/v1/decision`.
+Select Batch decisions to use `POST /v1/decision` with independent contexts and boolean/enum schemas. Tree-mode results display every allowed outcome and highlight the selected value. Both routes share the scorer and admission gate. Probabilities are over allowed candidates, not calibrated correctness estimates.
 
 ![Go System One decision playground](../../docs/images/go-system-one-light-desktop.png)
 

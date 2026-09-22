@@ -4,7 +4,7 @@ Go System One uses Gemma 4 12B for finite-choice decisions, ordered scores and y
 
 The current NVIDIA path loads hand-tuned PTX kernels directly from Go through the NVIDIA Driver API. It needs no CGo, llama.cpp or CUDA toolkit at run time, and reduced the pinned RTX 3060 request from about 521 ms in the first native version to a **72.80 ms median**. Automatic two-field batches reached **12.01 entries/s** at 100 entries; [benchmarks](docs/benchmarks/README.md) record the workloads, revisions and precision trade-offs.
 
-[![Go System One playground showing outcome probabilities](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
+[![Go System One playground showing Noul, Choice and Score results](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
 
 ## Run
 
@@ -16,7 +16,7 @@ make artifacts-download ACCEPT_GEMMA_LICENSE=1 HF_TOKEN="$HF_TOKEN"
 make run BACKEND=nvidia LISTEN=127.0.0.1:8080
 ```
 
-Open `http://127.0.0.1:8080/go-system-one`.
+Open `http://127.0.0.1:8080/go-system-one` for Noul, Choice and Score questions. Select **Batch decisions** for the boolean/enum context interface.
 
 ## Documentation
 

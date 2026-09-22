@@ -7,7 +7,7 @@ Go System One serves boolean/enum batches through `/v1/decision` and TypeSafe-st
 - [Jev-like decision model](jev-like.md) — finite-choice behaviour, Gemma world knowledge and compatibility limits.
 - [TypeSafe question types](systemone-api.md) — `noul`, `choice` and `score` through `/v1/systemone`.
 - [External model artifacts](artifacts.md) — exact model/tokenizer pins, download, verification and cleanup.
-- [Decision playground](playground.md) — routes, theme contract, desktop/mobile captures and browser-test provenance.
+- [Decision playground](playground.md) — TypeSafe questions and batch decisions, OS themes, desktop/mobile captures and browser tests.
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
 - [Packed Gemma scoring](performance/packed-decisions.md) — implementation, precision trade-offs and development measurements.
 - [Q5 staging](performance/q5-staged.md) and [512-column chunks](performance/q5-chunk512.md) — accepted kernel changes, measured gains and rejected variants.

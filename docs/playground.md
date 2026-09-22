@@ -1,56 +1,58 @@
 # Decision playground
 
-The embedded playground at `/go-system-one` provides a browser form for `POST /v1/decision`. It submits boolean and string-enum schemas to the same loopback service. The separate [TypeSafe route](systemone-api.md), `POST /v1/systemone`, accepts Noul, Choice and Score requests through HTTP; the playground does not expose those types yet.
+The embedded playground at `/go-system-one` submits requests to both inference routes on the same loopback service. It opens with **TypeSafe questions**; the API selector also offers the existing **Batch decisions** interface.
+
+## Question types
+
+TypeSafe mode sends one `state` and a named `questions` object to `POST /v1/systemone`. Choose **JSON** for a structured object, array, quoted string or `null`, or **Plain text** to send the editor contents as a string. Each question has its own instructions and criteria; the [API contract](systemone-api.md) defines the supported shapes and limits.
+
+* Noul shows the probability of yes and its complement, `1 - P(yes)`. It has no confidence field, threshold or selected boolean.
+* Choice shows the selected label and all candidate probabilities in request order. The selected row is highlighted; local confidence is labelled separately.
+* Score shows the fractional expected level, the numbered rubric and each level's probability. It does not highlight a level as the answer. Local confidence is labelled separately.
+
+TypeSafe results show input/output token usage and **client HTTP** latency. The API returns no handler timing field; the browser measures the interval from `fetch` through JSON decoding. Candidate probabilities are constrained model probabilities, not calibrated correctness estimates, and confidence uses the documented local approximations.
+
+Batch mode sends instructions, one context per line and a boolean/enum schema to `POST /v1/decision`. It retains automatic/tree controls, complete tree distributions, selected outcomes and handler timings. Greedy fallback explicitly reports when a full distribution is unavailable.
+
+Switching API preserves each editor's draft and clears the previous result. Reset restores defaults for the selected mode. Request controls are disabled during inference to prevent a mode change from mislabelling an in-flight result. Validation and server errors clear stale results, and HTTP 429 permits a manual retry after the active request finishes.
 
 ## Appearance
 
-The page follows the neutral OKLCH palette, typography and controls used by the ported llama-ui. System text is used for labels and prose; monospace text is limited to structured values and code-like output.
-
-Appearance follows the operating-system `prefers-color-scheme` setting. The page has no theme toggle, local-storage key or persisted theme override.
+The page uses the neutral OKLCH palette, system-font controls and monospace JSON editors. Appearance follows the operating-system `prefers-color-scheme` setting, with no theme toggle or persisted override. Mobile layout uses a single column.
 
 ### Light desktop
 
-![Go System One playground in light mode on desktop](images/go-system-one-light-desktop.png)
+![Noul, Choice and Score results in the light desktop playground](images/go-system-one-light-desktop.png)
 
-- OS preference: light
-- viewport: 1280 px wide
-- full-page output: 1280 × 1190
-- device pixel ratio: 1
-- SHA-256: `1dbe325f2b9e00dcb5a49836bf3f9cf6147eebc23c5d979e53cecd7c693070cc`
+* OS preference: light; viewport: 1280 × 900; device pixel ratio: 1.
+* Full-page output: 1280 × 1213.
+* SHA-256: `a8dbdd5bb799063f4dae6ff886c909d7d8f888dfa8f858f4293f01dcbb64002d`.
 
 ### Dark mobile
 
-![Go System One playground in dark mode on mobile](images/go-system-one-dark-mobile.png)
+![Noul, Choice and Score results in the dark mobile playground](images/go-system-one-dark-mobile.png)
 
-- OS preference: dark
-- viewport: 390 × 844
-- full-page output: 390 × 2138
-- device pixel ratio: 1
-- content width: 370 px, without horizontal overflow
-- SHA-256: `ed5d023bde9ae9e79cbac474e59187d4b412de1d1b6bdfbf0f90411f17ddeafb`
+* OS preference: dark; viewport: 390 × 844; device pixel ratio: 1.
+* Full-page output: 390 × 2129; content width: 370 px, without horizontal overflow.
+* SHA-256: `faa33baca87f91287fbed8e35c86bce1b85669d4adfdf1bf8b05d3db98fd9fd9`.
 
-## Standalone browser checks
+## Browser checks and screenshots
 
-The repository has a model-free Playwright project under `browser/`. Its loopback-only Go fixture serves the real embedded page and synthetic decision responses; no checkpoint is loaded.
+The model-free Playwright project under `browser/` uses the real embedded page and a loopback-only Go fixture. Seven Chromium tests cover both API request bodies, typed answers and usage, the existing two-context boolean/enum results, OS themes, mobile overflow, text/null state, draft preservation, error recovery, in-flight control locking and HTML-safe labels/structured legends. CI runs the same suite.
 
 ```sh
 PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/ms-playwright make browser-test
 ```
 
-The tests submit two contexts and assert every boolean and enum candidate probability, including the selected rows. They also exercise light and dark OS preferences, reject mobile horizontal overflow, and verify status and method boundaries. CI runs the same Chromium suite.
-
-## Capture provenance
-
-The probability renderer was imported from [`go-pherence@c84a151dd8e7f952bc6b3aba35f1d309e79016f3`](https://github.com/rcarmo/go-pherence/commit/c84a151dd8e7f952bc6b3aba35f1d309e79016f3). Screenshots used the loopback-only synthetic browser fixture. No model or user data was loaded.
-
-For each colour scheme, Playwright opened `/go-system-one`, clicked **Run decision**, waited for the first `.decision` result and captured the full page. The following source validation commands ran in the upstream repository at capture time. `webui/frontend` is not part of this standalone checkout; use `make browser-test` here.
+Regenerate both committed screenshots with:
 
 ```sh
-cd webui/frontend
-bun x playwright test --config playwright.go.config.ts --grep 'Go System One playground'
-go test ./webui
-go vet ./webui
-git diff --check
+UPDATE_PLAYGROUND_SCREENSHOTS=1 \
+PLAYWRIGHT_BROWSERS_PATH=/workspace/.cache/ms-playwright \
+make browser-test
+sha256sum docs/images/go-system-one-{light-desktop,dark-mobile}.png
 ```
 
-The upstream browser suite passed all three scenarios used for the original hand-off. The standalone Playwright harness covers this page independently without carrying the Svelte/chat frontend.
+The capture tests submit the default TypeSafe request, assert all three answers, wait for request controls to unlock and save full-page PNGs. They replace the variable HTTP timing pill with **client HTTP: fixture timing**, clear hover/focus and disable transitions before capture. Two successive runs produced identical screenshot hashes on the recorded browser environment. The status identifies the synthetic backend. No checkpoint or user data is loaded, and the screenshots are not performance or accuracy measurements. Update the dimensions and hashes above after regenerating them.
+
+The original boolean/enum renderer came from [`go-pherence@c84a151dd8e7f952bc6b3aba35f1d309e79016f3`](https://github.com/rcarmo/go-pherence/commit/c84a151dd8e7f952bc6b3aba35f1d309e79016f3). The TypeSafe controls, rendering and screenshot tests are local changes in this repository; the source manifest retains the original import pin.
