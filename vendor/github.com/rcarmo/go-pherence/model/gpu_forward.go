@@ -18,7 +18,7 @@ import (
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 func gpuKVMaxSeqFromEnv(defaultMax int) int {

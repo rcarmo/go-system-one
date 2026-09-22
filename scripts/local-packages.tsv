@@ -35,3 +35,4 @@ github.com/rcarmo/go-pherence/backends/internal/ggmlutil	github.com/rcarmo/go-sy
 github.com/rcarmo/go-pherence/internal/commandcapture	github.com/rcarmo/go-system-one/internal/commandcapture	local-only
 github.com/rcarmo/go-pherence/loader/safetensors	github.com/rcarmo/go-system-one/loader/safetensors
 github.com/rcarmo/go-pherence/loader/weights	github.com/rcarmo/go-system-one/loader/weights
+github.com/rcarmo/go-pherence/tensor	github.com/rcarmo/go-system-one/tensor

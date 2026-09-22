@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/rcarmo/go-pherence/model"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 func TestGoSystemOneGemma4CPUScorerRestoresTrunkBetweenBranches(t *testing.T) {

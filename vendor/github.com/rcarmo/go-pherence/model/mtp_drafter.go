@@ -9,7 +9,7 @@ import (
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-system-one/loader/weights"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 // Gemma4MTPDrafter holds the Gemma4 assistant/MTP drafter weights.

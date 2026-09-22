@@ -6,7 +6,7 @@ import (
 
 	"github.com/rcarmo/go-system-one/loader/gguf"
 	"github.com/rcarmo/go-pherence/model/common"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 // LoadGemma4GGUFAsLlama loads a Gemma4 GGUF checkpoint into the existing

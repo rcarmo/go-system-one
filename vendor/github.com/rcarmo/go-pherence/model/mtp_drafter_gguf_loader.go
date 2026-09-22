@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rcarmo/go-system-one/loader/gguf"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 // LoadGemma4MTPDrafterGGUF loads the compact Gemma4 assistant/MTP GGUF into

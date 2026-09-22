@@ -1,6 +1,6 @@
 package tensor
 
-import "github.com/rcarmo/go-pherence/internal/checked"
+import "github.com/rcarmo/go-system-one/internal/checked"
 
 // Shared preflight keeps dimension arithmetic safe before allocation/indexing.
 func conv1DGeometry(inChannels, inLength, outChannels, kernelSize, stride, padding int) (outLength, inputSize, weightSize, outputSize int, ok bool) {

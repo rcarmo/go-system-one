@@ -6,7 +6,7 @@ import (
 	"github.com/rcarmo/go-system-one/loader/tokenizer"
 	"github.com/rcarmo/go-pherence/model/common"
 	"github.com/rcarmo/go-pherence/runtime/kv"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 // QuantWeight holds GPTQ INT4 weight data for on-the-fly dequantization.

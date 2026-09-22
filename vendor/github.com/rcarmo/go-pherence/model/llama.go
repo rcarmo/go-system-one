@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
-	"github.com/rcarmo/go-pherence/tensor"
+	"github.com/rcarmo/go-system-one/tensor"
 )
 
 // LoadLlama loads a LLaMA-style model from safetensors + config.json.
