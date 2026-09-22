@@ -101,3 +101,17 @@ loader/tokenizer/sidecar_test.go	loader/tokenizer/sidecar_test.go
 loader/tokenizer/tokenizer.go	loader/tokenizer/tokenizer.go
 loader/tokenizer/tokenizer_test.go	loader/tokenizer/tokenizer_test.go
 testdata/omnivoice/tokenizer.json	testdata/omnivoice/tokenizer.json
+backends/cuda/ptx/attention_full.go	backends/cuda/ptx/attention_full.go
+backends/cuda/ptx/conv1d.go	backends/cuda/ptx/conv1d.go
+backends/cuda/ptx/encoder_ops.go	backends/cuda/ptx/encoder_ops.go
+backends/cuda/ptx/fft.go	backends/cuda/ptx/fft.go
+backends/cuda/ptx/fft_test.go	backends/cuda/ptx/fft_test.go
+backends/cuda/ptx/pool.go	backends/cuda/ptx/pool.go
+backends/cuda/ptx/ptx_contract_test.go	backends/cuda/ptx/ptx_contract_test.go
+backends/nvidia/ptx/bf16/bf16.go	backends/nvidia/ptx/bf16/bf16.go
+backends/nvidia/ptx/bf16/native.go	backends/nvidia/ptx/bf16/native.go
+backends/nvidia/ptx/fp8/fp8.go	backends/nvidia/ptx/fp8/fp8.go
+backends/nvidia/ptx/ideogram/ideogram.go	backends/nvidia/ptx/ideogram/ideogram.go
+backends/nvidia/ptx/mlx/mlx.go	backends/nvidia/ptx/mlx/mlx.go
+backends/nvidia/ptx/mlx/selected_expert.go	backends/nvidia/ptx/mlx/selected_expert.go
+backends/nvidia/ptx/nvfp4/nvfp4.go	backends/nvidia/ptx/nvfp4/nvfp4.go

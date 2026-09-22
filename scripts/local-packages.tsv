@@ -6,3 +6,9 @@ github.com/rcarmo/go-pherence/backends/nvidia/ptx/q4	github.com/rcarmo/go-system
 github.com/rcarmo/go-pherence/backends/nvidia/ptx/q8	github.com/rcarmo/go-system-one/backends/nvidia/ptx/q8
 github.com/rcarmo/go-pherence/backends/nvidia/ptx	github.com/rcarmo/go-system-one/backends/nvidia/ptx
 github.com/rcarmo/go-pherence/loader/tokenizer	github.com/rcarmo/go-system-one/loader/tokenizer
+github.com/rcarmo/go-pherence/backends/cuda/ptx	github.com/rcarmo/go-system-one/backends/cuda/ptx
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/bf16	github.com/rcarmo/go-system-one/backends/nvidia/ptx/bf16
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/fp8	github.com/rcarmo/go-system-one/backends/nvidia/ptx/fp8
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/ideogram	github.com/rcarmo/go-system-one/backends/nvidia/ptx/ideogram
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/mlx	github.com/rcarmo/go-system-one/backends/nvidia/ptx/mlx
+github.com/rcarmo/go-pherence/backends/nvidia/ptx/nvfp4	github.com/rcarmo/go-system-one/backends/nvidia/ptx/nvfp4

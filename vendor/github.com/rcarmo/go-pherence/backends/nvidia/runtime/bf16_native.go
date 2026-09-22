@@ -19,7 +19,7 @@ import (
 	"sync"
 	"unsafe"
 
-	ptxbf16 "github.com/rcarmo/go-pherence/backends/nvidia/ptx/bf16"
+	ptxbf16 "github.com/rcarmo/go-system-one/backends/nvidia/ptx/bf16"
 )
 
 var (
