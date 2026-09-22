@@ -33,4 +33,4 @@ A looped group variant removed the 24-row tile's small spill but was generally s
 
 Synthetic width/tail tests cover 256, 512, 768 and 3,840 input columns, partial output tiles and partial row batches. They pass against the existing Q5 reference, as do both pinned llama.cpp fixtures, batch isolation/logit tests, race checks, `make check` and Linux ARM64/RISC-V builds.
 
-The main benchmark charts remain explicitly pinned to their last complete refresh. This result is a separate incremental comparison until the next chart refresh, so older data is not silently relabelled.
+The [main benchmark tables and all five charts](../benchmarks/README.md) now use the committed `774c5da` runtime: 72.80 ms single-boolean median and 8,329.54 ms for 100 two-field entries. The pre-commit alternating comparison above remains separate, with its original binary hashes and run order.

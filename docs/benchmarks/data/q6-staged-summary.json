@@ -7,11 +7,11 @@
     "device": "NVIDIA GeForce RTX 3060 12 GB",
     "driver": "580.173.02",
     "resident_projection_bytes": 9173277696,
-    "standalone_commit": "774c5da5c8cf8c833102137d21062b79505c4929",
-    "revision": "774c5da5c8cf8c833102137d21062b79505c4929",
-    "binary_sha256": "b73f6923fb7ff5d1f67ea600abacb198711596d736108234c68bd2ae4ce4497b",
-    "sample_source": "data/q5-chunk512-warm.json",
-    "workload_source": "data/q5-chunk512-workloads.json"
+    "standalone_commit": "aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d",
+    "revision": "aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d",
+    "binary_sha256": "364cc7f2924f0bb53e91ef2840765eb6fc07ebc84e11ffebc4d753775942c31a",
+    "sample_source": "data/q6-staged-warm.json",
+    "workload_source": "data/q6-staged-workloads.json"
   },
   "comparison": [
     {
@@ -43,80 +43,73 @@
       "basis": "100-request median with stable decision check"
     },
     {
-      "label": "Earlier Q6-staged Go/PTX",
+      "label": "Current Q6-staged Go/PTX",
       "representative_ms": 77.907029,
       "min_ms": 77.545055,
       "max_ms": 78.798741,
       "basis": "100 warm handler samples at aca5e4c8952219d1d90bd4c45ff9b8fa80cc4d4d"
-    },
-    {
-      "label": "Current Q5 chunk512 Go/PTX",
-      "representative_ms": 72.80456699999999,
-      "min_ms": 72.429229,
-      "max_ms": 73.654949,
-      "basis": "100 warm handler samples at 774c5da5c8cf8c833102137d21062b79505c4929"
     }
   ],
   "workloads": [
     {
       "label": "Boolean cache hit",
-      "median_ms": 74.074532,
-      "min_ms": 73.908724,
-      "max_ms": 83.573669
+      "median_ms": 79.064989,
+      "min_ms": 79.00345,
+      "max_ms": 88.560628
     },
     {
       "label": "Cache disabled",
-      "median_ms": 216.678908,
-      "min_ms": 215.615727,
-      "max_ms": 217.727469
+      "median_ms": 234.82381,
+      "min_ms": 232.650275,
+      "max_ms": 236.586631
     },
     {
       "label": "Cache miss",
-      "median_ms": 212.835812,
-      "min_ms": 212.467298,
-      "max_ms": 213.551016
+      "median_ms": 231.087555,
+      "min_ms": 230.76392,
+      "max_ms": 231.244783
     },
     {
       "label": "Short context",
-      "median_ms": 72.458544,
-      "min_ms": 72.36435,
-      "max_ms": 72.972391
+      "median_ms": 75.520293,
+      "min_ms": 75.443121,
+      "max_ms": 75.855473
     },
     {
       "label": "Long context",
-      "median_ms": 947.262627,
-      "min_ms": 945.808695,
-      "max_ms": 948.359419
+      "median_ms": 1047.537956,
+      "min_ms": 1043.837672,
+      "max_ms": 1057.733273
     },
     {
       "label": "Multi-token enum tree",
-      "median_ms": 128.962602,
-      "min_ms": 128.699928,
-      "max_ms": 129.590248
+      "median_ms": 137.923552,
+      "min_ms": 137.263933,
+      "max_ms": 139.18946
     },
     {
       "label": "Multi-token enum greedy",
-      "median_ms": 198.167051,
-      "min_ms": 197.802916,
-      "max_ms": 218.402516
+      "median_ms": 203.486851,
+      "min_ms": 202.628365,
+      "max_ms": 203.639989
     },
     {
       "label": "Four distinct contexts",
-      "median_ms": 279.648818,
-      "min_ms": 277.777359,
-      "max_ms": 281.167366
+      "median_ms": 307.0888,
+      "min_ms": 306.105206,
+      "max_ms": 308.210584
     },
     {
       "label": "Four boolean fields",
-      "median_ms": 135.001323,
-      "min_ms": 134.865935,
-      "max_ms": 137.99266
+      "median_ms": 144.090981,
+      "min_ms": 143.546061,
+      "max_ms": 144.41129
     },
     {
       "label": "Boolean + enum",
-      "median_ms": 107.218583,
-      "min_ms": 106.848375,
-      "max_ms": 109.510958
+      "median_ms": 111.069795,
+      "min_ms": 110.934864,
+      "max_ms": 111.36821
     }
   ]
 }

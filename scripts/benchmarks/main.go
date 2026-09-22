@@ -97,10 +97,10 @@ func fatalf(format string, args ...any) {
 func render(args []string) error {
 	fs := flag.NewFlagSet("render", flag.ContinueOnError)
 	dataPath := fs.String("data", "docs/benchmarks/data/current.json", "comparison/workload JSON")
-	samplesPath := fs.String("samples", "docs/benchmarks/data/q6-staged-warm.json", "warm sample JSON")
+	samplesPath := fs.String("samples", "docs/benchmarks/data/q5-chunk512-warm.json", "warm sample JSON")
 	outDir := fs.String("out", "docs/benchmarks", "SVG output directory")
-	batchPath := fs.String("batch-data", "docs/benchmarks/data/q6-staged-batches.json", "automatic multi-field batch sweep")
-	pairedPath := fs.String("paired-data", "docs/benchmarks/data/q6-staged-paired.json", "paired multi-field comparison")
+	batchPath := fs.String("batch-data", "docs/benchmarks/data/q5-chunk512-batches.json", "automatic multi-field batch sweep")
+	pairedPath := fs.String("paired-data", "docs/benchmarks/data/q5-chunk512-paired.json", "paired multi-field comparison")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}

@@ -6,7 +6,7 @@
 
 [`scripts/upstream.env`](../scripts/upstream.env) records the base source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps upstream paths to local destinations. Its optional third column pins one file to another full commit. This permits a reviewed hand-off without importing unrelated files changed between the base and hand-off commits. [`scripts/local-packages.tsv`](../scripts/local-packages.tsv) maps upstream import paths to this module path after copying.
 
-All compiled first-party packages live in this repository. `vendor/` contains third-party modules and licences only.
+All compiled first-party packages live in this repository. `vendor/` contains third-party modules and licences only. Local packing, PTX and TypeSafe adapter changes can extend or modify imported files; an upstream pin records lineage, not equality with the current tree. Review incoming copies against those local changes before accepting an update.
 
 ## Import a revision
 
@@ -41,7 +41,7 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 4. Confirm no source imports `github.com/rcarmo/go-pherence/...` and no `go-pherence` requirement appears in `go.mod`, `go.sum` or `vendor/modules.txt`.
 5. Run `go mod tidy`, `./scripts/vendor.sh` and `make check`.
 6. Run released-model parity when model, tokenizer, scorer, PTX or dispatch behaviour changed.
-7. Record performance claims in `docs/validation/` with raw sample distributions and exact hardware details.
+7. Record new performance samples in `docs/benchmarks/data/`, refresh the benchmark tables and generated charts, and preserve historical datasets. Use `docs/performance/` for experiment decisions and `docs/validation/` for pinned correctness reports.
 8. Commit copied source, the source pin, third-party dependency changes and evidence as one reviewable change.
 
 ## Automation contract

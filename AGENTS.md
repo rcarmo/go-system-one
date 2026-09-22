@@ -34,7 +34,7 @@ vendor/                  pinned offline build closure and dependency licences
 
 1. Read the relevant files and tests.
 2. Search all callers before changing a public function, schema field or route.
-3. Treat `POST /v1/decision`, `/go-system-one`, artifact hashes, candidate order and validation limits as public contracts.
+3. Treat `POST /v1/decision`, `POST /v1/systemone`, `/go-system-one`, artifact hashes, candidate order and validation limits as public contracts. Preserve the shared admission gate and the TypeSafe adapter's documented type/confidence semantics.
 4. Check `scripts/upstream-files.tsv` when adding, moving or removing a first-party file that still originates in `go-pherence`.
 5. Keep package-path mappings in `scripts/local-packages.tsv`; sync uses them to rewrite imported source to this module path.
 6. Keep ordinary tests offline and deterministic. Released-model and hardware tests must remain opt-in.
@@ -113,7 +113,7 @@ git diff --check -- . ':(exclude)vendor/**'
 go test -race ./model/gosystemone ./internal/httpinput ./webui
 ```
 
-For NVIDIA or released-model changes, set the artifact paths documented in `docs/validation/go-system-one-v1-20260921.md` and run the named opt-in parity test. Record skipped hardware gates as skipped, not passed.
+For NVIDIA or released-model changes, set the artifact paths documented in `docs/validation/go-system-one-v1-20260921.md` and run the named opt-in parity test. For TypeSafe prompt or adapter changes, also run `TestSystemOneReleasedModelTypes` as documented in `docs/systemone-api.md`; `make hardware-check` does not include it. Record skipped hardware gates as skipped, not passed.
 
 ## Git workflow
 

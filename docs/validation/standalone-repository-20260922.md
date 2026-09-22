@@ -1,5 +1,7 @@
 # Standalone repository validation — 22 September 2026
 
+> Historical validation record: results and implementation descriptions below refer to the recorded revisions. See the [current API documentation](../README.md) and [refreshed benchmarks](../benchmarks/README.md) for the present service.
+
 The first `rcarmo/go-system-one` extraction builds without a neighbouring `go-pherence` checkout and preserves the pinned released-model decision.
 
 ## Source and dependency pins

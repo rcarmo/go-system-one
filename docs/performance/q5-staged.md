@@ -6,7 +6,7 @@ The Q5 projection kernel stages activation scales and sums alongside quantised a
 
 ## Measured service effect
 
-Automatic multi-field requests use the same frozen contexts and collector as the [Q6-only benchmark](../benchmarks/README.md). One warm-up preceded three cooled samples per size on the RTX 3060, driver 580.173.02.
+Automatic multi-field requests use the same frozen contexts and collector as the [historical Q6-only benchmark](../benchmarks/history.md). One warm-up preceded three cooled samples per size on the RTX 3060, driver 580.173.02.
 
 | Entries | Q6-only median | Q5 + Q6 median | Speedup |
 |---:|---:|---:|---:|
@@ -41,4 +41,4 @@ make check
 make cross-build
 ```
 
-Generated PTX is reproducible with the recorded compiler. Hardware acceptance also ran `make hardware-check` and `TestGoSystemOnePackedReleasedModelMatchesSerial` against the pinned artifacts. Main benchmark charts remain labelled with their Q6-only revision until a full post-commit refresh; the new sweep is kept separate rather than mixing revisions silently.
+Generated PTX is reproducible with the recorded compiler. Hardware acceptance also ran `make hardware-check` and `TestGoSystemOnePackedReleasedModelMatchesSerial` against the pinned artifacts. The [main benchmark charts](../benchmarks/README.md) now use the later committed Q5 chunk512 runtime at `774c5da`. The pre-commit sweep above and its Q6-only reference remain unchanged.

@@ -27,7 +27,7 @@ Development source for the segmented attention, rotary-position and batched Q5 s
 
 Two INT8 tensor-core prototypes were rejected: they were slower than the existing dp4a kernels, and Q5 accumulation also differed slightly. No prototype kernel enters production. Later Q6 PTX work stages quantised activations and scales in shared memory across a 24-row, 64-output tile. It uses 69 registers, 7,680 bytes of shared memory and no spills. Shape-tail differentials, original pinned parity and the stricter batch-logit comparison passed. The first Q5 staged tiles were held back because their larger released-model logit movement needed separate analysis. The [accepted Q5 revision](q5-staged.md) restores the existing arithmetic contraction, passes the original gates and improves the measured batch sweep by another 8–12%.
 
-The [current benchmark tables and all five charts](../benchmarks/README.md) use fresh `aca5e4c` measurements, including the full batch sweep and paired comparison. Earlier numbers in this note are development history. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
+The [current benchmark tables and all five charts](../benchmarks/README.md) use `774c5da` measurements, including staged Q5/Q6 and the [512-column Q5 chunks](q5-chunk512.md), the full batch sweep and paired comparison. Earlier numbers in this note are development history. Nsight attempts did not yield a usable kernel trace, so no new kernel timing breakdown is claimed.
 
 ## Multi-field experiment
 
@@ -50,11 +50,11 @@ The old scorer uses F32 activation kernels for fewer than four active branch row
 
 Without packing, [`Engine.Decide`](../../model/gosystemone/engine.go) scores contexts serially. The NVIDIA single-branch path combines the context and forced suffix into one causal prefill. It already projects only candidate vocabulary rows through `finishSelectedDevice` in [`gemma4_nvidia.go`](../../model/gemma4_nvidia.go).
 
-The short boolean fixture processes 24 token rows per context. Ten entries therefore cause ten separate transformer passes over 24 rows. Packing would instead process 240 rows through each layer's projections, with attention isolated by context. This can improve matrix utilisation and amortise launches and weight reads. It does not remove the transformer arithmetic for each token.
+The short boolean fixture processes 24 token rows per context. Ten entries therefore cause ten separate transformer passes over 24 rows. Packing processes up to 240 rows through each layer's projections, with attention isolated by context. This can improve matrix utilisation and amortise launches and weight reads. It does not remove the transformer arithmetic for each token.
 
 The multi-branch path has another cost: `runDepth` downloads hidden rows, and `finishRow` uploads each row, computes the full vocabulary vector and downloads it. The scorer then selects the candidate entries. That path needs a device-resident, selected-row readout too.
 
-The earlier [kernel profile](../validation/go-system-one-v1-20260921.md#warp-parallel-causal-attention) attributed 71.64 ms to Q4/Q5/Q6 projections out of 80.4 ms of GPU kernels. This favours packing projection work before tuning launch overhead alone. It is historical profiling, not a profile of the proposed batch path.
+The earlier [kernel profile](../validation/go-system-one-v1-20260921.md#warp-parallel-causal-attention) attributed 71.64 ms to Q4/Q5/Q6 projections out of 80.4 ms of GPU kernels. This favours packing projection work before tuning launch overhead alone. It is historical profiling, not a profile of the current packed path.
 
 ## Techniques reviewed
 
@@ -68,7 +68,9 @@ All upstream links below are pinned to the reviewed commit.
 | [Kev assessment](https://github.com/rcarmo/go-pherence/blob/32bfb937ca1c8608c66411c63f9b1eb39d152cb3/docs/models/kev-porting-roadmap.md) | Trained pointer projections over option-end and decision rows, with LoRA adaptation. | Reuse the isolation discipline. No native Kev scorer or Gemma-trained pointer head is available here. |
 | [Jevlike experiment](https://github.com/rcarmo/go-pherence/blob/32bfb937ca1c8608c66411c63f9b1eb39d152cb3/docs/experiments/jevlike-qwen3/final-report-20260921.md) | Scores options from frozen hidden features with a trained attention head. | Do not adopt the failed head recipe: mean accuracy was 22.20%, against 23.52% random expectation. Direct instruction scoring reached 81.25%, with an earlier option-order failure. |
 
-## Implementation order
+## Implementation sequence
+
+Steps 1–4 and bounded scratch reuse in step 5 are implemented. Segmented attention is also implemented; CUDA graph replay has not been qualified. This sequence records the original design order.
 
 1. Add an optional batch scorer to the engine. Keep the scalar scorer as a reference and fallback. Start with single-node boolean and enum fields under the existing prompt contract.
 2. Pack real context-plus-suffix token rows into a bounded workspace. Run Q/K/V, attention-output and feed-forward projections across the whole group. Use context offsets, lengths and absolute positions to preserve each entry's causal and sliding-window attention. An entry sees the shared prefix and its own tokens only.

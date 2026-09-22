@@ -1,5 +1,7 @@
 # Go System One v1 validation — 21 September 2026
 
+> Historical validation record: results and implementation descriptions below refer to the recorded revisions. See the [current API documentation](../README.md) and [refreshed benchmarks](../benchmarks/README.md) for the present service.
+
 Go System One v1 serves bounded boolean and enum decisions from the pinned Gemma 4 12B GGUF. CPU/SIMD defines the numerical oracle. The NVIDIA path keeps projection weights resident and executes prompt prefill, independent suffix transformers and the LM head through native PTX.
 
 ## Frozen inputs

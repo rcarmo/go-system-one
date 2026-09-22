@@ -1,0 +1,1198 @@
+{
+  "schema": "go-system-one-typesafe-benchmark-v1",
+  "revision": "594ba476bb33d7a38b8be482687b075ecdb2238d",
+  "binary_sha256": "7b058c7add081a6ca3438b3cdad78cd75001891914025c56822ba982c9e52347",
+  "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+  "started_utc": "2026-09-22T23:19:41.802Z",
+  "command": [
+    "/workspace/tmp/gso-bench-594ba47/server",
+    "-model",
+    "/tmp/qev-gemma4-12b/gemma-4-12b-it-UD-Q4_K_XL.gguf",
+    "-tokenizer-dir",
+    "/tmp/qev-gemma4-12b/tokenizer",
+    "-listen",
+    "127.0.0.1:18086"
+  ],
+  "mode": "automatic",
+  "device": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "driver": "580.173.02",
+    "temperature": 48,
+    "memory_mib": 33,
+    "sm_mhz": 210
+  },
+  "method": "One case warmup and five warm client HTTP samples; cool to <=55C before every call; abort at >=83C; 500ms GPU sampling. HTTP interval is fetch through JSON decode, excludes telemetry queries and loading. One structured state per request, no labelled accuracy evaluation.",
+  "cases": [
+    {
+      "label": "Noul",
+      "request": {
+        "state": {
+          "ticket": "Production services are down and customers cannot connect."
+        },
+        "questions": {
+          "urgent": {
+            "type": "noul",
+            "instructions": "Does this need urgent handling?"
+          }
+        }
+      },
+      "request_sha256": "81819abb6ec9aad26e4c01549d4225ee8d4e23021b16c375f37906872dd4c866",
+      "status": "complete",
+      "trials": [
+        {
+          "http_ms": 95.18262600000162,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 52,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 52,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 52,
+          "sampled_peak_memory_mib": 9393,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999826443929
+              }
+            },
+            "usage": {
+              "input_tokens": 94,
+              "output_tokens": 30
+            }
+          }
+        },
+        {
+          "http_ms": 95.11022400000002,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 52,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 54,
+          "sampled_peak_memory_mib": 9393,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999826443929
+              }
+            },
+            "usage": {
+              "input_tokens": 94,
+              "output_tokens": 30
+            }
+          }
+        },
+        {
+          "http_ms": 95.1032129999985,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9393,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999826443929
+              }
+            },
+            "usage": {
+              "input_tokens": 94,
+              "output_tokens": 30
+            }
+          }
+        },
+        {
+          "http_ms": 95.19566699999996,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 52,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 52,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 52,
+          "sampled_peak_memory_mib": 9393,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999826443929
+              }
+            },
+            "usage": {
+              "input_tokens": 94,
+              "output_tokens": 30
+            }
+          }
+        },
+        {
+          "http_ms": 95.09149599999728,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9393,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9393,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999826443929
+              }
+            },
+            "usage": {
+              "input_tokens": 94,
+              "output_tokens": 30
+            }
+          }
+        }
+      ],
+      "warmup": {
+        "http_ms": 285.0307920000014,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 51,
+          "memory_mib": 9305,
+          "sm_mhz": 1777
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 57,
+          "memory_mib": 9393,
+          "sm_mhz": 1852
+        },
+        "max_temperature_c": 57,
+        "sampled_peak_memory_mib": 9393,
+        "response": {
+          "model": "gemma-4-12b-it-go-system-one",
+          "answers": {
+            "urgent": {
+              "type": "noul",
+              "noul": 0.9999999826443929
+            }
+          },
+          "usage": {
+            "input_tokens": 94,
+            "output_tokens": 30
+          }
+        }
+      },
+      "n": 5,
+      "samples": [
+        95.09149599999728,
+        95.1032129999985,
+        95.11022400000002,
+        95.18262600000162,
+        95.19566699999996
+      ],
+      "min": 95.09149599999728,
+      "median": 95.11022400000002,
+      "max": 95.19566699999996,
+      "p95": 95.19566699999996,
+      "p99": 95.19566699999996
+    },
+    {
+      "label": "Choice",
+      "request": {
+        "state": {
+          "ticket": "Production services are down and customers cannot connect."
+        },
+        "questions": {
+          "route": {
+            "type": "choice",
+            "instructions": "Choose the team.",
+            "criteria": {
+              "technical operations": "Production outages",
+              "billing support": "Invoice questions"
+            }
+          }
+        }
+      },
+      "request_sha256": "b59542228db3a4dfe6f6221124b29226f072262957403fe8efe2277d9901d720",
+      "status": "complete",
+      "trials": [
+        {
+          "http_ms": 95.49273099999846,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 53,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9379,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999659638219,
+                "probabilities": {
+                  "billing support": 1.7018089188010714e-8,
+                  "technical operations": 0.999999982981911
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 89,
+              "output_tokens": 81
+            }
+          }
+        },
+        {
+          "http_ms": 95.71665599999687,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 53,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 54,
+          "sampled_peak_memory_mib": 9379,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999659638219,
+                "probabilities": {
+                  "billing support": 1.7018089188010714e-8,
+                  "technical operations": 0.999999982981911
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 89,
+              "output_tokens": 81
+            }
+          }
+        },
+        {
+          "http_ms": 96.86507400000119,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 53,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 56,
+            "memory_mib": 9379,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 56,
+          "sampled_peak_memory_mib": 9379,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999659638219,
+                "probabilities": {
+                  "billing support": 1.7018089188010714e-8,
+                  "technical operations": 0.999999982981911
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 89,
+              "output_tokens": 81
+            }
+          }
+        },
+        {
+          "http_ms": 99.44560300000012,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 53,
+            "memory_mib": 9379,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9379,
+            "sm_mhz": 1777
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9379,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999659638219,
+                "probabilities": {
+                  "billing support": 1.7018089188010714e-8,
+                  "technical operations": 0.999999982981911
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 89,
+              "output_tokens": 81
+            }
+          }
+        },
+        {
+          "http_ms": 97.7446889999992,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 53,
+            "memory_mib": 9379,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9379,
+            "sm_mhz": 1822
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9379,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999659638219,
+                "probabilities": {
+                  "billing support": 1.7018089188010714e-8,
+                  "technical operations": 0.999999982981911
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 89,
+              "output_tokens": 81
+            }
+          }
+        }
+      ],
+      "warmup": {
+        "http_ms": 241.1129089999995,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 52,
+          "memory_mib": 9393,
+          "sm_mhz": 1852
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 58,
+          "memory_mib": 9379,
+          "sm_mhz": 1852
+        },
+        "max_temperature_c": 58,
+        "sampled_peak_memory_mib": 9393,
+        "response": {
+          "model": "gemma-4-12b-it-go-system-one",
+          "answers": {
+            "route": {
+              "type": "choice",
+              "choice": "technical operations",
+              "confidence": 0.9999999659638219,
+              "probabilities": {
+                "billing support": 1.7018089188010714e-8,
+                "technical operations": 0.999999982981911
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 89,
+            "output_tokens": 81
+          }
+        }
+      },
+      "n": 5,
+      "samples": [
+        95.49273099999846,
+        95.71665599999687,
+        96.86507400000119,
+        97.7446889999992,
+        99.44560300000012
+      ],
+      "min": 95.49273099999846,
+      "median": 96.86507400000119,
+      "max": 99.44560300000012,
+      "p95": 99.44560300000012,
+      "p99": 99.44560300000012
+    },
+    {
+      "label": "Score",
+      "request": {
+        "state": {
+          "ticket": "Production services are down and customers cannot connect."
+        },
+        "questions": {
+          "severity": {
+            "type": "score",
+            "instructions": "Rate incident severity.",
+            "criteria": [
+              "Routine request",
+              "Degraded service",
+              "Total outage"
+            ]
+          }
+        }
+      },
+      "request_sha256": "032aaf7762bc79437d04920c611df2787f0f732bd92b559d1a0a9852feb22646",
+      "status": "complete",
+      "trials": [
+        {
+          "http_ms": 97.53102000000217,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 56,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 56,
+          "sampled_peak_memory_mib": 9435,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "severity": {
+                "type": "score",
+                "score": 1.9999991258290761,
+                "confidence": 0.999999562914538,
+                "probabilities": {
+                  "0": 1.5577159703749703e-7,
+                  "1": 5.626277301019311e-7,
+                  "2": 0.999999281600673
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 112,
+              "output_tokens": 136
+            }
+          }
+        },
+        {
+          "http_ms": 97.5660629999984,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9435,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "severity": {
+                "type": "score",
+                "score": 1.9999991258290761,
+                "confidence": 0.999999562914538,
+                "probabilities": {
+                  "0": 1.5577159703749703e-7,
+                  "1": 5.626277301019311e-7,
+                  "2": 0.999999281600673
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 112,
+              "output_tokens": 136
+            }
+          }
+        },
+        {
+          "http_ms": 99.27224299999943,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 54,
+          "sampled_peak_memory_mib": 9435,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "severity": {
+                "type": "score",
+                "score": 1.9999991258290761,
+                "confidence": 0.999999562914538,
+                "probabilities": {
+                  "0": 1.5577159703749703e-7,
+                  "1": 5.626277301019311e-7,
+                  "2": 0.999999281600673
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 112,
+              "output_tokens": 136
+            }
+          }
+        },
+        {
+          "http_ms": 97.42633699999715,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9435,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9435,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "severity": {
+                "type": "score",
+                "score": 1.9999991258290761,
+                "confidence": 0.999999562914538,
+                "probabilities": {
+                  "0": 1.5577159703749703e-7,
+                  "1": 5.626277301019311e-7,
+                  "2": 0.999999281600673
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 112,
+              "output_tokens": 136
+            }
+          }
+        },
+        {
+          "http_ms": 100.06175099999382,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 54,
+            "memory_mib": 9435,
+            "sm_mhz": 1777
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 57,
+            "memory_mib": 9435,
+            "sm_mhz": 1777
+          },
+          "max_temperature_c": 57,
+          "sampled_peak_memory_mib": 9435,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "severity": {
+                "type": "score",
+                "score": 1.9999991258290761,
+                "confidence": 0.999999562914538,
+                "probabilities": {
+                  "0": 1.5577159703749703e-7,
+                  "1": 5.626277301019311e-7,
+                  "2": 0.999999281600673
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              }
+            },
+            "usage": {
+              "input_tokens": 112,
+              "output_tokens": 136
+            }
+          }
+        }
+      ],
+      "warmup": {
+        "http_ms": 307.79829900000186,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 53,
+          "memory_mib": 9379,
+          "sm_mhz": 1822
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 60,
+          "memory_mib": 9435,
+          "sm_mhz": 1837
+        },
+        "max_temperature_c": 60,
+        "sampled_peak_memory_mib": 9435,
+        "response": {
+          "model": "gemma-4-12b-it-go-system-one",
+          "answers": {
+            "severity": {
+              "type": "score",
+              "score": 1.9999991258290761,
+              "confidence": 0.999999562914538,
+              "probabilities": {
+                "0": 1.5577159703749703e-7,
+                "1": 5.626277301019311e-7,
+                "2": 0.999999281600673
+              },
+              "legend": {
+                "0": "Routine request",
+                "1": "Degraded service",
+                "2": "Total outage"
+              }
+            }
+          },
+          "usage": {
+            "input_tokens": 112,
+            "output_tokens": 136
+          }
+        }
+      },
+      "n": 5,
+      "samples": [
+        97.42633699999715,
+        97.53102000000217,
+        97.5660629999984,
+        99.27224299999943,
+        100.06175099999382
+      ],
+      "min": 97.42633699999715,
+      "median": 97.5660629999984,
+      "max": 100.06175099999382,
+      "p95": 100.06175099999382,
+      "p99": 100.06175099999382
+    },
+    {
+      "label": "Noul + choice + score",
+      "request": {
+        "state": {
+          "ticket": "Production services are down and customers cannot connect."
+        },
+        "questions": {
+          "urgent": {
+            "type": "noul",
+            "instructions": "Does this need urgent handling?"
+          },
+          "route": {
+            "type": "choice",
+            "instructions": "Choose the team.",
+            "criteria": {
+              "technical operations": "Production outages",
+              "billing support": "Invoice questions"
+            }
+          },
+          "severity": {
+            "type": "score",
+            "instructions": "Rate incident severity.",
+            "criteria": [
+              "Routine request",
+              "Degraded service",
+              "Total outage"
+            ]
+          }
+        }
+      },
+      "request_sha256": "c9daf05850f6ad7fb5c049f260077765fd838698c6598a9b634612ddf73ce900",
+      "status": "complete",
+      "trials": [
+        {
+          "http_ms": 130.98921100000007,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9553,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999878595265,
+                "probabilities": {
+                  "billing support": 6.070236704174455e-9,
+                  "technical operations": 0.9999999939297632
+                }
+              },
+              "severity": {
+                "type": "score",
+                "score": 1.9999874067722747,
+                "confidence": 0.9999937033861374,
+                "probabilities": {
+                  "0": 0.000004140961222840458,
+                  "1": 0.000004311305279536916,
+                  "2": 0.9999915477334976
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              },
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999985025281
+              }
+            },
+            "usage": {
+              "input_tokens": 177,
+              "output_tokens": 254
+            }
+          }
+        },
+        {
+          "http_ms": 130.3463860000047,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9553,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999878595265,
+                "probabilities": {
+                  "billing support": 6.070236704174455e-9,
+                  "technical operations": 0.9999999939297632
+                }
+              },
+              "severity": {
+                "type": "score",
+                "score": 1.9999874067722747,
+                "confidence": 0.9999937033861374,
+                "probabilities": {
+                  "0": 0.000004140961222840458,
+                  "1": 0.000004311305279536916,
+                  "2": 0.9999915477334976
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              },
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999985025281
+              }
+            },
+            "usage": {
+              "input_tokens": 177,
+              "output_tokens": 254
+            }
+          }
+        },
+        {
+          "http_ms": 130.388681000004,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9553,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999878595265,
+                "probabilities": {
+                  "billing support": 6.070236704174455e-9,
+                  "technical operations": 0.9999999939297632
+                }
+              },
+              "severity": {
+                "type": "score",
+                "score": 1.9999874067722747,
+                "confidence": 0.9999937033861374,
+                "probabilities": {
+                  "0": 0.000004140961222840458,
+                  "1": 0.000004311305279536916,
+                  "2": 0.9999915477334976
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              },
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999985025281
+              }
+            },
+            "usage": {
+              "input_tokens": 177,
+              "output_tokens": 254
+            }
+          }
+        },
+        {
+          "http_ms": 130.57194000000163,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9553,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999878595265,
+                "probabilities": {
+                  "billing support": 6.070236704174455e-9,
+                  "technical operations": 0.9999999939297632
+                }
+              },
+              "severity": {
+                "type": "score",
+                "score": 1.9999874067722747,
+                "confidence": 0.9999937033861374,
+                "probabilities": {
+                  "0": 0.000004140961222840458,
+                  "1": 0.000004311305279536916,
+                  "2": 0.9999915477334976
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              },
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999985025281
+              }
+            },
+            "usage": {
+              "input_tokens": 177,
+              "output_tokens": 254
+            }
+          }
+        },
+        {
+          "http_ms": 134.23824299999978,
+          "before": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 55,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "after": {
+            "name": "NVIDIA GeForce RTX 3060",
+            "driver": "580.173.02",
+            "temperature": 58,
+            "memory_mib": 9553,
+            "sm_mhz": 1852
+          },
+          "max_temperature_c": 58,
+          "sampled_peak_memory_mib": 9553,
+          "response": {
+            "model": "gemma-4-12b-it-go-system-one",
+            "answers": {
+              "route": {
+                "type": "choice",
+                "choice": "technical operations",
+                "confidence": 0.9999999878595265,
+                "probabilities": {
+                  "billing support": 6.070236704174455e-9,
+                  "technical operations": 0.9999999939297632
+                }
+              },
+              "severity": {
+                "type": "score",
+                "score": 1.9999874067722747,
+                "confidence": 0.9999937033861374,
+                "probabilities": {
+                  "0": 0.000004140961222840458,
+                  "1": 0.000004311305279536916,
+                  "2": 0.9999915477334976
+                },
+                "legend": {
+                  "0": "Routine request",
+                  "1": "Degraded service",
+                  "2": "Total outage"
+                }
+              },
+              "urgent": {
+                "type": "noul",
+                "noul": 0.9999999985025281
+              }
+            },
+            "usage": {
+              "input_tokens": 177,
+              "output_tokens": 254
+            }
+          }
+        }
+      ],
+      "warmup": {
+        "http_ms": 466.28240099999675,
+        "before": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 54,
+          "memory_mib": 9435,
+          "sm_mhz": 1777
+        },
+        "after": {
+          "name": "NVIDIA GeForce RTX 3060",
+          "driver": "580.173.02",
+          "temperature": 61,
+          "memory_mib": 9553,
+          "sm_mhz": 1837
+        },
+        "max_temperature_c": 61,
+        "sampled_peak_memory_mib": 9553,
+        "response": {
+          "model": "gemma-4-12b-it-go-system-one",
+          "answers": {
+            "route": {
+              "type": "choice",
+              "choice": "technical operations",
+              "confidence": 0.9999999878595265,
+              "probabilities": {
+                "billing support": 6.070236704174455e-9,
+                "technical operations": 0.9999999939297632
+              }
+            },
+            "severity": {
+              "type": "score",
+              "score": 1.9999874067722747,
+              "confidence": 0.9999937033861374,
+              "probabilities": {
+                "0": 0.000004140961222840458,
+                "1": 0.000004311305279536916,
+                "2": 0.9999915477334976
+              },
+              "legend": {
+                "0": "Routine request",
+                "1": "Degraded service",
+                "2": "Total outage"
+              }
+            },
+            "urgent": {
+              "type": "noul",
+              "noul": 0.9999999985025281
+            }
+          },
+          "usage": {
+            "input_tokens": 177,
+            "output_tokens": 254
+          }
+        }
+      },
+      "n": 5,
+      "samples": [
+        130.3463860000047,
+        130.388681000004,
+        130.57194000000163,
+        130.98921100000007,
+        134.23824299999978
+      ],
+      "min": 130.3463860000047,
+      "median": 130.57194000000163,
+      "max": 134.23824299999978,
+      "p95": 134.23824299999978,
+      "p99": 134.23824299999978
+    }
+  ],
+  "status": {
+    "backend": "nvidia",
+    "busy": false,
+    "device": "NVIDIA GeForce RTX 3060",
+    "limits": {
+      "candidates_per_field": 255,
+      "contexts": 256,
+      "fields": 32
+    },
+    "model": "gemma-4-12b-it-go-system-one",
+    "object": "decision.status",
+    "resident_bytes": 9173277696
+  }
+}

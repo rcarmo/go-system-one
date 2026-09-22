@@ -1,5 +1,7 @@
 # Kev comparison for Go System One
 
+> Historical validation record: results and implementation descriptions below refer to the recorded revisions. See the [current API documentation](../README.md) and [refreshed benchmarks](../benchmarks/README.md) for the present service.
+
 The comparison uses `jaredpalmer/kev` at commit `90990a5fac2995b9faa3190f7d437e84f2067768`. Kev supplies a useful decision-model and evaluation reference. Its runtime and model contract do not replace Go System One's native Gemma 4 GGUF path.
 
 ## Systems compared

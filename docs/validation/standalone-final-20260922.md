@@ -1,5 +1,7 @@
 # Standalone final-state validation — 22 September 2026
 
+> Historical validation record: results and implementation descriptions below refer to the recorded revisions. See the [current API documentation](../README.md) and [refreshed benchmarks](../benchmarks/README.md) for the present service.
+
 Go System One now builds entirely from first-party source in `rcarmo/go-system-one`; `go-pherence` remains the canonical reference and one-way source origin, not a Go module dependency.
 
 ## Source and dependency boundary

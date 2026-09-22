@@ -5,7 +5,7 @@
 ## Request
 
 ```sh
-curl http://127.0.0.1:8089/v1/systemone \
+curl http://127.0.0.1:8080/v1/systemone \
   -H 'Content-Type: application/json' \
   -d '{
     "state": {"ticket": "Production is down and customers cannot connect."},
@@ -59,6 +59,10 @@ Requests are limited to 32 questions, 255 candidates per question and a 1 MiB bo
 
 The playground continues to use `/v1/decision`. This adapter does not implement TypeSafe's hosted models, authentication, billing, `messages`, `options`, raw-logit diagnostics, `/permute`, `/separate` or batch extensions. A request has one `state`; use `/v1/decision` for its existing independent-context batch interface. Matching these request/answer types does not reproduce Jev's weights, training or calibration.
 
+## Measured request costs
+
+The [TypeSafe workload matrix](benchmarks/README.md#typesafe-question-types) records five warm client HTTP samples per case at `594ba47`: 95.11 ms for Noul, 96.87 ms for Choice, 97.57 ms for Score and 130.57 ms for all three together. Each request evaluates one structured state. These are client HTTP intervals, not the `/v1/decision` handler times in the other charts.
+
 ## Contract and checks
 
 The contract follows TypeSafe's [request][request], [entry][entry], [Noul][noul], [Choice][choice] and [Score][score] documentation, retrieved on 22 September 2026. Some third-party implementations differ: Simple Jev uses nine rating bins for Noul; this adapter follows TypeSafe's documented probability-of-yes semantics and uses two outcomes. Confidence references [`kev/api.py` at the reviewed revision][kev].
@@ -67,6 +71,14 @@ Offline tests cover structured/null entries, fractional scores, Noul endpoints a
 
 ```sh
 go test ./model/gosystemone -run SystemOne -count=1
+```
+
+To run the released-model type check after verifying the [pinned artifacts](artifacts.md):
+
+```sh
+GO_SYSTEM_ONE_MODEL=/path/to/gemma-4-12b-it-UD-Q4_K_XL.gguf \
+GO_SYSTEM_ONE_TOKENIZER_DIR=/path/to/tokenizer \
+go test ./model/gosystemone -run '^TestSystemOneReleasedModelTypes$' -v -count=1
 ```
 
 The opt-in `TestSystemOneReleasedModelTypes` runs a mixed three-question request through the released tokenizer and NVIDIA scorer at serial and 512-row settings. Both passed; its saturated fixture had maximum score movement of about `0.00000681`. This checks types, distributions and execution, not task accuracy or a new numerical tolerance. Existing pinned llama.cpp decision and multi-field gates also pass unchanged.

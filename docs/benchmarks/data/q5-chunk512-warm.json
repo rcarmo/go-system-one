@@ -1,0 +1,6718 @@
+{
+  "revision": "774c5da5c8cf8c833102137d21062b79505c4929",
+  "binary_sha256": "b73f6923fb7ff5d1f67ea600abacb198711596d736108234c68bd2ae4ce4497b",
+  "model_sha256": "90fd944d227e9d9b68e7e2c7d5b57b79d4c66ed521b0919fbbd932cf834f6f8e",
+  "device": "NVIDIA GeForce RTX 3060 12 GB",
+  "driver": "580.173.02",
+  "status": {
+    "backend": "nvidia",
+    "busy": false,
+    "device": "NVIDIA GeForce RTX 3060",
+    "limits": {
+      "candidates_per_field": 255,
+      "contexts": 256,
+      "fields": 32
+    },
+    "model": "gemma-4-12b-it-go-system-one",
+    "object": "decision.status",
+    "resident_bytes": 9173277696
+  },
+  "method": "One warm-up then 100 uninterrupted warm HTTP requests after cooling to <=55C; 83C guard; handler samples exclude loading.",
+  "request": {
+    "model": "gemma-4-12b-it-go-system-one",
+    "instructions": "Answer from the context.",
+    "schema": {
+      "urgent": {
+        "type": "boolean",
+        "description": "Does this need urgent handling?"
+      }
+    },
+    "contexts": [
+      "The production service is down for every customer."
+    ],
+    "mode": "tree",
+    "tree_max": 128,
+    "cache_prompt": true
+  },
+  "request_sha256": "c96cb1c277e2c2dfe3279a5c79ea4b73c304a3b3de49920742c5dcabc0df29be",
+  "warmup": {
+    "handler_ms": 217.201602,
+    "wall_ms": 235.50845400000003,
+    "before": {
+      "temperature": 55,
+      "memory_mib": 9306,
+      "sm_mhz": 1777
+    },
+    "after": {
+      "temperature": 60,
+      "memory_mib": 9372,
+      "sm_mhz": 1777
+    },
+    "max_temperature_c": 60,
+    "sampled_peak_memory_mib": 9372,
+    "response": {
+      "object": "decision",
+      "model": "gemma-4-12b-it-go-system-one",
+      "created": 1790115629,
+      "results": [
+        {
+          "decision": {
+            "urgent": true
+          },
+          "fields": {
+            "urgent": {
+              "value": true,
+              "probability": 0.9999999999713995,
+              "candidates": [
+                {
+                  "value": true,
+                  "probability": 0.9999999999713995,
+                  "selected": true
+                },
+                {
+                  "value": false,
+                  "probability": 2.860040353978149e-11,
+                  "selected": false
+                }
+              ],
+              "scored_nodes": 1,
+              "tree": true
+            }
+          },
+          "usage": {
+            "context_tokens": 20,
+            "scored_rows": 4
+          }
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 77,
+        "cached_tokens": 57,
+        "context_tokens": 20,
+        "scored_rows": 4
+      },
+      "timings": {
+        "prefill_ms": 0.05607,
+        "scoring_ms": 216.536775,
+        "total_ms": 217.201602,
+        "rounds": 1,
+        "per_decision_ms": 217.201602
+      }
+    }
+  },
+  "n": 100,
+  "min": 72.429229,
+  "median": 72.80456699999999,
+  "p95": 73.487742,
+  "p99": 73.646578,
+  "max": 73.654949,
+  "samples": [
+    72.429229,
+    72.435529,
+    72.435694,
+    72.457944,
+    72.467689,
+    72.470602,
+    72.48246,
+    72.484582,
+    72.491315,
+    72.493851,
+    72.503243,
+    72.506394,
+    72.512242,
+    72.515647,
+    72.51695,
+    72.52,
+    72.528434,
+    72.538942,
+    72.539735,
+    72.540286,
+    72.54129,
+    72.575462,
+    72.600237,
+    72.663945,
+    72.668201,
+    72.683513,
+    72.688735,
+    72.708261,
+    72.721116,
+    72.722173,
+    72.727524,
+    72.737188,
+    72.742231,
+    72.744737,
+    72.751083,
+    72.751097,
+    72.753508,
+    72.762318,
+    72.764371,
+    72.768855,
+    72.775379,
+    72.780555,
+    72.783902,
+    72.785333,
+    72.787241,
+    72.791143,
+    72.796448,
+    72.798622,
+    72.801649,
+    72.804386,
+    72.804748,
+    72.808933,
+    72.809841,
+    72.811059,
+    72.820347,
+    72.83334,
+    72.838345,
+    72.842964,
+    72.857572,
+    72.864,
+    72.86404,
+    72.865328,
+    72.86704,
+    72.879315,
+    72.89095,
+    72.896423,
+    72.896517,
+    72.909584,
+    72.930919,
+    72.939703,
+    72.954918,
+    72.988734,
+    72.99267,
+    73.014647,
+    73.033187,
+    73.052268,
+    73.080889,
+    73.108091,
+    73.114394,
+    73.119887,
+    73.122278,
+    73.140932,
+    73.187574,
+    73.230863,
+    73.322416,
+    73.340144,
+    73.345247,
+    73.351005,
+    73.356404,
+    73.418309,
+    73.423408,
+    73.433151,
+    73.44956,
+    73.473889,
+    73.487742,
+    73.545269,
+    73.550807,
+    73.62996,
+    73.646578,
+    73.654949
+  ],
+  "decisions": [
+    {
+      "urgent": true
+    }
+  ],
+  "trials": [
+    {
+      "handler_ms": 72.663945,
+      "wall_ms": 90.60751700000003,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1777
+      },
+      "after": {
+        "temperature": 58,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 60,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115629,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.058833,
+          "scoring_ms": 72.016034,
+          "total_ms": 72.663945,
+          "rounds": 1,
+          "per_decision_ms": 72.663945
+        }
+      }
+    },
+    {
+      "handler_ms": 72.804748,
+      "wall_ms": 90.82482300000004,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 60,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115629,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.063152,
+          "scoring_ms": 71.867627,
+          "total_ms": 72.804748,
+          "rounds": 1,
+          "per_decision_ms": 72.804748
+        }
+      }
+    },
+    {
+      "handler_ms": 72.467689,
+      "wall_ms": 89.82841599999995,
+      "before": {
+        "temperature": 59,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 59,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 59,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115629,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054621,
+          "scoring_ms": 71.807307,
+          "total_ms": 72.467689,
+          "rounds": 1,
+          "per_decision_ms": 72.467689
+        }
+      }
+    },
+    {
+      "handler_ms": 72.540286,
+      "wall_ms": 90.29110600000001,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115629,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.057966,
+          "scoring_ms": 71.900713,
+          "total_ms": 72.540286,
+          "rounds": 1,
+          "per_decision_ms": 72.540286
+        }
+      }
+    },
+    {
+      "handler_ms": 72.503243,
+      "wall_ms": 92.85873100000003,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115629,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053339,
+          "scoring_ms": 71.861866,
+          "total_ms": 72.503243,
+          "rounds": 1,
+          "per_decision_ms": 72.503243
+        }
+      }
+    },
+    {
+      "handler_ms": 72.470602,
+      "wall_ms": 89.97957299999996,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.05454,
+          "scoring_ms": 71.834446,
+          "total_ms": 72.470602,
+          "rounds": 1,
+          "per_decision_ms": 72.470602
+        }
+      }
+    },
+    {
+      "handler_ms": 72.48246,
+      "wall_ms": 90.56175699999994,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051821,
+          "scoring_ms": 71.84793,
+          "total_ms": 72.48246,
+          "rounds": 1,
+          "per_decision_ms": 72.48246
+        }
+      }
+    },
+    {
+      "handler_ms": 72.809841,
+      "wall_ms": 90.17733700000008,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059358,
+          "scoring_ms": 71.887374,
+          "total_ms": 72.809841,
+          "rounds": 1,
+          "per_decision_ms": 72.809841
+        }
+      }
+    },
+    {
+      "handler_ms": 72.600237,
+      "wall_ms": 90.95225699999992,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053101,
+          "scoring_ms": 71.952905,
+          "total_ms": 72.600237,
+          "rounds": 1,
+          "per_decision_ms": 72.600237
+        }
+      }
+    },
+    {
+      "handler_ms": 72.668201,
+      "wall_ms": 89.92363599999999,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.065189,
+          "scoring_ms": 72.025221,
+          "total_ms": 72.668201,
+          "rounds": 1,
+          "per_decision_ms": 72.668201
+        }
+      }
+    },
+    {
+      "handler_ms": 72.491315,
+      "wall_ms": 90.39312100000006,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059422,
+          "scoring_ms": 71.870794,
+          "total_ms": 72.491315,
+          "rounds": 1,
+          "per_decision_ms": 72.491315
+        }
+      }
+    },
+    {
+      "handler_ms": 72.879315,
+      "wall_ms": 90.31495500000005,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.089191,
+          "scoring_ms": 71.920963,
+          "total_ms": 72.879315,
+          "rounds": 1,
+          "per_decision_ms": 72.879315
+        }
+      }
+    },
+    {
+      "handler_ms": 72.512242,
+      "wall_ms": 90.80735100000015,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 60,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.057104,
+          "scoring_ms": 71.84844,
+          "total_ms": 72.512242,
+          "rounds": 1,
+          "per_decision_ms": 72.512242
+        }
+      }
+    },
+    {
+      "handler_ms": 72.484582,
+      "wall_ms": 90.26626099999999,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 60,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051504,
+          "scoring_ms": 71.860333,
+          "total_ms": 72.484582,
+          "rounds": 1,
+          "per_decision_ms": 72.484582
+        }
+      }
+    },
+    {
+      "handler_ms": 72.538942,
+      "wall_ms": 90.71218099999987,
+      "before": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 60,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 60,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115630,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.050838,
+          "scoring_ms": 71.915345,
+          "total_ms": 72.538942,
+          "rounds": 1,
+          "per_decision_ms": 72.538942
+        }
+      }
+    },
+    {
+      "handler_ms": 73.187574,
+      "wall_ms": 90.83115700000008,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.061437,
+          "scoring_ms": 72.010575,
+          "total_ms": 73.187574,
+          "rounds": 1,
+          "per_decision_ms": 73.187574
+        }
+      }
+    },
+    {
+      "handler_ms": 72.539735,
+      "wall_ms": 90.64964699999996,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052439,
+          "scoring_ms": 71.904998,
+          "total_ms": 72.539735,
+          "rounds": 1,
+          "per_decision_ms": 72.539735
+        }
+      }
+    },
+    {
+      "handler_ms": 72.528434,
+      "wall_ms": 89.90060500000027,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051564,
+          "scoring_ms": 71.886491,
+          "total_ms": 72.528434,
+          "rounds": 1,
+          "per_decision_ms": 72.528434
+        }
+      }
+    },
+    {
+      "handler_ms": 72.54129,
+      "wall_ms": 90.88637699999981,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051911,
+          "scoring_ms": 71.898769,
+          "total_ms": 72.54129,
+          "rounds": 1,
+          "per_decision_ms": 72.54129
+        }
+      }
+    },
+    {
+      "handler_ms": 72.89095,
+      "wall_ms": 90.5352899999998,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.084906,
+          "scoring_ms": 72.09808,
+          "total_ms": 72.89095,
+          "rounds": 1,
+          "per_decision_ms": 72.89095
+        }
+      }
+    },
+    {
+      "handler_ms": 72.457944,
+      "wall_ms": 91.49261999999999,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.050642,
+          "scoring_ms": 71.823324,
+          "total_ms": 72.457944,
+          "rounds": 1,
+          "per_decision_ms": 72.457944
+        }
+      }
+    },
+    {
+      "handler_ms": 72.435529,
+      "wall_ms": 90.179979,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053588,
+          "scoring_ms": 71.794204,
+          "total_ms": 72.435529,
+          "rounds": 1,
+          "per_decision_ms": 72.435529
+        }
+      }
+    },
+    {
+      "handler_ms": 72.506394,
+      "wall_ms": 90.01242699999966,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059107,
+          "scoring_ms": 71.882232,
+          "total_ms": 72.506394,
+          "rounds": 1,
+          "per_decision_ms": 72.506394
+        }
+      }
+    },
+    {
+      "handler_ms": 72.51695,
+      "wall_ms": 89.75385199999982,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115631,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052154,
+          "scoring_ms": 71.880468,
+          "total_ms": 72.51695,
+          "rounds": 1,
+          "per_decision_ms": 72.51695
+        }
+      }
+    },
+    {
+      "handler_ms": 72.737188,
+      "wall_ms": 89.94927300000018,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052025,
+          "scoring_ms": 71.793835,
+          "total_ms": 72.737188,
+          "rounds": 1,
+          "per_decision_ms": 72.737188
+        }
+      }
+    },
+    {
+      "handler_ms": 72.435694,
+      "wall_ms": 90.133284,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053445,
+          "scoring_ms": 71.828451,
+          "total_ms": 72.435694,
+          "rounds": 1,
+          "per_decision_ms": 72.435694
+        }
+      }
+    },
+    {
+      "handler_ms": 72.575462,
+      "wall_ms": 90.23692099999971,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052411,
+          "scoring_ms": 71.971196,
+          "total_ms": 72.575462,
+          "rounds": 1,
+          "per_decision_ms": 72.575462
+        }
+      }
+    },
+    {
+      "handler_ms": 73.423408,
+      "wall_ms": 93.56185099999993,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.08822,
+          "scoring_ms": 72.136738,
+          "total_ms": 73.423408,
+          "rounds": 1,
+          "per_decision_ms": 73.423408
+        }
+      }
+    },
+    {
+      "handler_ms": 72.515647,
+      "wall_ms": 89.66895699999986,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051829,
+          "scoring_ms": 71.885154,
+          "total_ms": 72.515647,
+          "rounds": 1,
+          "per_decision_ms": 72.515647
+        }
+      }
+    },
+    {
+      "handler_ms": 72.429229,
+      "wall_ms": 90.14567799999986,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051554,
+          "scoring_ms": 71.795605,
+          "total_ms": 72.429229,
+          "rounds": 1,
+          "per_decision_ms": 72.429229
+        }
+      }
+    },
+    {
+      "handler_ms": 72.52,
+      "wall_ms": 90.18938099999968,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059985,
+          "scoring_ms": 71.894205,
+          "total_ms": 72.52,
+          "rounds": 1,
+          "per_decision_ms": 72.52
+        }
+      }
+    },
+    {
+      "handler_ms": 73.114394,
+      "wall_ms": 91.02109199999995,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054169,
+          "scoring_ms": 71.931112,
+          "total_ms": 73.114394,
+          "rounds": 1,
+          "per_decision_ms": 73.114394
+        }
+      }
+    },
+    {
+      "handler_ms": 72.493851,
+      "wall_ms": 90.45974300000034,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115632,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.068799,
+          "scoring_ms": 71.83083,
+          "total_ms": 72.493851,
+          "rounds": 1,
+          "per_decision_ms": 72.493851
+        }
+      }
+    },
+    {
+      "handler_ms": 72.865328,
+      "wall_ms": 90.33169100000032,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1845
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052831,
+          "scoring_ms": 72.222191,
+          "total_ms": 72.865328,
+          "rounds": 1,
+          "per_decision_ms": 72.865328
+        }
+      }
+    },
+    {
+      "handler_ms": 72.99267,
+      "wall_ms": 91.58890199999996,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052582,
+          "scoring_ms": 72.36499,
+          "total_ms": 72.99267,
+          "rounds": 1,
+          "per_decision_ms": 72.99267
+        }
+      }
+    },
+    {
+      "handler_ms": 73.345247,
+      "wall_ms": 92.4447199999995,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.086823,
+          "scoring_ms": 72.336685,
+          "total_ms": 73.345247,
+          "rounds": 1,
+          "per_decision_ms": 73.345247
+        }
+      }
+    },
+    {
+      "handler_ms": 72.896517,
+      "wall_ms": 91.05132200000025,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054339,
+          "scoring_ms": 72.260516,
+          "total_ms": 72.896517,
+          "rounds": 1,
+          "per_decision_ms": 72.896517
+        }
+      }
+    },
+    {
+      "handler_ms": 73.080889,
+      "wall_ms": 94.88523900000018,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.060056,
+          "scoring_ms": 72.369312,
+          "total_ms": 73.080889,
+          "rounds": 1,
+          "per_decision_ms": 73.080889
+        }
+      }
+    },
+    {
+      "handler_ms": 72.742231,
+      "wall_ms": 90.93484200000057,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 61,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052996,
+          "scoring_ms": 72.080738,
+          "total_ms": 72.742231,
+          "rounds": 1,
+          "per_decision_ms": 72.742231
+        }
+      }
+    },
+    {
+      "handler_ms": 73.230863,
+      "wall_ms": 91.37171300000045,
+      "before": {
+        "temperature": 61,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 62,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.083771,
+          "scoring_ms": 72.214592,
+          "total_ms": 73.230863,
+          "rounds": 1,
+          "per_decision_ms": 73.230863
+        }
+      }
+    },
+    {
+      "handler_ms": 73.119887,
+      "wall_ms": 91.59104000000025,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.075046,
+          "scoring_ms": 72.337689,
+          "total_ms": 73.119887,
+          "rounds": 1,
+          "per_decision_ms": 73.119887
+        }
+      }
+    },
+    {
+      "handler_ms": 72.930919,
+      "wall_ms": 91.62056600000051,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115633,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054226,
+          "scoring_ms": 72.302439,
+          "total_ms": 72.930919,
+          "rounds": 1,
+          "per_decision_ms": 72.930919
+        }
+      }
+    },
+    {
+      "handler_ms": 72.857572,
+      "wall_ms": 91.167281,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052128,
+          "scoring_ms": 72.184388,
+          "total_ms": 72.857572,
+          "rounds": 1,
+          "per_decision_ms": 72.857572
+        }
+      }
+    },
+    {
+      "handler_ms": 72.801649,
+      "wall_ms": 90.76750699999957,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054375,
+          "scoring_ms": 72.147112,
+          "total_ms": 72.801649,
+          "rounds": 1,
+          "per_decision_ms": 72.801649
+        }
+      }
+    },
+    {
+      "handler_ms": 72.939703,
+      "wall_ms": 90.90644800000064,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052029,
+          "scoring_ms": 72.27825,
+          "total_ms": 72.939703,
+          "rounds": 1,
+          "per_decision_ms": 72.939703
+        }
+      }
+    },
+    {
+      "handler_ms": 72.768855,
+      "wall_ms": 91.09188499999982,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053725,
+          "scoring_ms": 72.140581,
+          "total_ms": 72.768855,
+          "rounds": 1,
+          "per_decision_ms": 72.768855
+        }
+      }
+    },
+    {
+      "handler_ms": 73.646578,
+      "wall_ms": 94.80510500000037,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.088845,
+          "scoring_ms": 72.368698,
+          "total_ms": 73.646578,
+          "rounds": 1,
+          "per_decision_ms": 73.646578
+        }
+      }
+    },
+    {
+      "handler_ms": 72.683513,
+      "wall_ms": 90.47152499999993,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.05664,
+          "scoring_ms": 72.036121,
+          "total_ms": 72.683513,
+          "rounds": 1,
+          "per_decision_ms": 72.683513
+        }
+      }
+    },
+    {
+      "handler_ms": 72.780555,
+      "wall_ms": 90.18706699999984,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052659,
+          "scoring_ms": 72.149586,
+          "total_ms": 72.780555,
+          "rounds": 1,
+          "per_decision_ms": 72.780555
+        }
+      }
+    },
+    {
+      "handler_ms": 72.798622,
+      "wall_ms": 90.73199400000067,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.055958,
+          "scoring_ms": 72.176911,
+          "total_ms": 72.798622,
+          "rounds": 1,
+          "per_decision_ms": 72.798622
+        }
+      }
+    },
+    {
+      "handler_ms": 73.122278,
+      "wall_ms": 91.88841400000001,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.080646,
+          "scoring_ms": 72.219273,
+          "total_ms": 73.122278,
+          "rounds": 1,
+          "per_decision_ms": 73.122278
+        }
+      }
+    },
+    {
+      "handler_ms": 72.775379,
+      "wall_ms": 91.08703699999933,
+      "before": {
+        "temperature": 62,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115634,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.055602,
+          "scoring_ms": 72.137467,
+          "total_ms": 72.775379,
+          "rounds": 1,
+          "per_decision_ms": 72.775379
+        }
+      }
+    },
+    {
+      "handler_ms": 72.86704,
+      "wall_ms": 90.55389500000001,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.055586,
+          "scoring_ms": 72.218153,
+          "total_ms": 72.86704,
+          "rounds": 1,
+          "per_decision_ms": 72.86704
+        }
+      }
+    },
+    {
+      "handler_ms": 72.811059,
+      "wall_ms": 90.6917370000001,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051305,
+          "scoring_ms": 72.136347,
+          "total_ms": 72.811059,
+          "rounds": 1,
+          "per_decision_ms": 72.811059
+        }
+      }
+    },
+    {
+      "handler_ms": 73.418309,
+      "wall_ms": 90.90040300000055,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054321,
+          "scoring_ms": 72.155032,
+          "total_ms": 73.418309,
+          "rounds": 1,
+          "per_decision_ms": 73.418309
+        }
+      }
+    },
+    {
+      "handler_ms": 72.721116,
+      "wall_ms": 90.1164060000001,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.055866,
+          "scoring_ms": 72.072865,
+          "total_ms": 72.721116,
+          "rounds": 1,
+          "per_decision_ms": 72.721116
+        }
+      }
+    },
+    {
+      "handler_ms": 73.140932,
+      "wall_ms": 90.47095799999988,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.075087,
+          "scoring_ms": 72.193718,
+          "total_ms": 73.140932,
+          "rounds": 1,
+          "per_decision_ms": 73.140932
+        }
+      }
+    },
+    {
+      "handler_ms": 72.764371,
+      "wall_ms": 90.27443099999982,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052285,
+          "scoring_ms": 72.134004,
+          "total_ms": 72.764371,
+          "rounds": 1,
+          "per_decision_ms": 72.764371
+        }
+      }
+    },
+    {
+      "handler_ms": 72.744737,
+      "wall_ms": 91.4248950000001,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052226,
+          "scoring_ms": 72.112736,
+          "total_ms": 72.744737,
+          "rounds": 1,
+          "per_decision_ms": 72.744737
+        }
+      }
+    },
+    {
+      "handler_ms": 72.842964,
+      "wall_ms": 90.94370799999979,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051056,
+          "scoring_ms": 72.228108,
+          "total_ms": 72.842964,
+          "rounds": 1,
+          "per_decision_ms": 72.842964
+        }
+      }
+    },
+    {
+      "handler_ms": 73.340144,
+      "wall_ms": 91.41954500000065,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115635,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.085392,
+          "scoring_ms": 72.298997,
+          "total_ms": 73.340144,
+          "rounds": 1,
+          "per_decision_ms": 73.340144
+        }
+      }
+    },
+    {
+      "handler_ms": 72.988734,
+      "wall_ms": 90.33676399999968,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.072139,
+          "scoring_ms": 72.156769,
+          "total_ms": 72.988734,
+          "rounds": 1,
+          "per_decision_ms": 72.988734
+        }
+      }
+    },
+    {
+      "handler_ms": 72.909584,
+      "wall_ms": 90.69378500000039,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052275,
+          "scoring_ms": 72.281484,
+          "total_ms": 72.909584,
+          "rounds": 1,
+          "per_decision_ms": 72.909584
+        }
+      }
+    },
+    {
+      "handler_ms": 72.708261,
+      "wall_ms": 89.83813400000054,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 63,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059106,
+          "scoring_ms": 72.051565,
+          "total_ms": 72.708261,
+          "rounds": 1,
+          "per_decision_ms": 72.708261
+        }
+      }
+    },
+    {
+      "handler_ms": 72.688735,
+      "wall_ms": 90.87516199999936,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.05219,
+          "scoring_ms": 72.078938,
+          "total_ms": 72.688735,
+          "rounds": 1,
+          "per_decision_ms": 72.688735
+        }
+      }
+    },
+    {
+      "handler_ms": 72.762318,
+      "wall_ms": 90.752297,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053991,
+          "scoring_ms": 72.125993,
+          "total_ms": 72.762318,
+          "rounds": 1,
+          "per_decision_ms": 72.762318
+        }
+      }
+    },
+    {
+      "handler_ms": 73.550807,
+      "wall_ms": 91.39221799999996,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.088039,
+          "scoring_ms": 72.342083,
+          "total_ms": 73.550807,
+          "rounds": 1,
+          "per_decision_ms": 73.550807
+        }
+      }
+    },
+    {
+      "handler_ms": 72.753508,
+      "wall_ms": 90.29880599999979,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.050979,
+          "scoring_ms": 72.137772,
+          "total_ms": 72.753508,
+          "rounds": 1,
+          "per_decision_ms": 72.753508
+        }
+      }
+    },
+    {
+      "handler_ms": 73.033187,
+      "wall_ms": 90.84875599999941,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.07717,
+          "scoring_ms": 72.311161,
+          "total_ms": 73.033187,
+          "rounds": 1,
+          "per_decision_ms": 73.033187
+        }
+      }
+    },
+    {
+      "handler_ms": 72.864,
+      "wall_ms": 90.88847299999998,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115636,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053409,
+          "scoring_ms": 72.224255,
+          "total_ms": 72.864,
+          "rounds": 1,
+          "per_decision_ms": 72.864
+        }
+      }
+    },
+    {
+      "handler_ms": 72.791143,
+      "wall_ms": 90.46249399999942,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059462,
+          "scoring_ms": 72.146384,
+          "total_ms": 72.791143,
+          "rounds": 1,
+          "per_decision_ms": 72.791143
+        }
+      }
+    },
+    {
+      "handler_ms": 73.473889,
+      "wall_ms": 90.70978900000046,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.084807,
+          "scoring_ms": 72.275813,
+          "total_ms": 73.473889,
+          "rounds": 1,
+          "per_decision_ms": 73.473889
+        }
+      }
+    },
+    {
+      "handler_ms": 73.433151,
+      "wall_ms": 91.26649600000019,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.082467,
+          "scoring_ms": 72.220827,
+          "total_ms": 73.433151,
+          "rounds": 1,
+          "per_decision_ms": 73.433151
+        }
+      }
+    },
+    {
+      "handler_ms": 72.751097,
+      "wall_ms": 90.48722500000076,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051635,
+          "scoring_ms": 72.140798,
+          "total_ms": 72.751097,
+          "rounds": 1,
+          "per_decision_ms": 72.751097
+        }
+      }
+    },
+    {
+      "handler_ms": 72.804386,
+      "wall_ms": 91.30525300000045,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.05296,
+          "scoring_ms": 72.112476,
+          "total_ms": 72.804386,
+          "rounds": 1,
+          "per_decision_ms": 72.804386
+        }
+      }
+    },
+    {
+      "handler_ms": 73.654949,
+      "wall_ms": 91.78352899999845,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.099152,
+          "scoring_ms": 72.36086,
+          "total_ms": 73.654949,
+          "rounds": 1,
+          "per_decision_ms": 73.654949
+        }
+      }
+    },
+    {
+      "handler_ms": 72.727524,
+      "wall_ms": 90.42623599999934,
+      "before": {
+        "temperature": 63,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.050141,
+          "scoring_ms": 72.120868,
+          "total_ms": 72.727524,
+          "rounds": 1,
+          "per_decision_ms": 72.727524
+        }
+      }
+    },
+    {
+      "handler_ms": 73.052268,
+      "wall_ms": 90.97979899999882,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 64,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052596,
+          "scoring_ms": 72.183875,
+          "total_ms": 73.052268,
+          "rounds": 1,
+          "per_decision_ms": 73.052268
+        }
+      }
+    },
+    {
+      "handler_ms": 72.751083,
+      "wall_ms": 90.47411199999988,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115637,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052583,
+          "scoring_ms": 72.116443,
+          "total_ms": 72.751083,
+          "rounds": 1,
+          "per_decision_ms": 72.751083
+        }
+      }
+    },
+    {
+      "handler_ms": 72.796448,
+      "wall_ms": 89.98649099999966,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052863,
+          "scoring_ms": 72.159631,
+          "total_ms": 72.796448,
+          "rounds": 1,
+          "per_decision_ms": 72.796448
+        }
+      }
+    },
+    {
+      "handler_ms": 72.783902,
+      "wall_ms": 90.65514599999915,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051057,
+          "scoring_ms": 72.169843,
+          "total_ms": 72.783902,
+          "rounds": 1,
+          "per_decision_ms": 72.783902
+        }
+      }
+    },
+    {
+      "handler_ms": 72.722173,
+      "wall_ms": 89.9544249999999,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.059572,
+          "scoring_ms": 72.107553,
+          "total_ms": 72.722173,
+          "rounds": 1,
+          "per_decision_ms": 72.722173
+        }
+      }
+    },
+    {
+      "handler_ms": 72.785333,
+      "wall_ms": 90.69343200000003,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054179,
+          "scoring_ms": 72.171252,
+          "total_ms": 72.785333,
+          "rounds": 1,
+          "per_decision_ms": 72.785333
+        }
+      }
+    },
+    {
+      "handler_ms": 73.545269,
+      "wall_ms": 91.79682499999944,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.091023,
+          "scoring_ms": 72.330715,
+          "total_ms": 73.545269,
+          "rounds": 1,
+          "per_decision_ms": 73.545269
+        }
+      }
+    },
+    {
+      "handler_ms": 72.954918,
+      "wall_ms": 91.38394700000026,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.056832,
+          "scoring_ms": 72.31112,
+          "total_ms": 72.954918,
+          "rounds": 1,
+          "per_decision_ms": 72.954918
+        }
+      }
+    },
+    {
+      "handler_ms": 72.787241,
+      "wall_ms": 91.12389599999915,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.054682,
+          "scoring_ms": 72.148904,
+          "total_ms": 72.787241,
+          "rounds": 1,
+          "per_decision_ms": 72.787241
+        }
+      }
+    },
+    {
+      "handler_ms": 72.808933,
+      "wall_ms": 90.73597899999913,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053405,
+          "scoring_ms": 72.186245,
+          "total_ms": 72.808933,
+          "rounds": 1,
+          "per_decision_ms": 72.808933
+        }
+      }
+    },
+    {
+      "handler_ms": 73.014647,
+      "wall_ms": 91.06710799999928,
+      "before": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.072348,
+          "scoring_ms": 72.290807,
+          "total_ms": 73.014647,
+          "rounds": 1,
+          "per_decision_ms": 73.014647
+        }
+      }
+    },
+    {
+      "handler_ms": 73.108091,
+      "wall_ms": 93.29602899999918,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 64,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115638,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.074833,
+          "scoring_ms": 72.35466,
+          "total_ms": 73.108091,
+          "rounds": 1,
+          "per_decision_ms": 73.108091
+        }
+      }
+    },
+    {
+      "handler_ms": 72.83334,
+      "wall_ms": 91.4690759999994,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.084811,
+          "scoring_ms": 72.15597,
+          "total_ms": 72.83334,
+          "rounds": 1,
+          "per_decision_ms": 72.83334
+        }
+      }
+    },
+    {
+      "handler_ms": 73.351005,
+      "wall_ms": 91.03405200000088,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.089326,
+          "scoring_ms": 72.360432,
+          "total_ms": 73.351005,
+          "rounds": 1,
+          "per_decision_ms": 73.351005
+        }
+      }
+    },
+    {
+      "handler_ms": 72.820347,
+      "wall_ms": 92.0249189999995,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 67,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 67,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.052822,
+          "scoring_ms": 72.175752,
+          "total_ms": 72.820347,
+          "rounds": 1,
+          "per_decision_ms": 72.820347
+        }
+      }
+    },
+    {
+      "handler_ms": 73.356404,
+      "wall_ms": 91.13661900000079,
+      "before": {
+        "temperature": 67,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 67,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.077861,
+          "scoring_ms": 72.399886,
+          "total_ms": 73.356404,
+          "rounds": 1,
+          "per_decision_ms": 73.356404
+        }
+      }
+    },
+    {
+      "handler_ms": 73.487742,
+      "wall_ms": 91.87434199999916,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 67,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 67,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.083316,
+          "scoring_ms": 72.275556,
+          "total_ms": 73.487742,
+          "rounds": 1,
+          "per_decision_ms": 73.487742
+        }
+      }
+    },
+    {
+      "handler_ms": 72.86404,
+      "wall_ms": 90.52242800000022,
+      "before": {
+        "temperature": 67,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 67,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.051218,
+          "scoring_ms": 72.237515,
+          "total_ms": 72.86404,
+          "rounds": 1,
+          "per_decision_ms": 72.86404
+        }
+      }
+    },
+    {
+      "handler_ms": 73.44956,
+      "wall_ms": 90.87955599999987,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.081525,
+          "scoring_ms": 72.40334,
+          "total_ms": 73.44956,
+          "rounds": 1,
+          "per_decision_ms": 73.44956
+        }
+      }
+    },
+    {
+      "handler_ms": 73.62996,
+      "wall_ms": 92.82907100000011,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.083714,
+          "scoring_ms": 72.415527,
+          "total_ms": 73.62996,
+          "rounds": 1,
+          "per_decision_ms": 73.62996
+        }
+      }
+    },
+    {
+      "handler_ms": 72.838345,
+      "wall_ms": 92.79124300000149,
+      "before": {
+        "temperature": 66,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 66,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115639,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.066624,
+          "scoring_ms": 72.18199,
+          "total_ms": 72.838345,
+          "rounds": 1,
+          "per_decision_ms": 72.838345
+        }
+      }
+    },
+    {
+      "handler_ms": 73.322416,
+      "wall_ms": 90.53548199999932,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115640,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.079549,
+          "scoring_ms": 72.296083,
+          "total_ms": 73.322416,
+          "rounds": 1,
+          "per_decision_ms": 73.322416
+        }
+      }
+    },
+    {
+      "handler_ms": 72.896423,
+      "wall_ms": 90.75382399999944,
+      "before": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "after": {
+        "temperature": 65,
+        "memory_mib": 9372,
+        "sm_mhz": 1830
+      },
+      "max_temperature_c": 65,
+      "sampled_peak_memory_mib": 9372,
+      "response": {
+        "object": "decision",
+        "model": "gemma-4-12b-it-go-system-one",
+        "created": 1790115640,
+        "results": [
+          {
+            "decision": {
+              "urgent": true
+            },
+            "fields": {
+              "urgent": {
+                "value": true,
+                "probability": 0.9999999999713995,
+                "candidates": [
+                  {
+                    "value": true,
+                    "probability": 0.9999999999713995,
+                    "selected": true
+                  },
+                  {
+                    "value": false,
+                    "probability": 2.860040353978149e-11,
+                    "selected": false
+                  }
+                ],
+                "scored_nodes": 1,
+                "tree": true
+              }
+            },
+            "usage": {
+              "context_tokens": 20,
+              "scored_rows": 4
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 77,
+          "cached_tokens": 57,
+          "context_tokens": 20,
+          "scored_rows": 4
+        },
+        "timings": {
+          "prefill_ms": 0.053411,
+          "scoring_ms": 72.260125,
+          "total_ms": 72.896423,
+          "rounds": 1,
+          "per_decision_ms": 72.896423
+        }
+      }
+    }
+  ]
+}

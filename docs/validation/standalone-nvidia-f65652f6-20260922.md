@@ -1,5 +1,7 @@
 # Standalone NVIDIA validation — 22 September 2026
 
+> Historical validation record: results and implementation descriptions below refer to the recorded revisions. See the [current API documentation](../README.md) and [refreshed benchmarks](../benchmarks/README.md) for the present service.
+
 The standalone repository reproduced the accelerated `go-pherence@f65652f6d9d8aa45c2f5eae68603e995f27b5b75` decision path with a warm median of 81.69 ms over 100 HTTP requests.
 
 ## Pins and host

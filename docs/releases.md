@@ -35,7 +35,7 @@ Verify a local build with:
 
 ## GitHub release
 
-Push a signed or annotated `v*` tag after `main` CI and the required released-model hardware gate pass:
+Use an approved signing key to push a signed `v*` tag after `main` CI and the required released-model hardware gates pass. The workflow itself triggers on any `v*` tag; it does not enforce signing or run GPU tests. Without an approved key, use the build-only dry run.
 
 ```sh
 git tag -s v1.0.0 -m 'Go System One v1.0.0'
@@ -58,7 +58,7 @@ Before tagging:
 
 1. `main` is clean and synchronized with `origin/main`.
 2. `make check`, `make race` and `make cross-build` pass.
-3. `make hardware-check MODEL=... TOKENIZER_DIR=...` passes on authorized NVIDIA hardware.
+3. `make hardware-check MODEL=... TOKENIZER_DIR=...` passes on authorised NVIDIA hardware. Also run `TestSystemOneReleasedModelTypes` with `GO_SYSTEM_ONE_MODEL` and `GO_SYSTEM_ONE_TOKENIZER_DIR` set, as documented in the [TypeSafe API checks](systemone-api.md#contract-and-checks); the Make target does not include that test.
 4. Performance claims have a committed validation record and bounded raw samples.
 5. `make package VERSION=...` and checksum/archive checks pass.
-6. The accepted canonical [`go-pherence`](https://github.com/rcarmo/go-pherence) source pin in `scripts/upstream.env` matches the relevant implementation/evaluation revision.
+6. The accepted [`go-pherence`](https://github.com/rcarmo/go-pherence) base pin in `scripts/upstream.env` and per-file overrides in `scripts/upstream-files.tsv` match the reviewed imports. Local runtime and API changes are identified by the release commit; the upstream pin does not describe the entire current implementation.

@@ -1,6 +1,6 @@
 # Decision playground
 
-The embedded playground at `/go-system-one` provides a browser form for the `POST /v1/decision` API. It uses the same loopback service and does not add a second inference endpoint.
+The embedded playground at `/go-system-one` provides a browser form for `POST /v1/decision`. It submits boolean and string-enum schemas to the same loopback service. The separate [TypeSafe route](systemone-api.md), `POST /v1/systemone`, accepts Noul, Choice and Score requests through HTTP; the playground does not expose those types yet.
 
 ## Appearance
 
@@ -43,7 +43,7 @@ The tests submit two contexts and assert every boolean and enum candidate probab
 
 The probability renderer was imported from [`go-pherence@c84a151dd8e7f952bc6b3aba35f1d309e79016f3`](https://github.com/rcarmo/go-pherence/commit/c84a151dd8e7f952bc6b3aba35f1d309e79016f3). Screenshots used the loopback-only synthetic browser fixture. No model or user data was loaded.
 
-For each colour scheme, Playwright opened `/go-system-one`, clicked **Run decision**, waited for the first `.decision` result and captured the full page. Source validation passed:
+For each colour scheme, Playwright opened `/go-system-one`, clicked **Run decision**, waited for the first `.decision` result and captured the full page. The following source validation commands ran in the upstream repository at capture time. `webui/frontend` is not part of this standalone checkout; use `make browser-test` here.
 
 ```sh
 cd webui/frontend
