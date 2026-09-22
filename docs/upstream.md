@@ -4,7 +4,7 @@
 
 ## Pinned inputs
 
-[`scripts/upstream.env`](../scripts/upstream.env) records the accepted source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps product-owned upstream paths to their local destinations. `go.mod` separately pins the shared runtime module to an immutable pseudo-version.
+[`scripts/upstream.env`](../scripts/upstream.env) records the accepted source commit. [`scripts/upstream-files.tsv`](../scripts/upstream-files.tsv) maps product-owned upstream paths to their local destinations. `go.mod` separately pins the shared runtime module to an immutable pseudo-version. `vendor/` contains the complete package closure used by offline builds.
 
 These pins may advance together when an upstream change touches both product and runtime code. A documentation-only product update need not change the module dependency.
 
@@ -31,10 +31,11 @@ The checkout must have no tracked or untracked changes. This prevents an uncommi
 2. Add new product-owned files to `scripts/upstream-files.tsv`. Remove mappings only when this repository deliberately replaces or deletes the corresponding feature.
 3. Update `scripts/upstream.env` with the accepted full commit and its UTC commit time.
 4. If shared model, loader, SIMD or NVIDIA code changed, update the `go-pherence` pseudo-version in `go.mod` to the same accepted commit.
-5. Run `go mod tidy` and `make check`.
-6. Run the released-model parity gate when model, tokenizer, scorer, PTX or dispatch behaviour changed.
-7. Record performance claims in `docs/validation/` with raw sample distributions and exact hardware details.
-8. Commit the copied source, both pins and evidence as one reviewable change.
+5. Run `go mod tidy` and `./scripts/vendor.sh`. Commit the resulting `vendor/` changes, including dependency licences.
+6. Run `make check` with network access disabled for the vendored test.
+7. Run the released-model parity gate when model, tokenizer, scorer, PTX or dispatch behaviour changed.
+8. Record performance claims in `docs/validation/` with raw sample distributions and exact hardware details.
+9. Commit the copied source, both pins, dependency snapshot and evidence as one reviewable change.
 
 ## Automation contract
 

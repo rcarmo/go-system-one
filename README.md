@@ -8,7 +8,7 @@ The service runs through a portable CPU/SIMD correctness path or NVIDIA Driver A
 
 This repository owns the decision contract, request validation, scorer adapters, HTTP service, web interface, frozen oracle fixtures and evaluation records. The first standalone revision pins the shared model, tokenizer, SIMD and NVIDIA runtime to [`go-pherence@559d10b4eb558da20552edf442dbd46ccbee78c1`](https://github.com/rcarmo/go-pherence/commit/559d10b4eb558da20552edf442dbd46ccbee78c1).
 
-The shared runtime is an ordinary immutable Go module dependency. Builds do not require a sibling checkout. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies the declared product-owned files from a reviewed `go-pherence` commit without writing to that repository.
+The shared runtime is an ordinary immutable Go module dependency. Its complete build closure is checked into `vendor/`, including licences, so a clone can build offline without a sibling checkout. [`scripts/sync-upstream.sh`](scripts/sync-upstream.sh) copies the declared product-owned files from a reviewed `go-pherence` commit without writing to that repository.
 
 ## Build
 
@@ -49,7 +49,7 @@ The default suite is offline and uses synthetic or frozen repository fixtures. R
 ./scripts/sync-upstream.sh <full-go-pherence-commit>
 ```
 
-Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to read from an existing clean checkout. Review the resulting diff, update [`scripts/upstream.env`](scripts/upstream.env) and the module pin, then run `make check`. The detailed procedure is in [`docs/upstream.md`](docs/upstream.md).
+Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to read from an existing clean checkout. Review the resulting diff, update [`scripts/upstream.env`](scripts/upstream.env) and the module pin, run [`scripts/vendor.sh`](scripts/vendor.sh), then run `make check`. The detailed procedure is in [`docs/upstream.md`](docs/upstream.md).
 
 ## Licence
 

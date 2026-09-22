@@ -1,0 +1,312 @@
+package gguf
+
+import "strings"
+
+// Inspection is a lightweight GGUF readiness summary. It reads only metadata and
+// tensor index data, so it is safe for large local checkpoints.
+type Inspection struct {
+	Path                  string         `json:"path"`
+	Architecture          string         `json:"architecture,omitempty"`
+	Name                  string         `json:"name,omitempty"`
+	TensorCount           int            `json:"tensor_count"`
+	QuantCounts           map[string]int `json:"quant_counts"`
+	HasQ4K                bool           `json:"has_q4_k"`
+	HasMoE                bool           `json:"has_moe"`
+	Layers                uint32         `json:"layers,omitempty"`
+	HiddenSize            uint32         `json:"hidden_size,omitempty"`
+	Heads                 uint32         `json:"heads,omitempty"`
+	VocabSize             uint32         `json:"vocab_size,omitempty"`
+	TokenizerTokens       uint32         `json:"tokenizer_tokens,omitempty"`
+	BOSTokenID            uint32         `json:"bos_token_id,omitempty"`
+	EOSTokenID            uint32         `json:"eos_token_id,omitempty"`
+	MaxSeqLen             uint32         `json:"max_seq_len,omitempty"`
+	KVHeads               uint32         `json:"kv_heads,omitempty"`
+	HeadDim               uint32         `json:"head_dim,omitempty"`
+	KVDim                 uint32         `json:"kv_dim,omitempty"`
+	FullAttentionInterval uint32         `json:"full_attention_interval,omitempty"`
+	CompressedKVLayers    uint32         `json:"compressed_kv_layers,omitempty"`
+	Experts               uint32         `json:"experts,omitempty"`
+	ExpertsPerToken       uint32         `json:"experts_per_token,omitempty"`
+	HasREAPMetadata       bool           `json:"has_reap_metadata"`
+	REAPPruneRatio        float64        `json:"reap_prune_ratio,omitempty"`
+	REAPSource            string         `json:"reap_source,omitempty"`
+	REAPMetadataKeys      []string       `json:"reap_metadata_keys,omitempty"`
+	TurboQuantReady       bool           `json:"turboquant_ready"`
+	PureGoSIMDReady       bool           `json:"pure_go_simd_ready"`
+	RuntimeSupported      bool           `json:"runtime_supported"`
+	MissingRuntimeTensors []string       `json:"missing_runtime_tensors,omitempty"`
+	ReadinessWarnings     []string       `json:"readiness_warnings,omitempty"`
+}
+
+func Inspect(path string) (Inspection, error) {
+	g, err := Open(path)
+	if err != nil {
+		return Inspection{}, err
+	}
+	defer g.Close()
+	return InspectOpen(path, g), nil
+}
+
+func InspectOpen(path string, g *GGUF) Inspection {
+	in := Inspection{Path: path, TensorCount: len(g.Tensors), QuantCounts: make(map[string]int)}
+	if arch, ok := g.MetaString("general.architecture"); ok {
+		in.Architecture = arch
+	}
+	if name, ok := g.MetaString("general.name"); ok {
+		in.Name = name
+	}
+	for _, t := range g.Tensors {
+		name := quantTypeName(t.QType)
+		in.QuantCounts[name]++
+		if t.QType == QuantQ4_K {
+			in.HasQ4K = true
+		}
+		if strings.Contains(t.Name, "ffn_gate_exps") || strings.Contains(t.Name, "ffn_up_exps") || strings.Contains(t.Name, "ffn_down_exps") || strings.Contains(t.Name, "block_sparse_moe") {
+			in.HasMoE = true
+		}
+	}
+	prefixes := []string{in.Architecture, "llama", "qwen3moe", "qwen3", "qwen2moe", "qwen2"}
+	for _, p := range prefixes {
+		if p == "" {
+			continue
+		}
+		if in.Layers == 0 {
+			in.Layers, _ = g.MetaUint32(p + ".block_count")
+		}
+		if in.HiddenSize == 0 {
+			in.HiddenSize, _ = g.MetaUint32(p + ".embedding_length")
+		}
+		if in.Heads == 0 {
+			in.Heads, _ = g.MetaUint32(p + ".attention.head_count")
+		}
+		if in.Heads > 0 && in.HeadDim == 0 && in.HiddenSize > 0 {
+			in.HeadDim = in.HiddenSize / in.Heads
+		}
+		if in.KVHeads == 0 {
+			if scalar, ok := g.MetaUint32(p + ".attention.head_count_kv"); ok {
+				in.KVHeads = scalar
+			} else {
+				for _, heads := range metaNonNegativeInts(g.Meta[p+".attention.head_count_kv"]) {
+					if uint32(heads) > in.KVHeads {
+						in.KVHeads = uint32(heads)
+					}
+				}
+			}
+		}
+		if in.MaxSeqLen == 0 {
+			in.MaxSeqLen, _ = g.MetaUint32(p + ".context_length")
+		}
+		if in.VocabSize == 0 {
+			in.VocabSize, _ = g.MetaUint32(p + ".vocab_size")
+		}
+		if in.FullAttentionInterval == 0 {
+			in.FullAttentionInterval, _ = g.MetaUint32(p + ".full_attention_interval")
+		}
+		if v, ok := g.MetaUint32(p + ".attention.key_length"); ok && v > 0 {
+			in.HeadDim = v
+		}
+		if v, ok := g.MetaUint32(p + ".expert_count"); ok {
+			in.Experts = v
+			in.HasMoE = true
+		}
+		if v, ok := g.MetaUint32(p + ".expert_used_count"); ok {
+			in.ExpertsPerToken = v
+			in.HasMoE = true
+		}
+	}
+	if in.VocabSize == 0 {
+		if t, ok := g.TensorByName("token_embd.weight"); ok && len(t.Shape) >= 2 {
+			in.VocabSize = uint32(t.Shape[1])
+		}
+	}
+	if raw, ok := g.Meta["tokenizer.ggml.tokens"]; ok {
+		if arr, ok := raw.([]any); ok {
+			in.TokenizerTokens = uint32(len(arr))
+		}
+	}
+	in.BOSTokenID, _ = g.MetaUint32("tokenizer.ggml.bos_token_id")
+	in.EOSTokenID, _ = g.MetaUint32("tokenizer.ggml.eos_token_id")
+	in.KVDim = in.KVHeads * in.HeadDim
+	in.CompressedKVLayers = in.Layers
+	if isQwenNextHybridGGUF(g, in.Architecture) {
+		in.CompressedKVLayers = 0
+		if in.FullAttentionInterval > 0 {
+			in.CompressedKVLayers = in.Layers / in.FullAttentionInterval
+		}
+	}
+	for k, v := range g.Meta {
+		lk := strings.ToLower(k)
+		if strings.Contains(lk, "reap") || strings.Contains(lk, "prun") {
+			in.HasREAPMetadata = true
+			in.REAPMetadataKeys = append(in.REAPMetadataKeys, k)
+			if strings.Contains(lk, "ratio") || strings.Contains(lk, "prune") {
+				if ratio, ok := ggufMetaFloat64(v); ok && ratio > 0 && ratio < 1 {
+					in.REAPPruneRatio = ratio
+					in.REAPSource = k
+				}
+			}
+		}
+	}
+	if ratio, ok := inferREAPRatioFromName(path + " " + in.Name); ok && in.REAPPruneRatio == 0 {
+		in.REAPPruneRatio = ratio
+		in.REAPSource = "filename_or_name"
+	}
+	if !in.HasREAPMetadata && strings.Contains(strings.ToLower(path+" "+in.Name), "reap") {
+		in.HasREAPMetadata = true
+		in.REAPMetadataKeys = append(in.REAPMetadataKeys, "filename_or_name")
+		if in.REAPSource == "" {
+			in.REAPSource = "filename_or_name"
+		}
+	}
+	in.TurboQuantReady = true
+	in.PureGoSIMDReady = in.TensorCount > 0 && (in.HasQ4K || len(in.QuantCounts) > 0)
+	in.MissingRuntimeTensors = missingRuntimeTensors(g, in.Architecture, in.HasMoE)
+	in.RuntimeSupported = in.PureGoSIMDReady && len(in.MissingRuntimeTensors) == 0
+	if in.Architecture == "" {
+		in.ReadinessWarnings = append(in.ReadinessWarnings, "missing general.architecture metadata")
+	}
+	if in.HasMoE && in.Experts == 0 {
+		in.ReadinessWarnings = append(in.ReadinessWarnings, "MoE tensors found but expert_count metadata was not detected")
+	}
+	return in
+}
+
+func missingRuntimeTensors(g *GGUF, arch string, hasMoE bool) []string {
+	if g == nil {
+		return []string{"<nil gguf>"}
+	}
+	// Current GGUFLlama runtime expects llama.cpp split attention tensors. Newer
+	// Qwen3.5/Qwen3.6 MoE GGUF files use fused attn_qkv plus SSM/hybrid blocks;
+	// report that explicitly instead of claiming generation readiness from quant
+	// metadata alone.
+	required := []string{"token_embd.weight", "output_norm.weight"}
+	if _, tied := g.TensorByName("output.weight"); !tied {
+		if arch != "gemma4" {
+			required = append(required, "output.weight")
+		}
+	}
+	if isQwenNextHybridGGUF(g, arch) {
+		required = append(required,
+			"blk.0.attn_qkv.weight", "blk.0.attn_gate.weight", "blk.0.post_attention_norm.weight",
+			"blk.0.ssm_conv1d.weight", "blk.0.ssm_a", "blk.0.ssm_dt.bias", "blk.0.ssm_norm.weight", "blk.0.ssm_alpha.weight", "blk.0.ssm_beta.weight", "blk.0.ssm_out.weight",
+			"blk.0.ffn_gate_inp.weight", "blk.0.ffn_gate_exps.weight", "blk.0.ffn_up_exps.weight", "blk.0.ffn_down_exps.weight",
+		)
+		return missingTensorNames(g, required)
+	}
+	if hasMoE {
+		required = append(required,
+			"blk.0.attn_q.weight", "blk.0.attn_k.weight", "blk.0.attn_v.weight", "blk.0.attn_output.weight",
+			"blk.0.attn_norm.weight", "blk.0.ffn_norm.weight",
+			"blk.0.ffn_gate_inp.weight", "blk.0.ffn_gate_exps.weight", "blk.0.ffn_up_exps.weight", "blk.0.ffn_down_exps.weight",
+		)
+	} else {
+		required = append(required,
+			"blk.0.attn_q.weight", "blk.0.attn_k.weight", "blk.0.attn_v.weight", "blk.0.attn_output.weight",
+			"blk.0.attn_norm.weight", "blk.0.ffn_norm.weight", "blk.0.ffn_gate.weight", "blk.0.ffn_up.weight", "blk.0.ffn_down.weight",
+		)
+	}
+	return missingTensorNames(g, required)
+}
+
+func metaNonNegativeInts(value any) []int {
+	var out []int
+	appendValue := func(v int64) {
+		if v >= 0 && uint64(v) <= uint64(^uint(0)>>1) {
+			out = append(out, int(v))
+		}
+	}
+	switch values := value.(type) {
+	case []any:
+		for _, value := range values {
+			switch v := value.(type) {
+			case uint32:
+				out = append(out, int(v))
+			case uint64:
+				if v <= uint64(^uint(0)>>1) {
+					out = append(out, int(v))
+				}
+			case int:
+				appendValue(int64(v))
+			case int32:
+				appendValue(int64(v))
+			case int64:
+				appendValue(v)
+			}
+		}
+	case []uint32:
+		for _, v := range values {
+			out = append(out, int(v))
+		}
+	case []uint64:
+		for _, v := range values {
+			if v <= uint64(^uint(0)>>1) {
+				out = append(out, int(v))
+			}
+		}
+	case []int:
+		for _, v := range values {
+			appendValue(int64(v))
+		}
+	}
+	return out
+}
+
+func missingTensorNames(g *GGUF, required []string) []string {
+	var missing []string
+	for _, name := range required {
+		if _, ok := g.TensorByName(name); !ok {
+			missing = append(missing, name)
+		}
+	}
+	return missing
+}
+
+func isQwenNextHybridGGUF(g *GGUF, arch string) bool {
+	if g == nil {
+		return false
+	}
+	keys := []string{arch + ".ssm.inner_size", arch + ".ssm.state_size", arch + ".full_attention_interval"}
+	for _, key := range keys {
+		if key == ".ssm.inner_size" || key == ".ssm.state_size" || key == ".full_attention_interval" {
+			continue
+		}
+		if _, ok := g.MetaUint32(key); ok {
+			return true
+		}
+	}
+	if _, ok := g.TensorByName("blk.0.attn_qkv.weight"); ok {
+		if _, ok := g.TensorByName("blk.0.ssm_out.weight"); ok {
+			return true
+		}
+	}
+	return false
+}
+
+func quantTypeName(q QuantType) string {
+	switch q {
+	case QuantF32:
+		return "F32"
+	case QuantF16:
+		return "F16"
+	case QuantQ4_0:
+		return "Q4_0"
+	case QuantQ4_1:
+		return "Q4_1"
+	case QuantQ8_0:
+		return "Q8_0"
+	case QuantQ2_K:
+		return "Q2_K"
+	case QuantQ3_K:
+		return "Q3_K"
+	case QuantQ4_K:
+		return "Q4_K"
+	case QuantQ5_K:
+		return "Q5_K"
+	case QuantQ6_K:
+		return "Q6_K"
+	case QuantQ8_K:
+		return "Q8_K"
+	default:
+		return "UNKNOWN"
+	}
+}

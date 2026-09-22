@@ -19,7 +19,8 @@ model/gosystemone/       decision contract, validation, scorer adapters and test
 internal/httpinput/      bounded JSON request decoding
 webui/                   embedded standalone playground and status endpoint
 docs/validation/         model pins, oracle results and benchmark evidence
-scripts/                 one-way upstream sync and validation helpers
+scripts/                 one-way upstream sync and dependency helpers
+vendor/                  pinned offline build closure and dependency licences
 ```
 
 ## Required tooling
@@ -67,9 +68,9 @@ Set `GO_PHERENCE_SOURCE=/path/to/go-pherence` to use an existing clean checkout.
 1. Review every changed file.
 2. Update `scripts/upstream.env` to the reviewed full commit and UTC commit time.
 3. Update the pinned `go-pherence` pseudo-version in `go.mod` when shared runtime changes are required.
-4. Run `go mod tidy` and `make check`.
+4. Run `go mod tidy`, `./scripts/vendor.sh` and `make check`.
 5. Run the opt-in released-model gate on authorised hardware when scorer, tokenizer, model or backend code changed.
-6. Commit the source pin, copied changes, dependency pin and validation evidence together.
+6. Commit the source pin, copied changes, dependency pin, vendored closure and validation evidence together.
 
 The script must never write to the upstream checkout or create commits there.
 
@@ -84,7 +85,7 @@ make check
 This includes formatting checks, tests, vet and a full build. Also run:
 
 ```sh
-git diff --check
+git diff --check -- . ':(exclude)vendor/**'
 go test -race ./model/gosystemone ./internal/httpinput ./webui
 ```
 
@@ -96,4 +97,5 @@ For NVIDIA or released-model changes, set the artifact paths documented in `docs
 - Commit as `Rui Carmo <rui.carmo@gmail.com>`. Configure local and global Git identity before committing.
 - Keep commits focused and use `scope: concise change` subjects.
 - Do not commit model weights, tokenizers, profiles, generated benchmark databases, secrets or temporary probe code.
+- Do not reformat vendored dependencies. Regenerate them with `scripts/vendor.sh`; apply whitespace checks to first-party paths.
 - Push only this repository. Verify the remote branch and CI after pushing.

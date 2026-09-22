@@ -1,0 +1,442 @@
+package nvidia
+
+// Kernel compiler: generates fused PTX kernels from op sequences.
+//
+// tinygrad approach: build a computation graph, then compile an optimized
+// kernel for the entire subgraph. We implement a simpler version that
+// fuses sequences of elementwise ops into single PTX kernels.
+//
+// The compiler handles:
+//   1. Elementwise chains: add, mul, scale, neg, silu, fma
+//   2. Reductions: sum, max (for RMSNorm, softmax)
+//   3. Fused patterns: RMSNorm+scale, SiLU*Mul, residual add
+//
+// Each compiled kernel is cached by its op signature.
+
+import (
+	"crypto/sha256"
+	"fmt"
+	"math"
+	"strings"
+	"sync"
+	"unsafe"
+)
+
+// Op types for the kernel compiler
+type KernelOp int
+
+const (
+	KOpLoad      KernelOp = iota // load from global memory (input)
+	KOpStore                     // store to global memory (output)
+	KOpAdd                       // a + b
+	KOpMul                       // a * b
+	KOpNeg                       // -a
+	KOpSiLU                      // a * sigmoid(a)
+	KOpScale                     // a * scalar
+	KOpFMA                       // a*b + c
+	KOpRsqrt                     // 1/sqrt(a)
+	KOpSumReduce                 // sum reduction
+	KOpMaxReduce                 // max reduction
+	KOpExp                       // exp(a)
+	KOpDiv                       // a / b
+	KOpSub                       // a - b
+	KOpConst                     // constant value
+)
+
+// KNode represents a node in the kernel computation graph
+type KNode struct {
+	Op       KernelOp
+	Inputs   []*KNode
+	BufIdx   int     // buffer index for Load/Store ops
+	ConstVal float32 // for KOpConst
+	RegName  string  // assigned register (filled by codegen)
+}
+
+// KernelSpec defines a fused kernel to compile
+type KernelSpec struct {
+	Name      string
+	Nodes     []*KNode // computation graph in topological order
+	NumBufs   int      // number of input/output buffers
+	HasReduce bool     // needs shared memory for reduction
+}
+
+// CompiledKernel is a cached compiled PTX kernel
+type CompiledKernel struct {
+	mu        sync.Mutex
+	Fn        CUfunction
+	Mod       CUmodule
+	Name      string
+	NumBufs   int
+	GridDiv   int // grid = (N + GridDiv - 1) / GridDiv
+	BlockSz   int
+	SharedMem int
+}
+
+var (
+	kernelCache   = map[string]*CompiledKernel{}
+	kernelCacheMu sync.Mutex
+)
+
+// Compile compiles a KernelSpec into a PTX kernel and caches it.
+func Compile(spec *KernelSpec) (*CompiledKernel, error) {
+	if err := validateKernelSpec(spec); err != nil {
+		return nil, err
+	}
+	// Cache key from op sequence
+	key := specKey(spec)
+	kernelCacheMu.Lock()
+	defer kernelCacheMu.Unlock()
+	if k, ok := kernelCache[key]; ok {
+		k.mu.Lock()
+		valid := k.Mod != 0 && k.Fn != 0
+		k.mu.Unlock()
+		if valid {
+			return k, nil
+		}
+		delete(kernelCache, key)
+	}
+	if !Init() {
+		return nil, fmt.Errorf("CUDA unavailable")
+	}
+
+	// Generate PTX
+	// Pre-warm allocator before PTX compile
+	prewarmAllocator()
+	ptx, blockSz, sharedMem := genPTX(cloneKernelSpec(spec))
+
+	// Compile via CUDA driver
+	mod, fn, err := loadPTXModule(ptx, spec.Name)
+	if err != nil {
+		return nil, fmt.Errorf("compile %s: %w", spec.Name, err)
+	}
+
+	k := &CompiledKernel{
+		Fn:        fn,
+		Mod:       mod,
+		Name:      spec.Name,
+		NumBufs:   spec.NumBufs,
+		GridDiv:   blockSz,
+		BlockSz:   blockSz,
+		SharedMem: sharedMem,
+	}
+
+	kernelCache[key] = k
+
+	return k, nil
+}
+
+// Launch executes a compiled kernel with the given buffers and element count.
+// It returns true only when the CUDA launch was accepted by the driver.
+func (k *CompiledKernel) Launch(n int, bufs ...*Buffer) bool {
+	if k == nil {
+		return false
+	}
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	if k.Fn == 0 || n <= 0 || k.GridDiv <= 0 || k.BlockSz <= 0 || len(bufs) != k.NumBufs {
+		return false
+	}
+	bytes, err := checkedByteSize(n, -1)
+	if err != nil || !fitsUint32(n) || !fitsUint32(k.BlockSz) || !fitsUint32(k.SharedMem) {
+		return false
+	}
+	gridInt := (n + k.GridDiv - 1) / k.GridDiv
+	if !fitsUint32(gridInt) {
+		return false
+	}
+	for i := 0; i < k.NumBufs; i++ {
+		if bufs[i] == nil || bufs[i].Ptr == 0 || bufs[i].Size < int(bytes) {
+			return false
+		}
+	}
+	EnsureContext()
+	grid := uint32(gridInt)
+	args := make([]unsafe.Pointer, len(bufs)+1)
+	for i, b := range bufs {
+		args[i] = unsafe.Pointer(&b.Ptr)
+	}
+	nn := uint32(n)
+	args[len(bufs)] = unsafe.Pointer(&nn)
+	return LaunchKernel(k.Fn, grid, 1, 1, uint32(k.BlockSz), 1, 1, uint32(k.SharedMem), args...) == nil
+}
+
+func (k *CompiledKernel) Destroy() {
+	if k == nil {
+		return
+	}
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	unloadModule(k.Mod)
+	k.Mod = 0
+	k.Fn = 0
+}
+
+func shutdownCompiledKernels() {
+	kernelCacheMu.Lock()
+	defer kernelCacheMu.Unlock()
+	for _, k := range kernelCache {
+		if k != nil {
+			k.Destroy()
+		}
+	}
+	kernelCache = map[string]*CompiledKernel{}
+	jitAdd = nil
+}
+
+// --- PTX code generation ---
+
+func genPTX(spec *KernelSpec) (string, int, int) {
+	if spec == nil {
+		return "", 0, 0
+	}
+	blockSz := 256
+	sharedMem := 0
+	if spec.HasReduce {
+		sharedMem = blockSz * 4
+	}
+
+	var b strings.Builder
+	b.WriteString(`.version 7.0
+.target sm_80
+.address_size 64
+`)
+	// Entry point with buffer params + N
+	b.WriteString(fmt.Sprintf(".visible .entry %s(\n", spec.Name))
+	for i := 0; i < spec.NumBufs; i++ {
+		b.WriteString(fmt.Sprintf("    .param .u64 buf%d,\n", i))
+	}
+	b.WriteString("    .param .u32 N\n) {\n")
+
+	// Register declarations
+	b.WriteString("    .reg .u32 %r<16>;\n")
+	b.WriteString("    .reg .u64 %rd<16>;\n")
+	b.WriteString(fmt.Sprintf("    .reg .f32 %%f<32>;\n"))
+	b.WriteString("    .reg .pred %p;\n")
+	if spec.HasReduce {
+		b.WriteString(fmt.Sprintf("    .shared .align 4 .f32 sdata[%d];\n", blockSz))
+	}
+
+	// Thread index
+	b.WriteString(`    mov.u32 %r0, %ctaid.x;
+    mov.u32 %r1, %ntid.x;
+    mov.u32 %r2, %tid.x;
+    mad.lo.u32 %r3, %r0, %r1, %r2;
+    ld.param.u32 %r4, [N];
+    setp.ge.u32 %p, %r3, %r4;
+    @%p bra done;
+`)
+
+	// Assign registers and generate code for each node
+	regCounter := 10
+	for _, node := range spec.Nodes {
+		reg := fmt.Sprintf("%%f%d", regCounter)
+		node.RegName = reg
+		regCounter++
+
+		switch node.Op {
+		case KOpLoad:
+			// Load from buffer: buf_ptr + idx*4
+			b.WriteString(fmt.Sprintf("    ld.param.u64 %%rd%d, [buf%d];\n", node.BufIdx, node.BufIdx))
+			b.WriteString(fmt.Sprintf("    mul.wide.u32 %%rd8, %%r3, 4;\n"))
+			b.WriteString(fmt.Sprintf("    add.u64 %%rd9, %%rd%d, %%rd8;\n", node.BufIdx))
+			b.WriteString(fmt.Sprintf("    ld.global.f32 %s, [%%rd9];\n", reg))
+
+		case KOpStore:
+			src := node.Inputs[0].RegName
+			b.WriteString(fmt.Sprintf("    ld.param.u64 %%rd%d, [buf%d];\n", node.BufIdx, node.BufIdx))
+			b.WriteString(fmt.Sprintf("    mul.wide.u32 %%rd8, %%r3, 4;\n"))
+			b.WriteString(fmt.Sprintf("    add.u64 %%rd9, %%rd%d, %%rd8;\n", node.BufIdx))
+			b.WriteString(fmt.Sprintf("    st.global.f32 [%%rd9], %s;\n", src))
+
+		case KOpAdd:
+			a, bb := node.Inputs[0].RegName, node.Inputs[1].RegName
+			b.WriteString(fmt.Sprintf("    add.f32 %s, %s, %s;\n", reg, a, bb))
+
+		case KOpMul:
+			a, bb := node.Inputs[0].RegName, node.Inputs[1].RegName
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, %s;\n", reg, a, bb))
+
+		case KOpSub:
+			a, bb := node.Inputs[0].RegName, node.Inputs[1].RegName
+			b.WriteString(fmt.Sprintf("    sub.f32 %s, %s, %s;\n", reg, a, bb))
+
+		case KOpDiv:
+			a, bb := node.Inputs[0].RegName, node.Inputs[1].RegName
+			b.WriteString(fmt.Sprintf("    div.rn.f32 %s, %s, %s;\n", reg, a, bb))
+
+		case KOpNeg:
+			a := node.Inputs[0].RegName
+			b.WriteString(fmt.Sprintf("    neg.f32 %s, %s;\n", reg, a))
+
+		case KOpSiLU:
+			// silu(x) = x / (1 + exp(-x))
+			a := node.Inputs[0].RegName
+			b.WriteString(fmt.Sprintf("    neg.f32 %s, %s;\n", reg, a))
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, 0f3FB8AA3B;\n", reg, reg))
+			b.WriteString(fmt.Sprintf("    ex2.approx.f32 %s, %s;\n", reg, reg))
+			b.WriteString(fmt.Sprintf("    add.f32 %s, %s, 0f3F800000;\n", reg, reg))
+			b.WriteString(fmt.Sprintf("    div.rn.f32 %s, %s, %s;\n", reg, a, reg))
+
+		case KOpFMA:
+			a, bb, c := node.Inputs[0].RegName, node.Inputs[1].RegName, node.Inputs[2].RegName
+			b.WriteString(fmt.Sprintf("    fma.rn.f32 %s, %s, %s, %s;\n", reg, a, bb, c))
+
+		case KOpExp:
+			a := node.Inputs[0].RegName
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, 0f3FB8AA3B;\n", reg, a))
+			b.WriteString(fmt.Sprintf("    ex2.approx.f32 %s, %s;\n", reg, reg))
+
+		case KOpConst:
+			bits := fmt.Sprintf("0f%08X", *(*uint32)(unsafe.Pointer(&node.ConstVal)))
+			b.WriteString(fmt.Sprintf("    mov.f32 %s, %s;\n", reg, bits))
+
+		case KOpRsqrt:
+			a := node.Inputs[0].RegName
+			b.WriteString(fmt.Sprintf("    rsqrt.approx.f32 %s, %s;\n", reg, a))
+			// Newton refinement: y = y * (1.5 - 0.5*x*y*y)
+			tmp := fmt.Sprintf("%%f%d", regCounter)
+			regCounter++
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, %s;\n", tmp, a, reg))
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, %s;\n", tmp, tmp, reg))
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, 0fBF000000;\n", tmp, tmp))
+			b.WriteString(fmt.Sprintf("    add.f32 %s, %s, 0f3FC00000;\n", tmp, tmp))
+			b.WriteString(fmt.Sprintf("    mul.f32 %s, %s, %s;\n", reg, reg, tmp))
+		}
+	}
+
+	b.WriteString("done:\n    ret;\n}\n")
+	return b.String(), blockSz, sharedMem
+}
+
+func cloneKernelSpec(spec *KernelSpec) *KernelSpec {
+	out := *spec
+	out.Nodes = make([]*KNode, len(spec.Nodes))
+	nodes := map[*KNode]*KNode{}
+	for i, n := range spec.Nodes {
+		c := *n
+		c.Inputs = nil
+		c.RegName = ""
+		out.Nodes[i] = &c
+		nodes[n] = &c
+	}
+	for i, n := range spec.Nodes {
+		for _, in := range n.Inputs {
+			out.Nodes[i].Inputs = append(out.Nodes[i].Inputs, nodes[in])
+		}
+	}
+	return &out
+}
+
+func validateKernelSpec(spec *KernelSpec) error {
+	if spec == nil {
+		return fmt.Errorf("nil kernel spec")
+	}
+	if spec.Name == "" || spec.NumBufs <= 0 || len(spec.Nodes) == 0 {
+		return fmt.Errorf("invalid kernel spec %q", spec.Name)
+	}
+	if spec.NumBufs > 8 || spec.HasReduce {
+		return fmt.Errorf("unsupported JIT buffer count or reduction")
+	}
+	seen := map[*KNode]bool{}
+	registers := 10
+	for i, n := range spec.Nodes {
+		if n == nil {
+			return fmt.Errorf("kernel spec %q has nil node %d", spec.Name, i)
+		}
+		if (n.Op == KOpLoad || n.Op == KOpStore) && (n.BufIdx < 0 || n.BufIdx >= spec.NumBufs) {
+			return fmt.Errorf("kernel spec %q node %d buffer index %d out of range", spec.Name, i, n.BufIdx)
+		}
+		arity := 0
+		switch n.Op {
+		case KOpLoad, KOpConst:
+		case KOpStore, KOpNeg, KOpSiLU, KOpExp:
+			arity = 1
+		case KOpRsqrt:
+			arity = 1
+			registers++
+		case KOpAdd, KOpMul, KOpSub, KOpDiv:
+			arity = 2
+		case KOpFMA:
+			arity = 3
+		default:
+			return fmt.Errorf("kernel spec %q unsupported op %d", spec.Name, n.Op)
+		}
+		if len(n.Inputs) != arity || seen[n] {
+			return fmt.Errorf("kernel spec %q node %d invalid arity/duplicate", spec.Name, i)
+		}
+		for j, in := range n.Inputs {
+			if in == nil || !seen[in] {
+				return fmt.Errorf("kernel spec %q node %d input %d not topologically earlier", spec.Name, i, j)
+			}
+		}
+		seen[n] = true
+		registers++
+		if registers > 32 {
+			return fmt.Errorf("kernel spec exceeds PTX register budget")
+		}
+	}
+	return nil
+}
+
+func specKey(spec *KernelSpec) string {
+	if spec == nil {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "%s/%d/%t;", spec.Name, spec.NumBufs, spec.HasReduce)
+	indices := map[*KNode]int{}
+	for i, n := range spec.Nodes {
+		indices[n] = i
+	}
+	for _, n := range spec.Nodes {
+		fmt.Fprintf(&b, "%d:%d:%08x[", n.Op, n.BufIdx, math.Float32bits(n.ConstVal))
+		for _, in := range n.Inputs {
+			fmt.Fprintf(&b, "%d,", indices[in])
+		}
+		b.WriteString("];")
+	}
+	h := sha256.Sum256([]byte(b.String()))
+	return fmt.Sprintf("%x", h[:])
+}
+
+// --- Pre-built fused kernel specs ---
+
+// FusedSiLUMulSpec: out = silu(a) * b
+func FusedSiLUMulSpec() *KernelSpec {
+	a := &KNode{Op: KOpLoad, BufIdx: 0}
+	bb := &KNode{Op: KOpLoad, BufIdx: 1}
+	silu := &KNode{Op: KOpSiLU, Inputs: []*KNode{a}}
+	mul := &KNode{Op: KOpMul, Inputs: []*KNode{silu, bb}}
+	store := &KNode{Op: KOpStore, BufIdx: 2, Inputs: []*KNode{mul}}
+	return &KernelSpec{
+		Name: "fused_silu_mul_jit", NumBufs: 3,
+		Nodes: []*KNode{a, bb, silu, mul, store},
+	}
+}
+
+// FusedResidualAddSpec: out = a + b (trivial but tests the compiler)
+func FusedResidualAddSpec() *KernelSpec {
+	a := &KNode{Op: KOpLoad, BufIdx: 0}
+	bb := &KNode{Op: KOpLoad, BufIdx: 1}
+	add := &KNode{Op: KOpAdd, Inputs: []*KNode{a, bb}}
+	store := &KNode{Op: KOpStore, BufIdx: 2, Inputs: []*KNode{add}}
+	return &KernelSpec{
+		Name: "fused_add_jit", NumBufs: 3,
+		Nodes: []*KNode{a, bb, add, store},
+	}
+}
+
+// FusedRMSNormElemSpec: out = x * scale * weight
+// (the per-element part of RMSNorm, after the reduction computes scale)
+func FusedRMSNormElemSpec() *KernelSpec {
+	x := &KNode{Op: KOpLoad, BufIdx: 0}
+	scale := &KNode{Op: KOpLoad, BufIdx: 1} // broadcast scalar
+	w := &KNode{Op: KOpLoad, BufIdx: 2}
+	xs := &KNode{Op: KOpMul, Inputs: []*KNode{x, scale}}
+	xsw := &KNode{Op: KOpMul, Inputs: []*KNode{xs, w}}
+	store := &KNode{Op: KOpStore, BufIdx: 3, Inputs: []*KNode{xsw}}
+	return &KernelSpec{
+		Name: "fused_rmsnorm_elem_jit", NumBufs: 4,
+		Nodes: []*KNode{x, scale, w, xs, xsw, store},
+	}
+}

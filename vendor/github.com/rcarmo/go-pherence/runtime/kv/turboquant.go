@@ -1,0 +1,544 @@
+package kv
+
+import (
+	"math"
+	"math/rand"
+
+	simd "github.com/rcarmo/go-pherence/backends/simd/runtime"
+)
+
+// TurboQuantConfig holds settings for KV cache compression.
+type TurboQuantConfig struct {
+	KeyBits         int   // bits per key coordinate (default 4)
+	ValueBits       int   // bits per value coordinate (default 2)
+	ProtectedLayers []int // layers at full precision (first/last 2)
+	ResidualWindow  int   // last N tokens at full precision (default 128)
+}
+
+// DefaultTurboQuantConfig returns community-validated defaults.
+func DefaultTurboQuantConfig() TurboQuantConfig {
+	return TurboQuantConfig{
+		KeyBits:         4,
+		ValueBits:       2,
+		ProtectedLayers: []int{0, 1, -1, -2}, // first/last 2 layers
+		ResidualWindow:  128,
+	}
+}
+
+// TurboQuantState holds per-model quantization state.
+type TurboQuantState struct {
+	Config     TurboQuantConfig
+	RotationK  []float32 // [headDim × headDim] random orthogonal matrix for keys
+	RotationV  []float32 // [headDim × headDim] random orthogonal matrix for values
+	RotationKT []float32 // transpose of RotationK, for SIMD row-GEMV inverse rotation
+	RotationVT []float32 // transpose of RotationV, for SIMD row-GEMV inverse rotation
+	CodebookK  []float32 // [2^keyBits] reserved for future non-uniform quantization
+	CodebookV  []float32 // [2^valueBits] reserved for future non-uniform quantization
+	HeadDim    int
+	NumLayers  int
+}
+
+// NewTurboQuantState initializes TurboQuant for a model.
+func NewTurboQuantState(headDim, numLayers int, cfg TurboQuantConfig) *TurboQuantState {
+	if headDim < 0 || squareSize(headDim) < 0 {
+		headDim = 0
+	}
+	if numLayers < 0 {
+		numLayers = 0
+	}
+	cfg.KeyBits = clampBits(cfg.KeyBits)
+	cfg.ValueBits = clampBits(cfg.ValueBits)
+	if cfg.ResidualWindow < 0 {
+		cfg.ResidualWindow = 0
+	}
+	tq := &TurboQuantState{
+		Config:    cfg,
+		HeadDim:   headDim,
+		NumLayers: numLayers,
+	}
+
+	// Generate random orthogonal matrices via QR decomposition of random Gaussian
+	rng := rand.New(rand.NewSource(42)) // fixed seed for reproducibility
+	tq.RotationK = randomOrthogonal(headDim, rng)
+	tq.RotationV = randomOrthogonal(headDim, rng)
+	tq.RotationKT = transposeSquare(tq.RotationK, headDim)
+	tq.RotationVT = transposeSquare(tq.RotationV, headDim)
+
+	// Compute Beta-optimal codebooks
+	tq.CodebookK = betaOptimalCodebook(cfg.KeyBits)
+	tq.CodebookV = betaOptimalCodebook(cfg.ValueBits)
+
+	return tq
+}
+
+// IsProtectedLayer returns true if this layer should stay at full precision.
+func (tq *TurboQuantState) IsProtectedLayer(layerIdx int) bool {
+	if tq == nil || layerIdx < 0 {
+		return false
+	}
+	for _, pl := range tq.Config.ProtectedLayers {
+		if pl < 0 {
+			pl = tq.NumLayers + pl
+		}
+		if layerIdx == pl {
+			return true
+		}
+	}
+	return false
+}
+
+// QuantizeKey quantizes one key-head vector with the TurboQuant key rotation
+// and bit policy.
+func (tq *TurboQuantState) QuantizeKey(vec []float32) ([]byte, float32, float32) {
+	if tq == nil {
+		return nil, 0, 0
+	}
+	return tq.QuantizeVector(vec, tq.RotationK, tq.CodebookK, tq.Config.KeyBits)
+}
+
+// QuantizeValue quantizes one value-head vector with the TurboQuant value
+// rotation and bit policy.
+func (tq *TurboQuantState) QuantizeValue(vec []float32) ([]byte, float32, float32) {
+	if tq == nil {
+		return nil, 0, 0
+	}
+	return tq.QuantizeVector(vec, tq.RotationV, tq.CodebookV, tq.Config.ValueBits)
+}
+
+// DequantizeKey restores one key-head vector using the built-in key rotation.
+func (tq *TurboQuantState) DequantizeKey(packed []byte, vMin, scale float32, dim int) []float32 {
+	out := make([]float32, maxInt(dim, 0))
+	if !tq.DequantizeKeyTo(out, packed, vMin, scale, dim) {
+		return out
+	}
+	return out
+}
+
+// DequantizeValue restores one value-head vector using the built-in value rotation.
+func (tq *TurboQuantState) DequantizeValue(packed []byte, vMin, scale float32, dim int) []float32 {
+	out := make([]float32, maxInt(dim, 0))
+	if !tq.DequantizeValueTo(out, packed, vMin, scale, dim) {
+		return out
+	}
+	return out
+}
+
+// DequantizeKeyTo restores one key-head vector into caller-owned storage.
+func (tq *TurboQuantState) DequantizeKeyTo(dst []float32, packed []byte, vMin, scale float32, dim int) bool {
+	if tq == nil {
+		return false
+	}
+	return tq.dequantizeVectorTo(dst, packed, vMin, scale, tq.RotationK, tq.Config.KeyBits, dim)
+}
+
+// DequantizeValueTo restores one value-head vector into caller-owned storage.
+func (tq *TurboQuantState) DequantizeValueTo(dst []float32, packed []byte, vMin, scale float32, dim int) bool {
+	if tq == nil {
+		return false
+	}
+	return tq.dequantizeVectorTo(dst, packed, vMin, scale, tq.RotationV, tq.Config.ValueBits, dim)
+}
+
+func (tq *TurboQuantState) DequantizeKeyWithScratchTo(dst []float32, packed []byte, vMin, scale float32, dim int, rotated []float32, indices []byte) bool {
+	if tq == nil {
+		return false
+	}
+	return tq.dequantizeVectorWithScratchTo(dst, packed, vMin, scale, tq.RotationK, tq.Config.KeyBits, dim, rotated, indices)
+}
+
+func (tq *TurboQuantState) DequantizeValueWithScratchTo(dst []float32, packed []byte, vMin, scale float32, dim int, rotated []float32, indices []byte) bool {
+	if tq == nil {
+		return false
+	}
+	return tq.dequantizeVectorWithScratchTo(dst, packed, vMin, scale, tq.RotationV, tq.Config.ValueBits, dim, rotated, indices)
+}
+
+// QuantizeVector quantizes a float32 vector to compressed bytes.
+// Returns: quantized indices (packed), the min value, and the scale for dequantization.
+func (tq *TurboQuantState) QuantizeVector(vec []float32, rotation []float32, codebook []float32, bits int) ([]byte, float32, float32) {
+	dim := len(vec)
+	rotated := make([]float32, maxInt(dim, 0))
+	indices := make([]byte, maxInt(dim, 0))
+	packed, vMin, scale, ok := tq.quantizeVectorWithScratch(vec, rotation, codebook, bits, rotated, indices)
+	if !ok {
+		packedLen := packedByteLen(dim, clampBits(bits))
+		if packedLen < 0 {
+			packedLen = 0
+		}
+		return make([]byte, packedLen), 0, 0
+	}
+	return packed, vMin, scale
+}
+
+func (tq *TurboQuantState) QuantizeKeyWithScratch(vec, rotated []float32, indices []byte) ([]byte, float32, float32, bool) {
+	if tq == nil {
+		return nil, 0, 0, false
+	}
+	return tq.quantizeVectorWithScratch(vec, tq.RotationK, tq.CodebookK, tq.Config.KeyBits, rotated, indices)
+}
+
+func (tq *TurboQuantState) QuantizeValueWithScratch(vec, rotated []float32, indices []byte) ([]byte, float32, float32, bool) {
+	if tq == nil {
+		return nil, 0, 0, false
+	}
+	return tq.quantizeVectorWithScratch(vec, tq.RotationV, tq.CodebookV, tq.Config.ValueBits, rotated, indices)
+}
+
+func (tq *TurboQuantState) QuantizeKeyTo(packedDst []byte, vec, rotated []float32, indices []byte) (float32, float32, bool) {
+	if tq == nil {
+		return 0, 0, false
+	}
+	return tq.quantizeVectorTo(packedDst, vec, tq.RotationK, tq.CodebookK, tq.Config.KeyBits, rotated, indices)
+}
+
+func (tq *TurboQuantState) QuantizeValueTo(packedDst []byte, vec, rotated []float32, indices []byte) (float32, float32, bool) {
+	if tq == nil {
+		return 0, 0, false
+	}
+	return tq.quantizeVectorTo(packedDst, vec, tq.RotationV, tq.CodebookV, tq.Config.ValueBits, rotated, indices)
+}
+
+func (tq *TurboQuantState) quantizeVectorWithScratch(vec []float32, rotation []float32, codebook []float32, bits int, rotated []float32, indices []byte) ([]byte, float32, float32, bool) {
+	packedLen := packedByteLen(len(vec), clampBits(bits))
+	if packedLen < 0 {
+		return nil, 0, 0, false
+	}
+	packed := make([]byte, packedLen)
+	vMin, scale, ok := tq.quantizeVectorTo(packed, vec, rotation, codebook, bits, rotated, indices)
+	return packed, vMin, scale, ok
+}
+
+func (tq *TurboQuantState) quantizeVectorTo(packedDst []byte, vec []float32, rotation []float32, codebook []float32, bits int, rotated []float32, indices []byte) (float32, float32, bool) {
+	dim := len(vec)
+	bits = clampBits(bits)
+	needRot := squareSize(dim)
+	packedLen := packedByteLen(dim, bits)
+	if tq == nil || dim == 0 || needRot < 0 || packedLen < 0 || len(packedDst) < packedLen || len(rotation) < needRot || len(rotated) < dim || len(indices) < dim {
+		return 0, 0, false
+	}
+
+	// Step 1: rotate through the checked SIMD facade. GemvRows uses the
+	// architecture dot-product path where available (AVX2/FMA, NEON, RVV) and
+	// falls back to the scalar reference otherwise.
+	rotated = rotated[:dim]
+	indices = indices[:dim]
+	rotateRows(rotated, vec, rotation, dim)
+
+	// Step 2: find min/max for uniform quantization
+	vMin, vMax := rotated[0], rotated[0]
+	for _, v := range rotated[1:] {
+		if v < vMin {
+			vMin = v
+		}
+		if v > vMax {
+			vMax = v
+		}
+	}
+	scale := vMax - vMin
+	if scale < 1e-10 {
+		clear(packedDst[:packedLen])
+		return vMin, 0, true
+	}
+
+	// Step 3: quantize each coordinate to [0, 2^bits - 1]. The codebook
+	// parameter is reserved for a future non-uniform quantizer; the current
+	// implementation deliberately stays uniform because it has lower error in
+	// the existing roundtrip tests.
+	_ = codebook
+	nLevels := 1 << bits
+	for i, v := range rotated {
+		normalized := (v - vMin) / scale // [0, 1]
+		idx := int(normalized*float32(nLevels-1) + 0.5)
+		if idx < 0 {
+			idx = 0
+		}
+		if idx >= nLevels {
+			idx = nLevels - 1
+		}
+		indices[i] = byte(idx)
+	}
+
+	// Step 4: pack indices into caller-owned bytes
+	if !packIndicesTo(packedDst[:packedLen], indices, bits) {
+		return 0, 0, false
+	}
+	return vMin, scale, true
+}
+
+// DequantizeVector restores a float32 vector from compressed form.
+func (tq *TurboQuantState) DequantizeVector(packed []byte, vMin, scale float32, rotation []float32, bits int, dim int) []float32 {
+	out := make([]float32, maxInt(dim, 0))
+	if !tq.dequantizeVectorTo(out, packed, vMin, scale, rotation, bits, dim) {
+		return out
+	}
+	return out
+}
+
+func (tq *TurboQuantState) dequantizeVectorTo(dst []float32, packed []byte, vMin, scale float32, rotation []float32, bits int, dim int) bool {
+	rotated := make([]float32, maxInt(dim, 0))
+	indices := make([]byte, maxInt(dim, 0))
+	return tq.dequantizeVectorWithScratchTo(dst, packed, vMin, scale, rotation, bits, dim, rotated, indices)
+}
+
+func (tq *TurboQuantState) dequantizeVectorWithScratchTo(dst []float32, packed []byte, vMin, scale float32, rotation []float32, bits int, dim int, rotated []float32, indices []byte) bool {
+	bits = clampBits(bits)
+	needRot := squareSize(dim)
+	if tq == nil || dim <= 0 || needRot < 0 || len(dst) < dim || len(rotation) < needRot || len(rotated) < dim || len(indices) < dim {
+		return false
+	}
+	if !unpackIndicesTo(indices[:dim], packed, bits) {
+		return false
+	}
+	nLevels := 1 << bits
+
+	// Dequantize: map index back to value
+	rotated = rotated[:dim]
+	for i, idx := range indices[:dim] {
+		rotated[i] = vMin + scale*float32(idx)/float32(nLevels-1)
+	}
+
+	// Inverse rotation: R^T @ rotated. For the built-in K/V rotations, use the
+	// precomputed transpose so inverse rotation also runs through row-GEMV and
+	// can hit AVX/NEON/RVV dot-product assembly. External rotation slices retain
+	// the checked column-GEMV/scalar fallback for API compatibility.
+	out := dst[:dim]
+	if rt := tq.transposeForRotation(rotation); rt != nil && len(rt) >= needRot {
+		rotateRows(out, rotated, rt, dim)
+	} else {
+		rotateCols(out, rotated, rotation, dim)
+	}
+	return true
+}
+
+func (tq *TurboQuantState) transposeForRotation(rotation []float32) []float32 {
+	if tq == nil || len(rotation) == 0 {
+		return nil
+	}
+	if len(tq.RotationK) > 0 && &rotation[0] == &tq.RotationK[0] {
+		return tq.RotationKT
+	}
+	if len(tq.RotationV) > 0 && &rotation[0] == &tq.RotationV[0] {
+		return tq.RotationVT
+	}
+	return nil
+}
+
+func rotateRows(dst, vec, rotation []float32, dim int) bool {
+	need := squareSize(dim)
+	if dim <= 0 || need < 0 || len(dst) < dim || len(vec) < dim || len(rotation) < need {
+		return false
+	}
+	if simd.GemvRows(dst, vec, rotation, dim, dim) {
+		return true
+	}
+	for i := 0; i < dim; i++ {
+		var sum float32
+		for j := 0; j < dim; j++ {
+			sum += rotation[i*dim+j] * vec[j]
+		}
+		dst[i] = sum
+	}
+	return true
+}
+
+func rotateCols(dst, vec, rotation []float32, dim int) bool {
+	need := squareSize(dim)
+	if dim <= 0 || need < 0 || len(dst) < dim || len(vec) < dim || len(rotation) < need {
+		return false
+	}
+	if simd.GemvCols(dst, vec, rotation, dim, dim) {
+		return true
+	}
+	for i := 0; i < dim; i++ {
+		var sum float32
+		for j := 0; j < dim; j++ {
+			sum += rotation[j*dim+i] * vec[j]
+		}
+		dst[i] = sum
+	}
+	return true
+}
+
+func transposeSquare(src []float32, dim int) []float32 {
+	need := squareSize(dim)
+	if dim <= 0 || need < 0 || len(src) < need {
+		return nil
+	}
+	out := make([]float32, need)
+	for r := 0; r < dim; r++ {
+		for c := 0; c < dim; c++ {
+			out[c*dim+r] = src[r*dim+c]
+		}
+	}
+	return out
+}
+
+// randomOrthogonal generates a row-major random orthogonal matrix via
+// modified Gram-Schmidt. Columns are orthonormal (Q^T Q = I); callers apply Q
+// for rotation and Q^T for inverse rotation.
+func randomOrthogonal(dim int, rng *rand.Rand) []float32 {
+	need := squareSize(dim)
+	if dim <= 0 || need < 0 || rng == nil {
+		return nil
+	}
+	// Generate random Gaussian matrix
+	mat := make([]float32, need)
+	for i := range mat {
+		mat[i] = float32(rng.NormFloat64())
+	}
+
+	// QR decomposition via modified Gram-Schmidt
+	q := make([]float32, dim*dim)
+	for j := 0; j < dim; j++ {
+		// Copy column j
+		for i := 0; i < dim; i++ {
+			q[i*dim+j] = mat[i*dim+j]
+		}
+		// Subtract projections of previous columns
+		for k := 0; k < j; k++ {
+			var dot float32
+			for i := 0; i < dim; i++ {
+				dot += q[i*dim+j] * q[i*dim+k]
+			}
+			for i := 0; i < dim; i++ {
+				q[i*dim+j] -= dot * q[i*dim+k]
+			}
+		}
+		// Normalize
+		var norm float32
+		for i := 0; i < dim; i++ {
+			norm += q[i*dim+j] * q[i*dim+j]
+		}
+		norm = float32(math.Sqrt(float64(norm)))
+		if norm > 1e-10 {
+			for i := 0; i < dim; i++ {
+				q[i*dim+j] /= norm
+			}
+		}
+	}
+
+	return q
+}
+
+// betaOptimalCodebook computes MSE-optimal quantization levels for the
+// Beta distribution that arises after random rotation of unit vectors.
+// After rotation, each coordinate of a unit vector is approximately
+// Normal(0, 1/sqrt(d)) for large d. We use quantiles of this distribution.
+func betaOptimalCodebook(bits int) []float32 {
+	bits = clampBits(bits)
+	n := 1 << bits
+	levels := make([]float32, n)
+	// Use Normal quantiles scaled to the typical range
+	// For d=128, stdev ≈ 1/sqrt(128) ≈ 0.0884, but after norm-division
+	// the values span [-1, 1] with concentration near 0.
+	// Use quantiles of N(0, 1/sqrt(d)) distribution, but since we normalize
+	// to unit norm, the effective distribution is uniform-ish on the sphere.
+	// Empirically, uniform quantization of [-1, 1] with more levels near 0 works well.
+	// Lloyd-Max inspired: concentrate levels near 0 where density is highest.
+	for i := 0; i < n; i++ {
+		// Map [0, n-1] → [-1, 1] with concentration near 0
+		// Use: level = sign(t) * |t|^0.5 where t = (2i+1)/2n - 1 maps to [-1,1]
+		t := float64(2*i+1)/float64(2*n) - 0.5 // [-0.5, 0.5]
+		t *= 2.0                               // [-1, 1]
+		sign := float32(1.0)
+		if t < 0 {
+			sign = -1.0
+			t = -t
+		}
+		levels[i] = sign * float32(math.Sqrt(t))
+	}
+	return levels
+}
+
+// packIndices packs byte indices into a bit-packed byte array.
+func packIndices(indices []byte, bits int) []byte {
+	bits = clampBits(bits)
+	packedLen := packedByteLen(len(indices), bits)
+	if packedLen < 0 {
+		return nil
+	}
+	packed := make([]byte, packedLen)
+	if !packIndicesTo(packed, indices, bits) {
+		return nil
+	}
+	return packed
+}
+
+func packIndicesTo(dst []byte, indices []byte, bits int) bool {
+	bits = clampBits(bits)
+	packedLen := packedByteLen(len(indices), bits)
+	if packedLen < 0 || len(dst) < packedLen {
+		return false
+	}
+	dst = dst[:packedLen]
+	clear(dst)
+	bitPos := 0
+	for _, idx := range indices {
+		for b := 0; b < bits; b++ {
+			if idx&(1<<b) != 0 {
+				dst[bitPos/8] |= 1 << (bitPos % 8)
+			}
+			bitPos++
+		}
+	}
+	return true
+}
+
+func unpackIndicesTo(indices []byte, packed []byte, bits int) bool {
+	bits = clampBits(bits)
+	if len(indices) == 0 {
+		return false
+	}
+	bitPos := 0
+	for i := range indices {
+		var val byte
+		for b := 0; b < bits; b++ {
+			byteIdx := bitPos / 8
+			if byteIdx < len(packed) && packed[byteIdx]&(1<<(bitPos%8)) != 0 {
+				val |= 1 << b
+			}
+			bitPos++
+		}
+		indices[i] = val
+	}
+	return true
+}
+
+func clampBits(bits int) int {
+	if bits < 1 {
+		return 1
+	}
+	if bits > 8 {
+		return 8
+	}
+	return bits
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func squareSize(dim int) int {
+	if dim < 0 {
+		return -1
+	}
+	max := int(^uint(0) >> 1)
+	if dim != 0 && dim > max/dim {
+		return -1
+	}
+	return dim * dim
+}
+
+func packedByteLen(n, bits int) int {
+	if n < 0 || bits < 0 {
+		return -1
+	}
+	max := int(^uint(0) >> 1)
+	if bits != 0 && n > (max-7)/bits {
+		return -1
+	}
+	return (n*bits + 7) / 8
+}
