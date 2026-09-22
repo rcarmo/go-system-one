@@ -6,7 +6,7 @@ import (
 
 	"github.com/rcarmo/go-system-one/backends/mlx"
 	simdq4 "github.com/rcarmo/go-system-one/backends/simd/quant/q4"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 
 	loaderconfig "github.com/rcarmo/go-system-one/loader/config"
 	"github.com/rcarmo/go-system-one/loader/weights"

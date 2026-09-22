@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 	"github.com/rcarmo/go-system-one/runtime/kv"
 )
 

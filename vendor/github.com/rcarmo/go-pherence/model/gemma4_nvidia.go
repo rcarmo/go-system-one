@@ -7,7 +7,7 @@ import (
 
 	nvidia "github.com/rcarmo/go-system-one/backends/nvidia/runtime"
 	"github.com/rcarmo/go-system-one/loader/gguf"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 )
 
 // Gemma4NVIDIA owns resident PTX projections for one model. Requests are

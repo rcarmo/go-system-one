@@ -3,7 +3,7 @@ package gemma
 import (
 	"encoding/json"
 
-	"github.com/rcarmo/go-pherence/model/common"
+	"github.com/rcarmo/go-system-one/model/common"
 )
 
 // NormalizeTextConfig extracts Gemma4's nested text_config into the common

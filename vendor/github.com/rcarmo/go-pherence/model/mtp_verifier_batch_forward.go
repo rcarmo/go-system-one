@@ -11,7 +11,7 @@ import (
 	"github.com/rcarmo/go-system-one/backends/mlx"
 	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-system-one/loader/gguf"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 	"github.com/rcarmo/go-system-one/tensor"
 )
 

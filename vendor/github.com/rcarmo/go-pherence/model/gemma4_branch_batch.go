@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	simd "github.com/rcarmo/go-system-one/backends/simd/runtime"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 )
 
 // Gemma4BranchBatchResult contains the logits after the final forced token of

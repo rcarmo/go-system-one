@@ -3,7 +3,7 @@ package model
 import (
 	"github.com/rcarmo/go-system-one/backends/mlx"
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 )
 
 // ForwardLayer runs a single transformer layer on CPU and returns the updated hidden state.

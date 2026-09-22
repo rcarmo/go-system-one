@@ -6,7 +6,7 @@ import (
 	"github.com/rcarmo/go-system-one/backends/mlx"
 	"github.com/rcarmo/go-system-one/backends/simd/runtime"
 	"github.com/rcarmo/go-system-one/half"
-	gemmacfg "github.com/rcarmo/go-pherence/model/gemma"
+	gemmacfg "github.com/rcarmo/go-system-one/model/gemma"
 )
 
 // MTPPromptContext is the real verifier-side state needed to seed a q-only
