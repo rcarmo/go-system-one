@@ -8,6 +8,7 @@ These documents define the standalone service, its external artifacts, browser p
 - [External model artifacts](artifacts.md) — exact model/tokenizer pins, download, verification and cleanup.
 - [Decision playground](playground.md) — routes, theme contract, desktop/mobile captures and browser-test provenance.
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
+- [Packed Gemma scoring](performance/packed-decisions.md) — model-technique review and plan for parallel contexts and selected-logit extraction.
 - [Release process](releases.md) — local packages, version tags, archive contents, checksums and publication gates.
 
 ## Maintain the source
