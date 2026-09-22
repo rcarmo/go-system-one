@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Archive version for a build-only release dry run
+        required: false
+        default: snapshot
+        type: string
 
 permissions:
   contents: write
@@ -14,7 +21,9 @@ concurrency:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      RELEASE_VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -26,10 +35,11 @@ jobs:
           GOPROXY: "off"
           GOSUMDB: "off"
         run: |
-          make package VERSION="${GITHUB_REF_NAME}"
+          make package VERSION="$RELEASE_VERSION"
           (cd dist && sha256sum -c SHA256SUMS)
           ./scripts/check-release-archives.sh dist
       - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
