@@ -6,6 +6,10 @@ The current NVIDIA path loads hand-tuned PTX kernels directly from Go through th
 
 [![Go System One playground showing Noul, Choice and Score results](docs/images/go-system-one-light-desktop.png)](docs/playground.md)
 
+## JevBench
+
+**84.85% public-subset accuracy (196/231)** with [JevBench v1.4.0](https://github.com/fstandhartinger/jevbench/tree/v1.4.0): easy 48/48, original 71/72 and hard 77/111, with no failed requests. [Our results and raw evidence](docs/benchmarks/jevbench-v140-public.md) use one fixed runtime revision. This is public accuracy, not the official sealed-set composite score or leaderboard rank.
+
 ## Run
 
 Go 1.26.2 or the version in `go.mod` is required. Model files are downloaded separately under the [Gemma licence](docs/artifacts.md).
