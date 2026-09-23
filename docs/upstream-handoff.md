@@ -1,12 +1,12 @@
 # Upstream review hand-off
 
-The accepted standalone runtime, API and playground changes are available as three targeted `go-pherence` PRs. They use a fresh clone of base `3a3a629bea7bc4bc2a11ac3bb7f8e6c23251d6f8`; the active neighbouring checkout was not modified. Branches are on the `piclaw-bot/go-pherence` fork, and upstream review/merge remains the receiving agent's task.
+The accepted standalone runtime, API and playground changes are available as three targeted PRs with branches directly in `rcarmo/go-pherence`. They originated from base `3a3a629bea7bc4bc2a11ac3bb7f8e6c23251d6f8`; reconciliation also verified integration with `6f74c75ea7874c1e7c740c47d9532d2aa442b1ea`. The active neighbouring checkout was not modified. Review and merging remain the receiving agent's task.
 
 | PR | Scope | Head |
 |---|---|---|
-| [#22](https://github.com/rcarmo/go-pherence/pull/22) | Packed NVIDIA contexts/trees, selected readout, bounded scratch, staged Q5/Q6, CLI defaults and precision tool | `cf218b54b67acd5fdf637dab3753e4db271f9db6` |
-| [#23](https://github.com/rcarmo/go-pherence/pull/23) | TypeSafe `noul`, `choice`, `score` API, validation and tests | `60a25e3ce57745798acccd45d90b05ae0ee821af` |
-| [#24](https://github.com/rcarmo/go-pherence/pull/24) | Playground, embedded browser tests, screenshots and usage documentation | `e8d051b3d8e95882f9fb3bd1c8bdfd220b651dfb` |
+| [#25](https://github.com/rcarmo/go-pherence/pull/25) | Packed NVIDIA contexts/trees, selected readout, bounded scratch, staged Q5/Q6, CLI defaults and precision tool | `cf218b54b67acd5fdf637dab3753e4db271f9db6` |
+| [#26](https://github.com/rcarmo/go-pherence/pull/26) | TypeSafe `noul`, `choice`, `score` API, validation and tests | `d22c206b0c99044331bef42435c3dde45d0f65c6` |
+| [#27](https://github.com/rcarmo/go-pherence/pull/27) | Playground, embedded browser tests, screenshots and usage documentation | `4d5c5819e04df57e6dacd9445312adf07b01a74e` |
 
 Runtime and API PRs are independently testable. Merge API before playground because its default view calls `/v1/systemone`. All three layout CI checks passed. No PR was merged automatically.
 
@@ -20,7 +20,7 @@ The attention softmax barrier fix is already upstream and was not reapplied. The
 
 ## Verification
 
-The fork's [`handoff/gso-integration-check`](https://github.com/piclaw-bot/go-pherence/tree/cc39fe8e) branch merges all three PRs without conflicts using ordinary merges. It is an integration check, not a fourth bulk-merge request.
+The owner-repository [`handoff/gso-integration-check`](https://github.com/rcarmo/go-pherence/tree/670fb2dbde10b6a82ff4603a2d36289ec379f65c) branch merges the checked current main and all three PRs without conflicts using ordinary merges. The original integration commit `cc39fe8ef25de690778a39530c179955a1c5a7a7` remains in its history. It is an integration check, not a fourth bulk-merge request. The CPU-only race suite, docs checks and all ten browser tests passed again after reconciliation; the original hardware results below apply to unchanged runtime code.
 
 * Whole-tree CPU-only race tests passed: `GO_PHERENCE_DISABLE_NVIDIA=1 go test -race ./...`.
 * Affected-package vet and upstream `make docs-check` passed; the latter checked 398 Markdown files with no broken links.
@@ -31,4 +31,10 @@ The fork's [`handoff/gso-integration-check`](https://github.com/piclaw-bot/go-ph
 
 An initial full GPU runtime test hit the Whisper online-attention tolerance once. Five isolated repeats and subsequent full runtime runs passed; a clean-base run also passed. Its cause is unestablished. The PR records this observation, and no Whisper code or numerical tolerance was changed.
 
-The receiving `@go-pherence` session was sent the PR links, ordering and validation notes for later review. Follow its review there; future accepted imports into this repository still follow the [pinned source-update process](upstream.md).
+## Fork reconciliation
+
+The unnecessary `piclaw-bot/go-pherence` fork was used for the initial hand-off without a technical requirement. At the user's request, all four hand-off branches and their original commits were preserved directly in `rcarmo/go-pherence`. Old PRs #22–24 were closed with links to replacements #25–27. The replacements preserve the source changes and validation notes; the API/UI branches only add documentation corrections to the PR numbers. All replacement checks passed. No change was merged into `main`.
+
+Deleting the fork was attempted after reconciliation. GitHub returned HTTP 403 because the available bot token lacks the `delete_repo` scope, despite having repository admin rights. The fork still exists until deletion is performed with an authorised credential; no active hand-off depends on it.
+
+The receiving `@go-pherence` session was sent the replacement PR links, ordering and validation notes for later review. Follow its review there; future accepted imports into this repository still follow the [pinned source-update process](upstream.md).
