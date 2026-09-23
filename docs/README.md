@@ -11,11 +11,13 @@ Go System One serves boolean/enum batches through `/v1/decision` and TypeSafe-st
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
 - [Packed Gemma scoring](performance/packed-decisions.md) — implementation, precision trade-offs and development measurements.
 - [Q5 staging](performance/q5-staged.md) and [512-column chunks](performance/q5-chunk512.md) — accepted kernel changes, measured gains and rejected variants.
+- [Activation reuse evaluation](performance/activation-reuse.md) — six-run Q/K reuse experiment; inconclusive timing, prototype removed.
 - [Release process](releases.md) — local packages, version tags, archive contents, checksums and publication gates.
 
 ## Maintain the source
 
 - [Updating from go-pherence](upstream.md) — one-way manifest updates from the canonical reference repository.
+- [Upstream review hand-off](upstream-handoff.md) — targeted runtime, TypeSafe API and playground PRs, with port validation.
 
 [`go-pherence`](https://github.com/rcarmo/go-pherence) remains the canonical reference for implementation lineage and relevant future changes. This repository keeps an immutable accepted source pin and imports only manifest-listed paths.
 
