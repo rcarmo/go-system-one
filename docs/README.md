@@ -9,6 +9,7 @@ Go System One serves boolean/enum batches through `/v1/decision` and TypeSafe-st
 - [External model artifacts](artifacts.md) — exact model/tokenizer pins, download, verification and cleanup.
 - [Decision playground](playground.md) — TypeSafe questions and batch decisions, OS themes, desktop/mobile captures and browser tests.
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
+- [JevBench public evaluation](benchmarks/jevbench-public-20260923.md) — accuracy, calibration, context-limit failures and the diagnostic hard-tier continuation.
 - [Packed Gemma scoring](performance/packed-decisions.md) — implementation, precision trade-offs and development measurements.
 - [Q5 staging](performance/q5-staged.md) and [512-column chunks](performance/q5-chunk512.md) — accepted kernel changes, measured gains and rejected variants.
 - [Activation reuse evaluation](performance/activation-reuse.md) — six-run Q/K reuse experiment; inconclusive timing, prototype removed.

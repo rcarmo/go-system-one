@@ -1,0 +1,70 @@
+package gosystemone
+
+import (
+	"bufio"
+	"encoding/json"
+	"github.com/rcarmo/go-system-one/loader/tokenizer"
+	"os"
+	"testing"
+)
+
+func TestJevBenchLengthProbe(t *testing.T) {
+	tok, err := tokenizer.LoadWithConfig("/tmp/qev-gemma4-12b/tokenizer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := &Engine{Tokenizer: tok, BOSToken: 2}
+	input, err := os.Open("/workspace/tmp/gso-jevbench/report/raw-evidence.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer input.Close()
+	output, err := os.Create("/workspace/tmp/gso-jevbench/report/token-lengths.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer output.Close()
+	enc := json.NewEncoder(output)
+	scanner := bufio.NewScanner(input)
+	scanner.Buffer(make([]byte, 65536), 1<<20)
+	for scanner.Scan() {
+		var r struct {
+			ID       string `json:"task_id"`
+			Evidence struct {
+				Request SystemOneRequest `json:"request"`
+				Status  int              `json:"http_status"`
+			} `json:"evidence"`
+		}
+		if err := json.Unmarshal(scanner.Bytes(), &r); err != nil {
+			t.Fatal(err)
+		}
+		schema, _, state, err := compileSystemOne(r.Evidence.Request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		shared := len(tok.Encode(e.renderShared(schema.SystemText))) + 1
+		context := len(tok.Encode(e.renderContext(state)))
+		maxDepth, branchRows := 0, 0
+		for _, in := range schema.Inputs {
+			f, err := CompileField(tok, in, ModeTree, DefaultTreeMax)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, node := range f.Nodes {
+				n := len(f.Suffix) + len(node.Prefix)
+				maxDepth = max(maxDepth, n)
+				branchRows += n
+			}
+		}
+		total := shared + context + maxDepth
+		if (r.Evidence.Status == 400) != (total > 2048) {
+			t.Fatalf("%s HTTP %d tokens %d", r.ID, r.Evidence.Status, total)
+		}
+		if err := enc.Encode(map[string]any{"task_id": r.ID, "shared_tokens": shared, "state_tokens": context, "max_branch_tokens": maxDepth, "branch_rows": branchRows, "total_visible_tokens": total, "exceeds_nvidia_2048_limit": total > 2048}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		t.Fatal(err)
+	}
+}

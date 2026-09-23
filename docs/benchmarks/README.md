@@ -4,6 +4,10 @@ The five charts use **[`774c5da`](https://github.com/rcarmo/go-system-one/commit
 
 Chart times are `/v1/decision` HTTP handler `timings.total_ms`, excluding artifact verification, model loading and device upload. All chart inputs used binary SHA-256 `b73f6923fb7ff5d1f67ea600abacb198711596d736108234c68bd2ae4ce4497b`. [TypeSafe workloads](#typesafe-question-types) were measured separately at `594ba47`, which adds `/v1/systemone`; their client HTTP timings are not mixed into these charts. [History](history.md) retains earlier results.
 
+## JevBench public accuracy
+
+The [JevBench evaluation](jevbench-public-20260923.md) scored 48/48 easy and 71/72 original public items. Its hard diagnostic scored 50/111, including 36 requests rejected above the NVIDIA 2,048-token limit. The normal hard run stopped after three errors; the diagnostic continuation, calibration and public-subset limits are recorded separately. No full-suite rank or composite score is claimed.
+
 ## Multi-field batches
 
 One boolean plus a three-choice multi-token enum; contexts cycle the [frozen cohort](multifield-cohort.json) with unique ticket numbers. Automatic execution uses a 512-token-row budget and single-request admission.
