@@ -11,6 +11,7 @@ Go System One serves boolean/enum batches through `/v1/decision` and TypeSafe-st
 - [Benchmarks](benchmarks/README.md) — committed latency samples, generated charts, workload matrix and fresh-run commands.
 - [JevBench public evaluation](benchmarks/jevbench-public-20260923.md) — accuracy, calibration, context-limit failures and the diagnostic hard-tier continuation.
 - [Packed Gemma scoring](performance/packed-decisions.md) — implementation, precision trade-offs and development measurements.
+- [NVIDIA long contexts](performance/long-context.md) — removal of the fixed 2,048-token bound, sliding KV storage, memory admission and validation.
 - [Q5 staging](performance/q5-staged.md) and [512-column chunks](performance/q5-chunk512.md) — accepted kernel changes, measured gains and rejected variants.
 - [Activation reuse evaluation](performance/activation-reuse.md) — six-run Q/K reuse experiment; inconclusive timing, prototype removed.
 - [Release process](releases.md) — local packages, version tags, archive contents, checksums and publication gates.

@@ -6,7 +6,7 @@ Chart times are `/v1/decision` HTTP handler `timings.total_ms`, excluding artifa
 
 ## JevBench public accuracy
 
-The [JevBench evaluation](jevbench-public-20260923.md) scored 48/48 easy and 71/72 original public items. Its hard diagnostic scored 50/111, including 36 requests rejected above the NVIDIA 2,048-token limit. The normal hard run stopped after three errors; the diagnostic continuation, calibration and public-subset limits are recorded separately. No full-suite rank or composite score is claimed.
+The [JevBench evaluation](jevbench-public-20260923.md) at `a4e4983` scored 48/48 easy and 71/72 original public items. Its hard diagnostic scored 50/111, including 36 requests rejected above the then-current NVIDIA 2,048-token limit. A [later long-context fix](../performance/long-context.md) returned valid answers for all 36 (27 correct) in a separate failure-subset recheck; it is not a new full benchmark. The normal hard run stopped after three errors; the diagnostic continuation, calibration and public-subset limits are recorded separately. No full-suite rank or composite score is claimed.
 
 ## Multi-field batches
 

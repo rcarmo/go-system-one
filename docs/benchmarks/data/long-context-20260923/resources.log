@@ -1,0 +1,6 @@
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function 'gqa_attention_long' for 'sm_86'
+ptxas info    : Function properties for gqa_attention_long
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, used 1 barriers, 1024 bytes smem, 492 bytes cmem[0]
+ptxas info    : Compile time = 82.140 ms

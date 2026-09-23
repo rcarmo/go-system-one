@@ -20,6 +20,10 @@ NVIDIA tree scoring packs contexts and field branches by default, up to 512 real
 
 Packing uses Q8 activations where tiny serial branch batches use F32. The [precision report](../../docs/performance/multifield-precision.md) records winner agreement, losing-rank shifts and probability movement. Returned confidence can change even when the selected answer does not.
 
+## Long contexts
+
+The NVIDIA path supports attention beyond 2,048 tokens using bounded score scratch and compacted sliding-window KV. Its logical context ceiling is the smaller of the model limit and 32,768 tokens; real admission also checks available GPU memory. Capacity refusals return HTTP 422, with no input truncation. [Validation](../../docs/performance/long-context.md) covers CPU-oracle attention to 32,768 tokens and full released-model requests through 3,937 tokens on the RTX 3060 12 GB.
+
 ## Deployment limits
 
 The server has no authentication or TLS. Its default loopback binding is the supported direct-use configuration. For remote access, put an authenticated TLS reverse proxy in front of every route, restrict the upstream to loopback or a private socket, and apply request-rate and body-size limits at the proxy. Do not expose the command directly to an untrusted network.

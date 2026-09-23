@@ -1,0 +1,21 @@
+=== RUN   TestGoSystemOneNVIDIAMultiFieldReleasedModelMatchesPinnedLlamaCpp
+    multifield_parity_test.go:131: packed budget=0 total_ms=2243.572484
+    multifield_parity_test.go:131: packed budget=128 total_ms=193.292465
+    multifield_parity_test.go:131: packed budget=256 total_ms=193.327205
+    multifield_parity_test.go:131: packed budget=512 total_ms=193.279304
+--- PASS: TestGoSystemOneNVIDIAMultiFieldReleasedModelMatchesPinnedLlamaCpp (25.27s)
+=== RUN   TestGoSystemOnePackedReleasedModelMatchesSerial
+=== RUN   TestGoSystemOnePackedReleasedModelMatchesSerial/128
+    packed_test.go:179: packed rows=128 max probability delta=0 max logit delta=0
+=== RUN   TestGoSystemOnePackedReleasedModelMatchesSerial/256
+    packed_test.go:179: packed rows=256 max probability delta=0 max logit delta=0
+=== RUN   TestGoSystemOnePackedReleasedModelMatchesSerial/512
+    packed_test.go:179: packed rows=512 max probability delta=0 max logit delta=0
+--- PASS: TestGoSystemOnePackedReleasedModelMatchesSerial (24.22s)
+    --- PASS: TestGoSystemOnePackedReleasedModelMatchesSerial/128 (0.99s)
+    --- PASS: TestGoSystemOnePackedReleasedModelMatchesSerial/256 (0.96s)
+    --- PASS: TestGoSystemOnePackedReleasedModelMatchesSerial/512 (0.96s)
+=== RUN   TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision
+--- PASS: TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision (19.55s)
+PASS
+ok  	github.com/rcarmo/go-system-one/model/gosystemone	69.549s

@@ -1,0 +1,5 @@
+=== RUN   TestLongContextReleasedModelRecovery
+    long_context_test.go:78: long request prompt tokens=2458; repeated answers identical; short/cancel/refusal recovery passed
+--- PASS: TestLongContextReleasedModelRecovery (51.04s)
+PASS
+ok  	github.com/rcarmo/go-system-one/model/gosystemone	51.431s
