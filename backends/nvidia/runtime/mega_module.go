@@ -65,7 +65,19 @@ func loadMegaModule() {
 
 		ptxStr := combined.String()
 		if os.Getenv("GO_PHERENCE_GPU_DEBUG_PTX") != "" {
-			_ = os.WriteFile("/tmp/go-pherence-mega.ptx", []byte(ptxStr), 0o600)
+			// Debug dumps follow the caller's project-owned temporary directory.
+			// Refuse ambient /tmp instead of silently writing outside that scope.
+			if dir := os.Getenv("PROJECT_RUN_DIR"); dir != "" && dir == os.Getenv("TMPDIR") {
+				if f, err := os.CreateTemp(dir, "go-system-one-mega-*.ptx"); err == nil {
+					_, err = f.WriteString(ptxStr)
+					closeErr := f.Close()
+					debuglog.Printf("[gpu] PTX dump %s: write=%v close=%v\n", f.Name(), err, closeErr)
+				} else {
+					debuglog.Printf("[gpu] PTX dump: %v\n", err)
+				}
+			} else {
+				debuglog.Printf("[gpu] PTX dump requires scripts/project-env.sh\n")
+			}
 		}
 		ptxBytes := append([]byte(ptxStr), 0)
 

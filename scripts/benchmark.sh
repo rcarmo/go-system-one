@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/project-env.sh"
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 artifact_dir=${GO_SYSTEM_ONE_ARTIFACT_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/go-system-one/v1}
@@ -9,9 +10,11 @@ backend=${BACKEND:-nvidia}
 listen=${BENCHMARK_LISTEN:-127.0.0.1:18081}
 requests=${BENCHMARK_REQUESTS:-100}
 warmup=${BENCHMARK_WARMUP:-1}
-out=${BENCHMARK_OUT:-$root/dist/benchmarks/nvidia-http.json}
-binary=$root/bin/go-system-one-benchmark
-log=${BENCHMARK_LOG:-$root/dist/benchmarks/server.log}
+mkdir -p "$EVIDENCE_ROOT/benchmarks"
+report_dir=$(mktemp -d "$EVIDENCE_ROOT/benchmarks/run-XXXXXXXX")
+out=${BENCHMARK_OUT:-$report_dir/nvidia-http.json}
+binary=$BUILD_DIR/go-system-one-benchmark
+log=${BENCHMARK_LOG:-$report_dir/server.log}
 
 if [[ "$listen" != 127.0.0.1:* && "$listen" != localhost:* ]]; then
   printf 'benchmark: BENCHMARK_LISTEN must be loopback: %s\n' "$listen" >&2
@@ -40,11 +43,12 @@ trap cleanup EXIT INT TERM
 GO_SYSTEM_ONE_ARTIFACT_DIR="$artifact_dir" GO_SYSTEM_ONE_MODEL="$model" GO_SYSTEM_ONE_TOKENIZER_DIR="$tokenizer_dir" \
   "$root/scripts/artifacts.sh" verify
 
-mkdir -p "$root/bin" "$(dirname "$out")" "$(dirname "$log")"
+mkdir -p "$BUILD_DIR" "$(dirname "$out")" "$(dirname "$log")"
 (
   cd "$root"
   go build -mod=vendor -trimpath -o "$binary" ./cmd/go-system-one
 )
+cp "$binary" "$report_dir/go-system-one"
 "$binary" -model "$model" -tokenizer-dir "$tokenizer_dir" -backend "$backend" -listen "$listen" >"$log" 2>&1 &
 pid=$!
 

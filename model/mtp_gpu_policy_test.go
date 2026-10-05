@@ -20,7 +20,11 @@ func TestMTPGPUParityHonoursDisableBeforeDiscovery(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, value := range []string{"1", "0"} { // runtime uses any nonempty value
-		cmd := exec.Command(os.Args[0], "-test.run=^TestGemma4MTPVerifierPostAttentionRMSNormGPUParity$", "-test.v")
+		args := []string{"-test.run=^TestGemma4MTPVerifierPostAttentionRMSNormGPUParity$", "-test.v"}
+		if dir := os.Getenv("PROFILE_SUBPROCESS_DIR"); dir != "" {
+			args = append(args, "-test.cpuprofile="+filepath.Join(dir, "disable-"+value+".cpu.pprof"), "-test.memprofile="+filepath.Join(dir, "disable-"+value+".heap.pprof"))
+		}
+		cmd := exec.Command(os.Args[0], args...)
 		for _, e := range os.Environ() {
 			if !strings.HasPrefix(e, "GO_PHERENCE_DISABLE_NVIDIA=") && !strings.HasPrefix(e, "PATH=") && !strings.HasPrefix(e, "MTP_GPU_POLICY_MARKER=") {
 				cmd.Env = append(cmd.Env, e)

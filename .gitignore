@@ -15,3 +15,7 @@
 *.nsys-rep
 *.sqlite
 .env
+
+# Retained local/CI validation is uploaded separately, never release source.
+/validation-evidence/
+/go-system-one/

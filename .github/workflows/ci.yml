@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+env:
+  EVIDENCE_ROOT: ${{ github.workspace }}/go-system-one
+  PROFILE_ROOT: ${{ github.workspace }}/go-system-one/profiles
+
 jobs:
   host:
     runs-on: ubuntu-24.04
@@ -17,7 +21,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
       - name: Repository checks
         env:
           GOPROXY: "off"
@@ -27,7 +31,15 @@ jobs:
         env:
           GOPROXY: "off"
           GOSUMDB: "off"
-        run: go test -mod=vendor -race ./model/gosystemone ./internal/httpinput ./webui
+        run: ./scripts/test-profile.sh ./model/gosystemone ./internal/httpinput ./webui -- -race
+
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn
 
   browser:
     runs-on: ubuntu-24.04
@@ -36,26 +48,35 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.1
       - name: Cache Chromium
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/.cache/ms-playwright
+          path: ${{ runner.temp }}/go-system-one/cache/playwright
           key: playwright-chromium-${{ runner.os }}-1.56.1
       - name: Install browser test dependencies
         env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/go-system-one/cache/playwright
         run: |
+          source scripts/project-env.sh
           cd browser
           bun install --frozen-lockfile
           bun x playwright install chromium
       - name: Test embedded playground
         env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/go-system-one/cache/playwright
         run: make browser-test
+
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn
 
   cross-build:
     runs-on: ubuntu-24.04
@@ -68,7 +89,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
       - name: Compile service
         env:
           CGO_ENABLED: "0"
@@ -76,4 +97,22 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           GOPROXY: "off"
           GOSUMDB: "off"
-        run: go build -mod=vendor -o /tmp/go-system-one-${{ matrix.goarch }} ./cmd/go-system-one
+        run: |
+          source scripts/project-env.sh
+          go build -mod=vendor -o "$PROJECT_TMP_ROOT/build/go-system-one-${{ matrix.goarch }}" ./cmd/go-system-one
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn
+
+
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn

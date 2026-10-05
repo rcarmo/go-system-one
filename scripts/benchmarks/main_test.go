@@ -73,6 +73,12 @@ func TestRenderIsDeterministic(t *testing.T) {
 	}
 }
 
+func TestCollectRequiresRetainedOutput(t *testing.T) {
+	if err := collect([]string{"-n", "1"}); err == nil || !strings.Contains(err.Error(), "-out is required") {
+		t.Fatalf("got %v, want explicit retained output path", err)
+	}
+}
+
 func TestCollectRejectsDecisionDrift(t *testing.T) {
 	var calls int
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

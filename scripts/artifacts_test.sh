@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/project-env.sh"
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 sandbox=$(mktemp -d)

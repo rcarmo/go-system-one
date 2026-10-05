@@ -298,12 +298,15 @@ func run() error {
 	modelPath := flag.String("model", "", "pinned GGUF path")
 	tokPath := flag.String("tokenizer-dir", "", "pinned tokenizer directory")
 	input := flag.String("cohort", "docs/benchmarks/multifield-cohort.json", "frozen requests")
-	output := flag.String("out", "dist/benchmarks/multifield-precision.json", "report path")
+	output := flag.String("out", "", "required retained report path, outside disposable scratch")
 	source := flag.String("source-revision", "", "source SHA (include dirty qualifier when applicable)")
 	chunk := flag.Int("contexts-per-call", 4, "split frozen requests into cooled calls; does not change context text or order")
 	resume := flag.Bool("resume", false, "resume complete chunks from the report after verifying source, cohort and request identities")
 	analyse := flag.String("analyse", "", "recompute comparisons from a saved report without model execution")
 	flag.Parse()
+	if *output == "" {
+		return fmt.Errorf("-out is required; choose a retained evidence path")
+	}
 	if *chunk < 1 || *chunk > gso.MaxContexts {
 		return fmt.Errorf("contexts-per-call must be 1..%d", gso.MaxContexts)
 	}

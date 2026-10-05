@@ -159,12 +159,15 @@ func collect(args []string) error {
 	fs := flag.NewFlagSet("collect", flag.ContinueOnError)
 	url := fs.String("url", "http://127.0.0.1:8080/v1/decision", "decision endpoint")
 	requestPath := fs.String("request", "docs/benchmarks/request.json", "request JSON")
-	outPath := fs.String("out", "dist/benchmarks/nvidia-http.json", "sample output JSON")
+	outPath := fs.String("out", "", "required retained sample output JSON")
 	warmup := fs.Int("warmup", 1, "warm-up requests")
 	n := fs.Int("n", 100, "measured requests")
 	timeout := fs.Duration("timeout", 60*time.Second, "per-request timeout")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *outPath == "" {
+		return fmt.Errorf("-out is required; choose a retained evidence path")
 	}
 	if *warmup < 0 || *n <= 0 || *n > 10000 || *timeout <= 0 {
 		return fmt.Errorf("invalid warmup=%d n=%d timeout=%s", *warmup, *n, *timeout)

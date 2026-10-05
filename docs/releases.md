@@ -24,13 +24,13 @@ go-system-one-VERSION-linux-ARCH/
 └── docs/
 ```
 
-`dist/SHA256SUMS` records archive checksums. `scripts/check-release-archives.sh` rejects model/checkpoint paths and scans extracted files for GGUF magic.
+`/workspace/tmp/go-system-one/build/dist/SHA256SUMS` records archive checksums. `make package` preserves a copy under `/workspace/notes/validation/go-system-one/releases/VERSION/` before disposable build cleanup. `scripts/check-release-archives.sh` rejects model/checkpoint paths and scans extracted files for GGUF magic. CI maps scratch to `$RUNNER_TEMP/go-system-one` and retains release/profile artifacts separately under `$GITHUB_WORKSPACE/go-system-one`.
 
 Verify a local build with:
 
 ```sh
-(cd dist && sha256sum -c SHA256SUMS)
-./scripts/check-release-archives.sh dist
+./scripts/project-env.sh bash -c 'cd "$DIST_DIR" && sha256sum -c SHA256SUMS'
+./scripts/check-release-archives.sh
 ```
 
 ## GitHub release
@@ -59,6 +59,6 @@ Before tagging:
 1. `main` is clean and synchronized with `origin/main`.
 2. `make check`, `make race` and `make cross-build` pass.
 3. `make hardware-check MODEL=... TOKENIZER_DIR=...` passes on authorised NVIDIA hardware. Also run `TestSystemOneReleasedModelTypes` with `GO_SYSTEM_ONE_MODEL` and `GO_SYSTEM_ONE_TOKENIZER_DIR` set, as documented in the [TypeSafe API checks](systemone-api.md#contract-and-checks); the Make target does not include that test.
-4. Performance claims have a committed validation record and bounded raw samples.
+4. Performance claims have a committed validation record and bounded raw samples. Every Go test retains CPU/heap profiles, matching binaries and logs through `scripts/test-profile.sh`; review cumulative CPU, allocated bytes and allocated objects. Report missing/empty captures and profile subprocesses separately.
 5. `make package VERSION=...` and checksum/archive checks pass.
 6. The accepted [`go-pherence`](https://github.com/rcarmo/go-pherence) base pin in `scripts/upstream.env` and per-file overrides in `scripts/upstream-files.tsv` match the reviewed imports. Local runtime and API changes are identified by the release commit; the upstream pin does not describe the entire current implementation.

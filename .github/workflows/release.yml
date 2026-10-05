@@ -19,6 +19,10 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  EVIDENCE_ROOT: ${{ github.workspace }}/go-system-one
+  PROFILE_ROOT: ${{ github.workspace }}/go-system-one/profiles
+
 jobs:
   release:
     runs-on: ubuntu-24.04
@@ -29,22 +33,40 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
       - name: Build and audit code-only archives
         env:
           GOPROXY: "off"
           GOSUMDB: "off"
         run: |
+          source scripts/project-env.sh
           make package VERSION="$RELEASE_VERSION"
-          (cd dist && sha256sum -c SHA256SUMS)
-          ./scripts/check-release-archives.sh dist
+          (cd "$PROJECT_TMP_ROOT/build/dist" && sha256sum -c SHA256SUMS)
+          ./scripts/check-release-archives.sh "$PROJECT_TMP_ROOT/build/dist"
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          source scripts/project-env.sh
           gh release create "$GITHUB_REF_NAME" \
             --verify-tag \
             --generate-notes \
             --title "Go System One $GITHUB_REF_NAME" \
-            dist/*.tar.gz dist/SHA256SUMS
+            "$PROJECT_TMP_ROOT"/build/dist/*.tar.gz "$PROJECT_TMP_ROOT/build/dist/SHA256SUMS"
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn
+
+
+      - name: Retain validation profiles and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/go-system-one/
+          if-no-files-found: warn

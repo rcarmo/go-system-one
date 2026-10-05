@@ -24,6 +24,20 @@ scripts/                 one-way upstream sync and dependency helpers
 vendor/                  pinned offline build closure and dependency licences
 ```
 
+## Project caches, scratch and retained evidence
+
+Canonical project: `go-system-one`. Before any local tool/build/test command, use `scripts/project-env.sh <command> ...` (or source it in Bash). Make recipes load the same environment. The root resolves once, before exporting `TMPDIR`: a validated absolute `PROJECT_TMP_ROOT` ending in `go-system-one`, otherwise writable `/workspace/tmp/go-system-one`, then `$RUNNER_TEMP/go-system-one`, the original `$TMPDIR/go-system-one`, or the platform temp directory plus `/go-system-one`. Invalid overrides fail; symlink components (except the operator-provided `/workspace` mount alias), traversal, non-owned or unwritable roots are rejected. All disposable paths share the resolved root: `cache/<tool>/`, `build/` and unique `runs/<purpose>/<run-id>/`. Never use bare temporary directories, home caches or ad-hoc unscoped roots. The portable resolver is repository-owned; CI does not require `/workspace/Makefile`.
+
+The environment routes `TMPDIR`, `TMP`, `TEMP`, `GOTMPDIR`, `GOCACHE`, `GOMODCACHE`, `GOPATH`, `XDG_CACHE_HOME`, `BUN_INSTALL_CACHE_DIR`, `npm_config_cache`, `PLAYWRIGHT_BROWSERS_PATH` and `CUDA_CACHE_PATH`. Helpers check ownership and reject symlink path components. Tests keep isolated `mktemp`/`t.TempDir` roots beneath the run directory. Do not reuse real project state as a test fixture.
+
+GitHub Actions maps this hierarchy explicitly to `$RUNNER_TEMP/go-system-one/{cache,build,runs}`. Retained CPU/heap profiles, matching binaries, flags, revisions, logs, benchmark results and release archives go under `/workspace/notes/validation/go-system-one/` locally (`PROFILE_ROOT`/`EVIDENCE_ROOT`), with ignored `validation-evidence/` as the absent-workspace fallback; CI retains them under `$GITHUB_WORKSPACE/go-system-one/` and uploads them even after failures. `make clean` deletes only the owned build directory, after the operator has stopped its jobs. It never removes caches, run directories, retained evidence, models or another project. No automatic migration or removal of old paths is authorised.
+
+Installed model/tokenizer assets are durable data: the existing artifact location is preserved independently of the tool cache environment. Historical benchmark protocol scripts under `docs/benchmarks/data/` retain their original paths as evidence; they are not current execution entrypoints. Do not rerun frozen benchmark collection to validate path changes.
+
+## Test profiling
+
+Every Go test invocation must use `scripts/test-profile.sh <packages...> -- <flags...>` or a profiling-aware Make target. The wrapper retains per-package CPU/heap profiles, binaries, commands, revision/diff, toolchain, sampling rates and logs outside scratch. Inspect cumulative CPU, `alloc_space` and `alloc_objects` after each run; generated tables alone do not complete analysis. Empty CPU samples, build failures, interrupted captures and unprofiled subprocesses must be reported. Collect a representative focused run before making performance claims. Fuzzing requires separate worker-level profiling support; the wrapper rejects it rather than silently running unprofiled workers.
+
 ## Required tooling
 
 - Go 1.26.2 or the version declared in `go.mod`.
@@ -110,7 +124,7 @@ This includes formatting checks, tests, vet and a full build. Also run:
 
 ```sh
 git diff --check -- . ':(exclude)vendor/**'
-go test -race ./model/gosystemone ./internal/httpinput ./webui
+./scripts/test-profile.sh ./model/gosystemone ./internal/httpinput ./webui -- -race
 ```
 
 For NVIDIA or released-model changes, set the artifact paths documented in `docs/validation/go-system-one-v1-20260921.md` and run the named opt-in parity test. For TypeSafe prompt or adapter changes, also run `TestSystemOneReleasedModelTypes` as documented in `docs/systemone-api.md`; `make hardware-check` does not include it. Record skipped hardware gates as skipped, not passed.

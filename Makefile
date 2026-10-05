@@ -1,24 +1,35 @@
 SHELL := /usr/bin/env bash
+# Shared with direct helpers; all recipes get project-owned cache/temp paths.
+# Resolve before BASH_ENV can rewrite TMPDIR; invalid overrides stop Make.
+TMP_ROOT_ENV = $(if $(filter undefined,$(origin PROJECT_TMP_ROOT)),,PROJECT_TMP_ROOT='$(subst ','"'"',$(PROJECT_TMP_ROOT))')
+RESOLVED_TMP_ROOT := $(shell env -u BASH_ENV $(TMP_ROOT_ENV) PROJECT=go-system-one bash scripts/project-tmp.sh root)
+ifeq ($(strip $(RESOLVED_TMP_ROOT)),)
+$(error Could not resolve a safe project temporary root)
+endif
+export PROJECT_TMP_ROOT := $(RESOLVED_TMP_ROOT)
+export BASH_ENV := $(CURDIR)/scripts/project-env.sh
+# Durable model assets are independent of tool caches.
+ARTIFACT_DIR ?= $(or $(GO_SYSTEM_ONE_ARTIFACT_DIR),$(HOME)/.cache/go-system-one/v1)
+export GO_SYSTEM_ONE_ARTIFACT_DIR := $(ARTIFACT_DIR)
 
 GO ?= go
 GOOS ?= $(shell $(GO) env GOOS)
 GOARCH ?= $(shell $(GO) env GOARCH)
 VERSION ?= $(shell git describe --tags --always --dirty)
-BUILD_DIR ?= bin
-DIST_DIR ?= dist
+override BUILD_DIR := $(PROJECT_TMP_ROOT)/build
+override DIST_DIR := $(BUILD_DIR)/dist
 PREFIX ?= /usr/local
 DESTDIR ?=
 BINARY ?= $(BUILD_DIR)/go-system-one
 LISTEN ?= 127.0.0.1:8080
 BACKEND ?= nvidia
-ARTIFACT_DIR ?= $(or $(GO_SYSTEM_ONE_ARTIFACT_DIR),$(or $(XDG_CACHE_HOME),$(HOME)/.cache)/go-system-one/v1)
 MODEL ?= $(ARTIFACT_DIR)/model/gemma-4-12b-it-UD-Q4_K_XL.gguf
 TOKENIZER_DIR ?= $(ARTIFACT_DIR)/tokenizer
 UPSTREAM_COMMIT ?= $(shell . scripts/upstream.env && printf '%s' "$$UPSTREAM_COMMIT")
 BENCHMARK_REQUESTS ?= 100
 BENCHMARK_WARMUP ?= 1
 BENCHMARK_LISTEN ?= 127.0.0.1:18081
-BENCHMARK_OUT ?= $(DIST_DIR)/benchmarks/nvidia-http.json
+BENCHMARK_OUT ?=
 
 .PHONY: help prerequisites setup vendor build install uninstall run test race coverage vet fmt-check scripts-check browser-test \
 	benchmark benchmark-charts benchmark-check vendor-check check cross-build artifacts-info artifacts-download artifacts-verify \
@@ -30,12 +41,12 @@ help:
 	  '' \
 	  '  make prerequisites      Check required and optional tools' \
 	  '  make setup              Regenerate vendor and build the service' \
-	  '  make build              Build bin/go-system-one' \
+	  '  make build              Build in the project scratch build directory' \
 	  '  make install            Install under PREFIX (default /usr/local)' \
 	  '  make uninstall          Remove the installed binary' \
 	  '  make run                Verify external artifacts and serve on LISTEN' \
 	  '  make test               Run the offline test suite' \
-	  '  make coverage           Write coverage.out and print package coverage' \
+	  '  make coverage           Retain coverage and CPU/heap profiles' \
 	  '  make race               Run race tests across first-party packages' \
 	  '  make browser-test       Run model-free Chromium playground tests' \
 	  '  make check              Run formatting, policy, test, vet and build gates' \
@@ -82,14 +93,13 @@ run: artifacts-verify build
 	$(BINARY) -model "$(MODEL)" -tokenizer-dir "$(TOKENIZER_DIR)" -backend "$(BACKEND)" -listen "$(LISTEN)"
 
 test:
-	GOPROXY=off GOSUMDB=off $(GO) test -mod=vendor ./...
+	GOPROXY=off GOSUMDB=off ./scripts/test-profile.sh ./...
 
 race:
-	$(GO) test -race ./model ./model/gosystemone ./backends/nvidia/runtime ./backends/simd/... ./loader/... ./runtime/... ./tensor ./webui ./internal/...
+	./scripts/test-profile.sh ./model ./model/gosystemone ./backends/nvidia/runtime ./backends/simd/... ./loader/... ./runtime/... ./tensor ./webui ./internal/... -- -race
 
 coverage:
-	$(GO) test -coverprofile=coverage.out ./...
-	$(GO) tool cover -func=coverage.out
+	PROFILE_COVERAGE=1 ./scripts/test-profile.sh ./...
 
 vet:
 	$(GO) vet ./...
@@ -100,7 +110,7 @@ fmt-check:
 
 browser-test:
 	cd browser && bun install --frozen-lockfile
-	cd browser && bun x playwright test --config playwright.config.ts
+	./scripts/browser-test.sh
 
 benchmark:
 	MODEL="$(MODEL)" TOKENIZER_DIR="$(TOKENIZER_DIR)" BACKEND="$(BACKEND)" \
@@ -112,11 +122,12 @@ benchmark-charts:
 	$(GO) run ./scripts/benchmarks render
 
 benchmark-check:
-	$(GO) test ./scripts/benchmarks
+	./scripts/test-profile.sh ./scripts/benchmarks
 	./scripts/check-benchmark-charts.sh
 
 scripts-check:
 	bash -n scripts/*.sh
+	./scripts/project-env_test.sh
 	./scripts/check-manifests.sh
 	./scripts/manifests_test.sh
 	./scripts/check-local-imports.sh
@@ -127,7 +138,7 @@ scripts-check:
 vendor-check:
 	@test ! -d vendor/github.com/rcarmo/go-pherence
 	@! grep -q 'github.com/rcarmo/go-pherence' go.mod go.sum vendor/modules.txt
-	GOPROXY=off GOSUMDB=off $(GO) test -mod=vendor ./...
+	GOPROXY=off GOSUMDB=off ./scripts/test-profile.sh ./...
 
 check: fmt-check scripts-check benchmark-check vendor-check vet build
 	@git diff --check -- . ':(exclude)vendor/**'
@@ -150,13 +161,13 @@ artifacts-clean:
 	GO_SYSTEM_ONE_ARTIFACT_DIR="$(ARTIFACT_DIR)" CONFIRM_ARTIFACT_DELETE="$(CONFIRM_ARTIFACT_DELETE)" ./scripts/artifacts.sh clean
 
 hardware-check: artifacts-verify
-	GO_SYSTEM_ONE_MODEL="$(MODEL)" GO_SYSTEM_ONE_TOKENIZER_DIR="$(TOKENIZER_DIR)" \
-		$(GO) test -mod=vendor ./model/gosystemone \
+	GO_PHERENCE_DISABLE_NVIDIA= GO_SYSTEM_ONE_MODEL="$(MODEL)" GO_SYSTEM_ONE_TOKENIZER_DIR="$(TOKENIZER_DIR)" \
+		./scripts/test-profile.sh ./model/gosystemone -- \
 		-run '^(TestPinnedGemma4Artifacts|TestGoSystemOneNVIDIAReleasedModelMatchesPinnedLlamaCppDecision|TestGoSystemOneNVIDIAMultiFieldReleasedModelMatchesPinnedLlamaCpp)$$' \
 		-count=1 -v
 
 package: check
-	@rm -rf $(DIST_DIR)
+	@./scripts/clean-build.sh dist
 	@mkdir -p $(DIST_DIR)
 	@set -euo pipefail; \
 	for target in linux/amd64 linux/arm64 linux/riscv64; do \
@@ -172,13 +183,15 @@ package: check
 	@./scripts/check-no-gguf-artifacts.sh
 	@./scripts/check-release-archives.sh "$(DIST_DIR)"
 	@cd $(DIST_DIR) && sha256sum *.tar.gz > SHA256SUMS
-	@find $(DIST_DIR) -type f -maxdepth 1 -print
+	@mkdir -p "$EVIDENCE_ROOT/releases/$(VERSION)"
+	@cp -n $(DIST_DIR)/*.tar.gz $(DIST_DIR)/SHA256SUMS "$EVIDENCE_ROOT/releases/$(VERSION)/"
+	@find $(DIST_DIR) -maxdepth 1 -type f -print
 
 update:
 	./scripts/update-upstream.sh "$(UPSTREAM_COMMIT)"
 
 clean:
-	rm -rf $(BUILD_DIR) $(DIST_DIR) coverage.out
+	./scripts/clean-build.sh
 
 distclean: clean
 	GO_SYSTEM_ONE_ARTIFACT_DIR="$(ARTIFACT_DIR)" CONFIRM_ARTIFACT_DELETE="$(CONFIRM_ARTIFACT_DELETE)" ./scripts/artifacts.sh clean

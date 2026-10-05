@@ -1,0 +1,30 @@
+# Project paths and test profiling
+
+Builds and helpers now use a project-owned temporary root. `scripts/project-tmp.sh` resolves a validated absolute `PROJECT_TMP_ROOT` ending in `go-system-one`, otherwise writable `/workspace/tmp/go-system-one`, `$RUNNER_TEMP/go-system-one`, the original `$TMPDIR/go-system-one`, or `/tmp/go-system-one`. It rejects invalid overrides instead of falling back. `scripts/project-env.sh` resolves before changing `TMPDIR`, preserves the original value, and exports one root to child processes.
+
+`cache/<tool>/` contains Go, Bun/npm, Playwright, CUDA and XDG caches; `build/` contains generated binaries and archives; `runs/<purpose>/<run-id>/` contains isolated scratch. CI uses the same repository-owned resolver without the workspace Makefile. Evidence lives outside scratch: `/workspace/notes/validation/go-system-one/` locally, `$GITHUB_WORKSPACE/go-system-one/` in CI, or ignored `validation-evidence/` on other hosts.
+
+`make clean` validates and deletes only the build directory. It does not clean caches, run directories or retained evidence. No old directory, installed model, toolchain, source checkout or frozen benchmark evidence was moved or deleted. There were no active Go System One jobs during adoption. Other projects' jobs were left alone.
+
+## Validation
+
+* Shell/helper checks passed, including resolution precedence, invalid overrides, preserved original TMPDIR, re-sourcing, symlink/traversal rejection and cleanup sentinels. Fallback tests used isolated directories beneath the project run; the platform fallback was resolved without creating or mutating `/tmp/go-system-one`.
+* `make check` passed with package-specific CPU/heap profiles, followed by vet and build. All 59 package entries completed successfully (packages without tests are compilation-only).
+* Product HTTP/web UI/input/precision-helper race checks passed with profiles. The benchmark/precision helpers passed ten repetitions after requiring an explicit retained report path.
+* Seven Playwright scenarios passed. Node runner and worker CPU/heap profiles and a separate Go fixture-server profile were retained. Chromium process internals are outside those profiles. No hardware inference or frozen benchmark collection was run.
+* Linux ARM64/RISC-V cross-builds passed. All three workflow YAML files parsed. Hosted CI execution is separate from local validation.
+* A read-only review prompted fixes to original-TMPDIR preservation, root-parent handling, durable artifact defaults, evidence-path validation and non-creating cleanup validation. A subsequent shell check rejected synthetic artifact fixtures when a blanket model-path guard was added. That guard was removed: production defaults remain durable, while explicit synthetic fixtures retain their isolated run directories. Shell checks, vet and build then passed again; the failed shell log is retained.
+
+## Profile analysis
+
+Local evidence is under `/workspace/notes/validation/go-system-one/`. `path-policy/` holds check logs and profile excerpts; `profiles/` retains each run's matching test binaries, invocation/toolchain, source revision/patch, CPU/heap data and cumulative CPU/`alloc_space`/`alloc_objects` tables. CPU sampling is 100 Hz; ordinary Go heap sampling is 524,288 bytes. These checks qualify path and profiling behaviour, not inference throughput.
+
+The initial and portable-root full runs (`run-20261005T190713Z-i8zHN3IZ` and `run-20261005T191108Z-jhyVrBvb`) used equivalent offline workloads. Many tiny packages had zero or only 10 ms of CPU samples; sampled allocation totals varied and cannot support a speed or allocation-reduction claim. Leading costs were unchanged: synthetic Qwen state allocation (64 MiB, 77% of the model package's sampled bytes), large NVFP4 layout fixtures (about 100 MiB), and the NVIDIA driver's source-audit AST parser (about 81% of that package's allocated objects). These are test/state setup costs, not new per-request allocations from path resolution.
+
+The race run (`run-20261005T191228Z-yeNsF1qq`) passed; short input, web UI and precision-helper CPU profiles were empty. The browser Go fixture also captured an empty CPU sample set over 7.25 seconds. Browser Node profiles were predominantly idle waiting for browser work; sampled live allocations were module loading, Playwright dispatch and transform code. Those observations do not measure browser rendering or service inference.
+
+A representative HTTP admission test repeated 100 times (`run-20261005T191615Z-6CsAWeSH`) captured 650 ms of CPU samples. The handler accounted for about 62% cumulative CPU. JSON decoder refill accounted for 396.6 MiB (63%) of sampled allocation bytes; `strings.Repeat` fixture construction accounted for 99.5 MiB (16%). The workload deliberately exercises large/rejected bodies. Reusing a global decoder or relaxing bounded input validation would compromise isolation; no such optimisation was made for this path-only change.
+
+The final ten-repeat benchmark-helper run (`run-20261005T192016Z-yY7Z7jln`) captured 310 ms CPU and 66.9 MiB allocations: JSON evidence decoding accounted for 210 ms cumulative CPU and 81% of allocated objects. Precision-helper CPU contained only 10 ms, so it remains statistically weak. These helpers audit small retained datasets; changing them to cache mutable fixture data would add complexity without affecting serving performance.
+
+The first full run exposed an unprofiled skip-only GPU-policy subprocess. The test now writes independent child CPU/heap profiles and the wrapper analyses them. The portable-root run captured both children; their empty CPU samples are explicitly recorded. No GPU discovery occurred. Fuzzing is rejected by the wrapper until worker-level capture is available. Failed builds and missing profile files fail the profiling check; ordinary empty CPU samples are recorded as limitations and cannot qualify a performance result.
