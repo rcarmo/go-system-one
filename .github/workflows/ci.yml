@@ -53,7 +53,7 @@ jobs:
         with:
           bun-version: 1.4.1
       - name: Cache Chromium
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/go-system-one/cache/playwright
           key: playwright-chromium-${{ runner.os }}-1.56.1

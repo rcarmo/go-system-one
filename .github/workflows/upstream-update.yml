@@ -74,7 +74,7 @@ jobs:
         run: ./scripts/update-upstream.sh '${{ steps.upstream.outputs.revision }}'
       - name: Create review pull request
         if: steps.relevance.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/go-pherence-update
           delete-branch: true
