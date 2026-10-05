@@ -19,6 +19,14 @@ Publication initially encountered a non-fast-forward: remote `main` had merged d
 
 The final precedence amendment added `PROJECT_TMP_BASE`, conflict rejection, explicit CI/local precedence and stable `tests/`/`logs/` roots. Isolated resolver and Make override checks passed. A 100-repeat HTTP-input smoke run (`run-20261005T193812Z-I8AVYy6r`) retained CPU/heap profiles: only 10 ms CPU samples (runtime unwinding), with 13.1 MiB sampled allocation dominated by decoder test fixtures and profiling overhead. It establishes wrapper operation, not a performance comparison.
 
+## Hosted CI capture correction
+
+CI run `37364806214` on `919aa37` initially could not acquire hosted runners for host and RISC-V; neither job executed any steps. A failed-job retry completed them successfully, retaining the already successful browser and ARM64 jobs. Host artifacts contain 59 ordinary package entries, one focused benchmark-helper entry and three race entries, all with successful test/profile statuses. Empty CPU samples in short tests remain unsuitable for performance comparisons. Their leading costs match local runs: JSON decoding, synthetic state construction and source-audit AST parsing. The raw CI artifacts and analysis are retained under `/workspace/notes/validation/go-system-one/ci/37364806214-attempt2/`.
+
+Despite the green browser job, artifact inspection found fixture-server `status.txt=1`, an empty CPU file and no heap profile. Playwright signals the complete server process group; the wrapper also forwarded TERM to Go, risking a second termination during profile flushing after `signal.NotifyContext` returned. The wrapper now lets the group signal reach Go once and waits for the child before analysing captures. The browser runner checks its own server receipt and required profile files, so a successful browser assertion suite cannot hide failed profiling during teardown.
+
+The affected seven-scenario local check passed with complete server profiles and both receipts at zero (`browser-runner-et41yqSF`). Its 4.34-second server CPU profile has zero samples; sampled allocations are dominated by profiler/signal setup. Node profiles are idle-heavy with module-loading allocations. Captures are complete but do not qualify an inference or rendering performance claim. No public benchmark request or GPU inference was repeated.
+
 ## Profile analysis
 
 Local evidence is under `/workspace/notes/validation/go-system-one/`. `path-policy/` holds check logs and profile excerpts; `profiles/` retains each run's matching test binaries, invocation/toolchain, source revision/patch, CPU/heap data and cumulative CPU/`alloc_space`/`alloc_objects` tables. CPU sampling is 100 Hz; ordinary Go heap sampling is 524,288 bytes. These checks qualify path and profiling behaviour, not inference throughput.
