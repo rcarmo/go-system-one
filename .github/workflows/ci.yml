@@ -107,12 +107,3 @@ jobs:
           name: validation-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/go-system-one/
           if-no-files-found: warn
-
-
-      - name: Retain validation profiles and logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: validation-${{ github.job }}-${{ strategy.job-index }}
-          path: ${{ github.workspace }}/go-system-one/
-          if-no-files-found: warn
