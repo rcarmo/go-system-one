@@ -5,12 +5,12 @@ project_env() {
   local relative component path repo
   repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
   source "$repo/scripts/project-tmp.sh"
-  # Preserve the caller's platform temp root across nested Make/helper calls.
-  export GO_SYSTEM_ONE_ORIGINAL_TMPDIR="${GO_SYSTEM_ONE_ORIGINAL_TMPDIR-${TMPDIR:-}}"
   # Resolve once, before assigning TMPDIR to a unique child run.
   PROJECT_TMP_ROOT=$(project_tmp_resolve go-system-one) || return
   export PROJECT_TMP_ROOT
   project_tmp_init "$PROJECT_TMP_ROOT" || return
+  export CACHE_ROOT="$PROJECT_TMP_ROOT/cache" BUILD_ROOT="$PROJECT_TMP_ROOT/build"
+  export TEST_ROOT="$PROJECT_TMP_ROOT/tests" LOG_ROOT="$PROJECT_TMP_ROOT/logs" RUN_ROOT="$PROJECT_TMP_ROOT/runs"
   # Check every component below the project parent, including existing symlinks.
   project_owned_dir() {
     local target=$1 current=${PROJECT_TMP_ROOT%/*} part

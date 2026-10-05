@@ -2,7 +2,8 @@ SHELL := /usr/bin/env bash
 # Shared with direct helpers; all recipes get project-owned cache/temp paths.
 # Resolve before BASH_ENV can rewrite TMPDIR; invalid overrides stop Make.
 TMP_ROOT_ENV = $(if $(filter undefined,$(origin PROJECT_TMP_ROOT)),,PROJECT_TMP_ROOT='$(subst ','"'"',$(PROJECT_TMP_ROOT))')
-RESOLVED_TMP_ROOT := $(shell env -u BASH_ENV $(TMP_ROOT_ENV) PROJECT=go-system-one bash scripts/project-tmp.sh root)
+TMP_BASE_ENV = $(if $(filter undefined,$(origin PROJECT_TMP_BASE)),,PROJECT_TMP_BASE='$(subst ','"'"',$(PROJECT_TMP_BASE))')
+RESOLVED_TMP_ROOT := $(shell env -u BASH_ENV $(TMP_ROOT_ENV) $(TMP_BASE_ENV) PROJECT=go-system-one bash scripts/project-tmp.sh root)
 ifeq ($(strip $(RESOLVED_TMP_ROOT)),)
 $(error Could not resolve a safe project temporary root)
 endif

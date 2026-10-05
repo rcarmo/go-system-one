@@ -19,24 +19,38 @@ fi
 if PROJECT_TMP_ROOT="$fixture/wrong" bash "$root/scripts/project-env.sh" true >/dev/null 2>&1; then
   echo 'ad-hoc project root accepted' >&2; exit 1
 fi
-# Fallback resolution is tested beneath this isolated fixture; no real /tmp mutation.
+# Policy amendment: CI ignores an available workspace; local ignores CI temp vars.
 mkdir -p "$fixture/workspace/tmp" "$fixture/runner" "$fixture/original"
-resolved=$(unset PROJECT_TMP_ROOT GO_SYSTEM_ONE_ORIGINAL_TMPDIR; RUNNER_TEMP="$fixture/runner" TMPDIR="$fixture/original" project_tmp_resolve go-system-one "$fixture/workspace/tmp")
-[[ $resolved == "$fixture/workspace/tmp/go-system-one" ]]
-resolved=$(unset PROJECT_TMP_ROOT GO_SYSTEM_ONE_ORIGINAL_TMPDIR; RUNNER_TEMP="$fixture/runner" TMPDIR="$fixture/original" project_tmp_resolve go-system-one "$fixture/absent/host/tmp")
-[[ $resolved == "$fixture/runner/go-system-one" ]]
-resolved=$(unset PROJECT_TMP_ROOT RUNNER_TEMP GO_SYSTEM_ONE_ORIGINAL_TMPDIR; TMPDIR="$fixture/original" project_tmp_resolve go-system-one "$fixture/absent/host/tmp")
-[[ $resolved == "$fixture/original/go-system-one" ]]
-resolved=$(unset PROJECT_TMP_ROOT RUNNER_TEMP TMPDIR GO_SYSTEM_ONE_ORIGINAL_TMPDIR; project_tmp_resolve go-system-one "$fixture/absent/host/tmp")
-[[ $resolved == /tmp/go-system-one ]]
-PROJECT_TMP_ROOT="$fixture/owned/go-system-one" project_tmp_resolve go-system-one >/dev/null
+resolve_fixture() (
+  unset PROJECT_TMP_ROOT PROJECT_TMP_BASE CI GITHUB_ACTIONS GITLAB_CI TF_BUILD CIRCLECI
+  export PROJECT_ORIGINAL_TMPDIR="$fixture/original" RUNNER_TEMP="$fixture/runner"
+  case "$1" in
+    local) project_tmp_resolve go-system-one "$fixture/workspace/tmp";;
+    local-absent) project_tmp_resolve go-system-one "$fixture/absent/host/tmp";;
+    ci) CI=true project_tmp_resolve go-system-one "$fixture/workspace/tmp";;
+    ci-original) unset RUNNER_TEMP; CI=true project_tmp_resolve go-system-one "$fixture/workspace/tmp";;
+    ci-system) unset RUNNER_TEMP; PROJECT_ORIGINAL_TMPDIR= CI=true project_tmp_resolve go-system-one "$fixture/workspace/tmp";;
+  esac
+)
+[[ $(resolve_fixture local) == "$fixture/workspace/tmp/go-system-one" ]]
+[[ $(resolve_fixture local-absent) == /tmp/go-system-one ]]
+[[ $(resolve_fixture ci) == "$fixture/runner/go-system-one" ]]
+[[ $(resolve_fixture ci-original) == "$fixture/original/go-system-one" ]]
+[[ $(resolve_fixture ci-system) == /tmp/go-system-one ]]
+(
+  unset PROJECT_TMP_ROOT PROJECT_TMP_BASE
+  [[ $(PROJECT_TMP_BASE="$fixture/owned" project_tmp_resolve go-system-one) == "$fixture/owned/go-system-one" ]]
+  PROJECT_TMP_BASE="$fixture/owned" PROJECT_TMP_ROOT="$fixture/owned/go-system-one" project_tmp_resolve go-system-one >/dev/null
+  if PROJECT_TMP_BASE="$fixture/owned" PROJECT_TMP_ROOT="$fixture/other/go-system-one" project_tmp_resolve go-system-one >/dev/null 2>&1; then exit 1; fi
+  for invalid in relative "$fixture/link" "$fixture/owned/../elsewhere" ''; do
+    if PROJECT_TMP_BASE="$invalid" project_tmp_resolve go-system-one >/dev/null 2>&1; then exit 1; fi
+  done
+)
 for invalid in relative/go-system-one "$fixture/owned/../go-system-one" "$fixture/link/go-system-one" ''; do
-  if (PROJECT_TMP_ROOT="$invalid" project_tmp_resolve go-system-one) >/dev/null 2>&1; then
+  if (unset PROJECT_TMP_BASE; PROJECT_TMP_ROOT="$invalid" project_tmp_resolve go-system-one) >/dev/null 2>&1; then
     echo "invalid override accepted: $invalid" >&2; exit 1
   fi
 done
-resolved=$(unset PROJECT_TMP_ROOT RUNNER_TEMP; GO_SYSTEM_ONE_ORIGINAL_TMPDIR="$fixture/original" TMPDIR="$fixture/owned" project_tmp_resolve go-system-one "$fixture/absent/host/tmp")
-[[ $resolved == "$fixture/original/go-system-one" ]]
 # Re-sourcing must preserve the root rather than append under the new TMPDIR.
 before=$PROJECT_TMP_ROOT
 source "$root/scripts/project-env.sh"
