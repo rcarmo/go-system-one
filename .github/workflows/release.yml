@@ -56,7 +56,7 @@ jobs:
             "$PROJECT_TMP_ROOT"/build/dist/*.tar.gz "$PROJECT_TMP_ROOT/build/dist/SHA256SUMS"
       - name: Retain validation profiles and logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: validation-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/go-system-one/
